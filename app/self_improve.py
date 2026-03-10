@@ -224,17 +224,21 @@ class SelfImprover:
             }
             passed, reason = self._integrity.validate_learned_rule(domain, gate_data)
             if not passed:
-                log.warning(
-                    "Puriel rejected pattern %s: %s", pattern_id, reason,
+                log.info(
+                    "Puriel gently held back pattern %s: %s",
+                    pattern_id, reason,
                 )
                 self._log_improvement(ImprovementRecord(
-                    action="integrity_rejection",
+                    action="integrity_guidance",
                     domain=domain,
-                    description=f"Puriel rejected '{rule_name}': {reason}",
+                    description=(
+                        f"Puriel guided '{rule_name}' away from the seeds: "
+                        f"{reason}"
+                    ),
                     confidence=confidence,
                     integrity_check_passed=False,
                 ))
-                return  # Do NOT strengthen the pattern
+                return  # This one isn't ready yet -- and that's OK
 
         # -- Pattern learning (passed integrity gate) ----------------------
         if pattern_id in self._patterns:
