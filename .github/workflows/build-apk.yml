@@ -58,7 +58,11 @@ jobs:
 
       - name: Build APK
         run: |
-          set -euo pipefail
+          # NOTE: Do NOT use 'set -eo pipefail' here.
+          # 'yes | buildozer | tee' always ends with SIGPIPE (broken pipe)
+          # when buildozer finishes and closes stdin. With pipefail, that
+          # kills the whole step even on a successful build.
+          # Instead, we gate success on whether an APK file actually exists.
 
           # Ensure autotools can find all m4 macros (libtool, gettext, etc.)
           export ACLOCAL_PATH="/usr/share/aclocal"
@@ -67,11 +71,10 @@ jobs:
           # Buildozer requires main.py as the entry point
           cp main_android.py main.py
 
-          # Build — use script to provide pseudo-tty for buildozer prompts
-          yes | buildozer -v android debug 2>&1 | tee /tmp/build.log
-          BUILD_EXIT=${PIPESTATUS[2]}
+          # Build — 'yes' answers SDK license prompts; tee captures logs
+          yes | buildozer -v android debug 2>&1 | tee /tmp/build.log || true
 
-          # Verify APK was actually produced
+          # Verify APK was actually produced — this is our real success gate
           if ! ls bin/*.apk 2>/dev/null; then
             echo ""
             echo "========================================="
