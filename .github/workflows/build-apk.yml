@@ -53,10 +53,13 @@ jobs:
       - name: Install buildozer and cython
         run: |
           pip install --upgrade pip
-          pip install buildozer cython
+          # Pin Cython <3 — Cython 3.x removed 'long' builtin, breaking pyjnius
+          pip install "cython<3" buildozer
 
       - name: Build APK
         run: |
+          set -euo pipefail
+
           # Ensure autotools can find all m4 macros (libtool, gettext, etc.)
           export ACLOCAL_PATH="/usr/share/aclocal"
           export ACLOCAL="aclocal"
@@ -64,15 +67,23 @@ jobs:
           # Buildozer requires main.py as the entry point
           cp main_android.py main.py
 
-          # Build with output capture for error diagnosis
-          yes | buildozer -v android debug 2>&1 | tee /tmp/build.log || {
+          # Build — use script to provide pseudo-tty for buildozer prompts
+          yes | buildozer -v android debug 2>&1 | tee /tmp/build.log
+          BUILD_EXIT=${PIPESTATUS[2]}
+
+          # Verify APK was actually produced
+          if ! ls bin/*.apk 2>/dev/null; then
             echo ""
             echo "========================================="
-            echo "BUILD FAILED - Last 300 lines of output:"
+            echo "BUILD FAILED - No APK produced!"
+            echo "Last 100 lines of build log:"
             echo "========================================="
-            tail -300 /tmp/build.log
+            tail -100 /tmp/build.log
             exit 1
-          }
+          fi
+
+          echo "✅ APK built successfully:"
+          ls -lh bin/*.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
@@ -80,3 +91,4 @@ jobs:
           name: mkangel-apk
           path: bin/*.apk
           retention-days: 30
+          if-no-files-found: error
