@@ -9,7 +9,8 @@ version = 0.2.0
 # Entry point — buildozer requires main.py
 # The CI workflow copies main_android.py -> main.py before building
 
-requirements = python3,kivy,sqlite3
+# Python 3 includes sqlite3 built-in; no separate recipe needed
+requirements = python3,kivy
 
 # Android settings
 android.permissions = INTERNET

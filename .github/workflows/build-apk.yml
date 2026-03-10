@@ -37,6 +37,7 @@ jobs:
             gettext \
             libtool \
             libtool-bin \
+            libltdl-dev \
             m4 \
             pkg-config \
             zlib1g-dev \
@@ -54,6 +55,8 @@ jobs:
           pip install buildozer cython
 
       - name: Build APK
+        env:
+          ACLOCAL_PATH: /usr/share/aclocal
         run: |
           # Buildozer requires main.py as the entry point
           cp main_android.py main.py
