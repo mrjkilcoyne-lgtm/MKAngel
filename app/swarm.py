@@ -1,18 +1,19 @@
 """
-Swarm intelligence and harness system for MKAngel.
+Host intelligence and harness system for MKAngel.
 
-A swarm is a collection of specialised agents that coordinate to solve
+A Host is a collection of specialised agents working in concert —
+like a heavenly host, a multitude of angels coordinating to solve
 problems no single agent could handle alone.  Like neurons in a brain,
 bees in a hive, or instruments in an orchestra — the emergent behaviour
 of the collective exceeds the sum of its parts.
 
 Architecture:
-- Swarm: a collection of agents with a coordination protocol
-- Harness: a runtime that manages swarm lifecycle, routing, and synthesis
+- Host: a collection of agents with a coordination protocol
+- Harness: a runtime that manages host lifecycle, routing, and synthesis
 - Agent roles: explorer, analyst, synthesiser, critic, specialist
 - Coordination: broadcast, relay, auction, consensus, hierarchical
 
-The Borges Library principle: the swarm navigates the space of all
+The Borges Library principle: the host navigates the space of all
 possible responses — the Library of Babel — finding the meaningful
 needles in the infinite haystack.  Each agent explores a different
 corridor of the Library.
@@ -32,7 +33,7 @@ from typing import Any, Callable
 # ---------------------------------------------------------------------------
 
 class AgentRole(Enum):
-    """Roles agents can play in a swarm."""
+    """Roles agents can play in a host."""
     EXPLORER = auto()      # Searches possibility space broadly
     ANALYST = auto()       # Deep analysis of a specific domain
     SYNTHESISER = auto()   # Combines findings from other agents
@@ -44,7 +45,7 @@ class AgentRole(Enum):
 
 
 class CoordinationProtocol(Enum):
-    """How agents coordinate within the swarm."""
+    """How agents coordinate within the host."""
     BROADCAST = auto()     # All agents receive all messages
     RELAY = auto()         # Messages pass through chain
     AUCTION = auto()       # Tasks assigned to best-suited agent
@@ -58,8 +59,8 @@ class CoordinationProtocol(Enum):
 # ---------------------------------------------------------------------------
 
 @dataclass
-class SwarmMessage:
-    """A message passed between agents in the swarm."""
+class HostMessage:
+    """A message passed between agents in the host."""
     sender: str
     content: str
     message_type: str = "info"  # info, query, result, critique, consensus
@@ -72,8 +73,8 @@ class SwarmMessage:
 
 
 @dataclass
-class SwarmAgent:
-    """An agent within a swarm."""
+class HostAgent:
+    """An agent within a host."""
     name: str
     role: AgentRole
     domain: str = "general"
@@ -87,8 +88,8 @@ class SwarmAgent:
 
 
 @dataclass
-class SwarmResult:
-    """Result from a swarm operation."""
+class HostResult:
+    """Result from a host operation."""
     task: str
     agents_used: list[str]
     individual_results: dict[str, Any]
@@ -110,7 +111,7 @@ class BorgesLibrary:
     every book that could ever be written.  Most are gibberish.  The
     Angel's job is to find the meaningful volumes.
 
-    This is the principle behind the swarm: each agent explores a
+    This is the principle behind the host: each agent explores a
     different hexagonal room in the Library, searching for coherent
     text among the noise.  The grammar is the compass — it tells us
     which rooms are likely to contain meaning.
@@ -204,25 +205,25 @@ class BorgesLibrary:
 
 
 # ---------------------------------------------------------------------------
-# Swarm — the collective
+# Host — the collective
 # ---------------------------------------------------------------------------
 
-class Swarm:
-    """A coordinated swarm of agents.
+class Host:
+    """A coordinated host of agents.
 
-    Each agent is a voice in the fugue.  The swarm is the full orchestra.
+    Each agent is a voice in the fugue.  The host is the full orchestra.
     Coordination protocols determine how the voices harmonise.
     """
 
     def __init__(
         self,
-        name: str = "angel_swarm",
+        name: str = "angel_host",
         protocol: CoordinationProtocol = CoordinationProtocol.BROADCAST,
     ) -> None:
         self.name = name
         self.protocol = protocol
-        self._agents: dict[str, SwarmAgent] = {}
-        self._messages: list[SwarmMessage] = []
+        self._agents: dict[str, HostAgent] = {}
+        self._messages: list[HostMessage] = []
         self._library = BorgesLibrary()
         self._results: dict[str, Any] = {}
         self._angel: Any = None
@@ -237,9 +238,9 @@ class Swarm:
         domain: str = "general",
         capabilities: list[str] | None = None,
         config: dict[str, Any] | None = None,
-    ) -> SwarmAgent:
-        """Add an agent to the swarm."""
-        agent = SwarmAgent(
+    ) -> HostAgent:
+        """Add an agent to the host."""
+        agent = HostAgent(
             name=name,
             role=role,
             domain=domain,
@@ -255,21 +256,21 @@ class Swarm:
             return True
         return False
 
-    def list_agents(self) -> list[SwarmAgent]:
+    def list_agents(self) -> list[HostAgent]:
         return list(self._agents.values())
 
-    # -- Swarm execution ---------------------------------------------------
+    # -- Host execution ----------------------------------------------------
 
     def run(
         self,
         task: str,
         provider: Any = None,
         grammars: list[Any] | None = None,
-    ) -> SwarmResult:
-        """Run the swarm on a task.
+    ) -> HostResult:
+        """Run the host on a task.
 
         Each agent processes the task according to its role and domain.
-        Results are coordinated according to the swarm's protocol.
+        Results are coordinated according to the host's protocol.
         The Borges Library navigator searches for unexpected connections.
 
         Args:
@@ -278,14 +279,14 @@ class Swarm:
             grammars: Grammar objects for navigation.
 
         Returns:
-            SwarmResult with coordinated findings.
+            HostResult with coordinated findings.
         """
         start = time.time()
         individual_results: dict[str, Any] = {}
 
-        # If no agents, create a default swarm
+        # If no agents, create a default host
         if not self._agents:
-            self._create_default_swarm()
+            self._create_default_host()
 
         # Run agents concurrently
         threads: list[threading.Thread] = []
@@ -311,7 +312,7 @@ class Swarm:
 
         # Synthesise results
         consensus = self._build_consensus(task, individual_results, provider)
-        harmonics = self._find_swarm_harmonics(individual_results)
+        harmonics = self._find_host_harmonics(individual_results)
 
         # Calculate confidence
         confidences = []
@@ -320,7 +321,7 @@ class Swarm:
                 confidences.append(r.get("confidence", 0.5))
         avg_confidence = sum(confidences) / max(len(confidences), 1)
 
-        return SwarmResult(
+        return HostResult(
             task=task,
             agents_used=list(individual_results.keys()),
             individual_results=individual_results,
@@ -333,7 +334,7 @@ class Swarm:
 
     def _run_agent(
         self,
-        agent: SwarmAgent,
+        agent: HostAgent,
         task: str,
         provider: Any,
         grammars: list[Any] | None,
@@ -348,7 +349,7 @@ class Swarm:
 
             # Broadcast result to other agents if using broadcast protocol
             if self.protocol == CoordinationProtocol.BROADCAST:
-                self._messages.append(SwarmMessage(
+                self._messages.append(HostMessage(
                     sender=agent.name,
                     content=str(result.get("output", "")),
                     message_type="result",
@@ -360,7 +361,7 @@ class Swarm:
 
     def _execute_agent_role(
         self,
-        agent: SwarmAgent,
+        agent: HostAgent,
         task: str,
         provider: Any,
         grammars: list[Any] | None,
@@ -415,7 +416,7 @@ class Swarm:
 
     def _analyse_task(
         self,
-        agent: SwarmAgent,
+        agent: HostAgent,
         task: str,
         provider: Any,
         grammars: list[Any] | None,
@@ -465,7 +466,7 @@ class Swarm:
 
     def _oracle_predict(
         self,
-        agent: SwarmAgent,
+        agent: HostAgent,
         task: str,
         grammars: list[Any] | None,
     ) -> dict[str, Any]:
@@ -516,22 +517,22 @@ class Swarm:
                     summaries.append(f"[{name}]: {result.get('output', 'no output')}")
             combined = "\n".join(summaries)
             return provider.generate(
-                f"Synthesise these swarm agent results for task '{task}':\n{combined}",
+                f"Synthesise these host agent results for task '{task}':\n{combined}",
                 system="Combine insights from multiple specialist agents. Be concise.",
                 temperature=0.3,
                 max_tokens=1024,
             )
 
-        parts = [f"Swarm consensus for: {task}", ""]
+        parts = [f"Host consensus for: {task}", ""]
         for name, result in results.items():
             if isinstance(result, dict):
                 parts.append(f"  [{name}]: {result.get('output', 'error')}")
         return "\n".join(parts)
 
-    def _find_swarm_harmonics(
+    def _find_host_harmonics(
         self, results: dict[str, Any],
     ) -> list[dict[str, Any]]:
-        """Find where swarm agents agree."""
+        """Find where host agents agree."""
         harmonics = []
         outputs = {}
         for name, result in results.items():
@@ -550,8 +551,8 @@ class Swarm:
                 })
         return harmonics
 
-    def _create_default_swarm(self) -> None:
-        """Create a default swarm with standard agent composition."""
+    def _create_default_host(self) -> None:
+        """Create a default host with standard agent composition."""
         self.add_agent("explorer", AgentRole.EXPLORER, "general", ["broad_search"])
         self.add_agent("navigator", AgentRole.NAVIGATOR, "general", ["borges_navigation"])
         self.add_agent("linguist", AgentRole.SPECIALIST, "linguistic", ["grammar_analysis"])
@@ -573,72 +574,72 @@ class Swarm:
     def __repr__(self) -> str:
         n = len(self._agents)
         active = sum(1 for a in self._agents.values() if a.active)
-        return f"Swarm('{self.name}', agents={active}/{n}, protocol={self.protocol.name})"
+        return f"Host('{self.name}', agents={active}/{n}, protocol={self.protocol.name})"
 
 
 # ---------------------------------------------------------------------------
-# Harness — the swarm runtime manager
+# Harness — the host runtime manager
 # ---------------------------------------------------------------------------
 
-class SwarmHarness:
-    """Runtime manager for swarm operations.
+class HostHarness:
+    """Runtime manager for host operations.
 
-    The harness manages the lifecycle of swarms: creation, execution,
-    monitoring, and result collection.  It can run multiple swarms
+    The harness manages the lifecycle of hosts: creation, execution,
+    monitoring, and result collection.  It can run multiple hosts
     concurrently and coordinate between them.
     """
 
     def __init__(self, provider: Any = None) -> None:
         self._provider = provider
-        self._swarms: dict[str, Swarm] = {}
-        self._history: list[SwarmResult] = []
+        self._hosts: dict[str, Host] = {}
+        self._history: list[HostResult] = []
 
-    def create_swarm(
+    def create_host(
         self,
         name: str = "default",
         protocol: CoordinationProtocol = CoordinationProtocol.BROADCAST,
-    ) -> Swarm:
-        """Create a new swarm."""
-        swarm = Swarm(name=name, protocol=protocol)
-        self._swarms[name] = swarm
-        return swarm
+    ) -> Host:
+        """Create a new host."""
+        host = Host(name=name, protocol=protocol)
+        self._hosts[name] = host
+        return host
 
-    def run_swarm(
+    def run_host(
         self,
         task: str,
-        swarm_name: str = "default",
+        host_name: str = "default",
         grammars: list[Any] | None = None,
-    ) -> SwarmResult:
-        """Run a swarm on a task."""
-        if swarm_name not in self._swarms:
-            self.create_swarm(swarm_name)
+    ) -> HostResult:
+        """Run a host on a task."""
+        if host_name not in self._hosts:
+            self.create_host(host_name)
 
-        swarm = self._swarms[swarm_name]
-        result = swarm.run(task, self._provider, grammars)
+        host = self._hosts[host_name]
+        result = host.run(task, self._provider, grammars)
         self._history.append(result)
         return result
 
-    def run_multi_swarm(
+    def run_multi_host(
         self,
         task: str,
-        swarm_names: list[str] | None = None,
+        host_names: list[str] | None = None,
         grammars: list[Any] | None = None,
-    ) -> list[SwarmResult]:
-        """Run multiple swarms concurrently on the same task."""
-        names = swarm_names or list(self._swarms.keys())
+    ) -> list[HostResult]:
+        """Run multiple hosts concurrently on the same task."""
+        names = host_names or list(self._hosts.keys())
         if not names:
             names = ["default"]
 
-        results: list[SwarmResult] = []
+        results: list[HostResult] = []
         threads: list[threading.Thread] = []
         lock = threading.Lock()
 
         for name in names:
-            if name not in self._swarms:
-                self.create_swarm(name)
+            if name not in self._hosts:
+                self.create_host(name)
 
             def _run(n=name):
-                r = self._swarms[n].run(task, self._provider, grammars)
+                r = self._hosts[n].run(task, self._provider, grammars)
                 with lock:
                     results.append(r)
 
@@ -653,8 +654,8 @@ class SwarmHarness:
         return results
 
     @property
-    def history(self) -> list[SwarmResult]:
+    def history(self) -> list[HostResult]:
         return list(self._history)
 
     def __repr__(self) -> str:
-        return f"SwarmHarness(swarms={len(self._swarms)}, history={len(self._history)})"
+        return f"HostHarness(hosts={len(self._hosts)}, history={len(self._history)})"

@@ -63,7 +63,7 @@ except Exception:
     pass
 
 try:
-    from app.swarm import Swarm, SwarmHarness, BorgesLibrary, AgentRole
+    from app.swarm import Host, HostHarness, BorgesLibrary, AgentRole
 except Exception:
     pass
 
