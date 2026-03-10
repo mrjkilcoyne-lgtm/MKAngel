@@ -47,7 +47,8 @@ jobs:
             git \
             zip \
             unzip \
-            lld
+            lld \
+            patch
 
       - name: Install buildozer and cython
         run: |
@@ -55,13 +56,23 @@ jobs:
           pip install buildozer cython
 
       - name: Build APK
-        env:
-          ACLOCAL_PATH: /usr/share/aclocal
         run: |
+          # Ensure autotools can find all m4 macros (libtool, gettext, etc.)
+          export ACLOCAL_PATH="/usr/share/aclocal"
+          export ACLOCAL="aclocal"
+
           # Buildozer requires main.py as the entry point
           cp main_android.py main.py
-          # Accept licenses and build (yes handles SDK license prompts)
-          yes | buildozer -v android debug
+
+          # Build with output capture for error diagnosis
+          yes | buildozer -v android debug 2>&1 | tee /tmp/build.log || {
+            echo ""
+            echo "========================================="
+            echo "BUILD FAILED - Last 300 lines of output:"
+            echo "========================================="
+            tail -300 /tmp/build.log
+            exit 1
+          }
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
