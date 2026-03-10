@@ -161,6 +161,12 @@ class CoworkSession:
         start = time.time()
         self._results = []
 
+        # Create a single shared Angel -- avoids resource contention
+        # from multiple threads each instantiating their own.
+        from glm.angel import Angel
+        angel = Angel()
+        angel.awaken()
+
         # Run agents concurrently using threads
         threads: list[threading.Thread] = []
         results_lock = threading.Lock()
@@ -168,7 +174,7 @@ class CoworkSession:
         for agent_info in self._agents:
             t = threading.Thread(
                 target=self._run_agent,
-                args=(agent_info, results_lock),
+                args=(agent_info, results_lock, angel),
                 daemon=True,
             )
             threads.append(t)
@@ -205,6 +211,7 @@ class CoworkSession:
         self,
         agent_info: dict[str, Any],
         lock: threading.Lock,
+        angel: Any = None,
     ) -> None:
         """Run a single agent (executed in a thread)."""
         domain = agent_info["domain"]
@@ -215,9 +222,10 @@ class CoworkSession:
         error = None
 
         try:
-            from glm.angel import Angel
-            angel = Angel()
-            angel.awaken()
+            if angel is None:
+                from glm.angel import Angel
+                angel = Angel()
+                angel.awaken()
 
             tokens = self._task.lower().split()
 
