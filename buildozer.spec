@@ -6,11 +6,10 @@ source.dir = .
 source.include_exts = py,png,jpg,kv,atlas,json
 version = 0.2.0
 
-# Entry point — Kivy looks for main_android.py
-# Rename to main.py at build time (see below)
-entrypoint = main_android.py
+# Entry point — buildozer requires main.py
+# The CI workflow copies main_android.py -> main.py before building
 
-requirements = python3,kivy
+requirements = python3,kivy,pysqlite3
 
 # Android settings
 android.permissions = INTERNET
@@ -31,6 +30,7 @@ fullscreen = 0
 
 # Include the glm and app packages
 source.include_patterns = glm/**/*.py,app/**/*.py,main_android.py
+source.exclude_dirs = .github,tests,bin,.buildozer
 
 # iOS (future)
 ios.kivy_ios_url = https://github.com/kivy/kivy-ios

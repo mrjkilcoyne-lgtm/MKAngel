@@ -50,12 +50,10 @@ jobs:
 
       - name: Build APK
         run: |
-          # Buildozer needs main.py as entry point — copy our android entry
-          cp main_android.py main.py.bak 2>/dev/null || true
+          # Buildozer requires main.py as the entry point
           cp main_android.py main.py
-          buildozer android debug
-          # Restore original main.py if it existed
-          mv main.py.bak main.py 2>/dev/null || true
+          # Accept licenses and build (yes handles SDK license prompts)
+          yes | buildozer -v android debug
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
