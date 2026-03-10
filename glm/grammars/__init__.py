@@ -36,6 +36,19 @@ from .computational import (
     build_type_grammar,
     build_pattern_grammar,
 )
+from .mathematical import (
+    build_algebra_grammar,
+    build_calculus_grammar,
+    build_logic_grammar,
+    build_number_theory_grammar,
+)
+from .physics import (
+    build_mechanics_grammar,
+    build_electromagnetism_grammar,
+    build_thermodynamics_grammar,
+    build_quantum_grammar,
+    build_relativity_grammar,
+)
 
 __all__ = [
     # Linguistic
@@ -58,4 +71,15 @@ __all__ = [
     "build_syntax_grammar",
     "build_type_grammar",
     "build_pattern_grammar",
+    # Mathematical
+    "build_algebra_grammar",
+    "build_calculus_grammar",
+    "build_logic_grammar",
+    "build_number_theory_grammar",
+    # Physics
+    "build_mechanics_grammar",
+    "build_electromagnetism_grammar",
+    "build_thermodynamics_grammar",
+    "build_quantum_grammar",
+    "build_relativity_grammar",
 ]

@@ -56,11 +56,25 @@ from glm.grammars.computational import (
     build_type_grammar,
     build_pattern_grammar,
 )
+from glm.grammars.mathematical import (
+    build_algebra_grammar,
+    build_calculus_grammar,
+    build_logic_grammar,
+    build_number_theory_grammar,
+)
+from glm.grammars.physics import (
+    build_mechanics_grammar,
+    build_electromagnetism_grammar,
+    build_thermodynamics_grammar,
+    build_quantum_grammar,
+    build_relativity_grammar,
+)
 
 from glm.substrates.phonological import PhonologicalSubstrate
 from glm.substrates.morphological import MorphologicalSubstrate
 from glm.substrates.molecular import MolecularSubstrate
 from glm.substrates.symbolic import SymbolicSubstrate
+from glm.substrates.mathematical import MathSubstrate
 
 from glm.model.glm import GrammarLanguageModel, GLMConfig
 
@@ -92,6 +106,8 @@ class AngelConfig:
         "chemical",
         "biological",
         "computational",
+        "mathematical",
+        "physics",
     ])
 
 
@@ -145,6 +161,7 @@ class Angel:
             "morphological": MorphologicalSubstrate,
             "molecular": MolecularSubstrate,
             "symbolic": SymbolicSubstrate,
+            "mathematical": MathSubstrate,
         }
         for name, builder_cls in substrate_builders.items():
             self._substrates[name] = builder_cls()
@@ -180,6 +197,19 @@ class Angel:
                 build_code_syntax_grammar,
                 build_type_grammar,
                 build_pattern_grammar,
+            ],
+            "mathematical": [
+                build_algebra_grammar,
+                build_calculus_grammar,
+                build_logic_grammar,
+                build_number_theory_grammar,
+            ],
+            "physics": [
+                build_mechanics_grammar,
+                build_electromagnetism_grammar,
+                build_thermodynamics_grammar,
+                build_quantum_grammar,
+                build_relativity_grammar,
             ],
         }
         for domain in self.config.domains:

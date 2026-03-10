@@ -29,6 +29,11 @@ from .symbolic import (
     Token,
     TokenCategory,
 )
+from .mathematical import (
+    MathCategory,
+    MathSubstrate,
+    MathSymbol,
+)
 
 __all__ = [
     # Phonological
@@ -49,4 +54,8 @@ __all__ = [
     "SymbolicSubstrate",
     "Token",
     "TokenCategory",
+    # Mathematical
+    "MathCategory",
+    "MathSubstrate",
+    "MathSymbol",
 ]

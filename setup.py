@@ -4,10 +4,11 @@ from setuptools import setup, find_packages
 
 setup(
     name="mkangel",
-    version="0.1.0",
+    version="0.2.0",
     description=(
         "A Grammar Language Model that learns the deep structural rules "
-        "underlying natural languages, chemistry, biology, and code. "
+        "underlying natural languages, chemistry, biology, code, mathematics, "
+        "and physics.  Speaks, listens, swarms, and self-improves.  "
         "Learns scales to play masterpieces."
     ),
     author="mrjkilcoyne",
@@ -17,10 +18,33 @@ setup(
     python_requires=">=3.10",
     extras_require={
         "dev": ["pytest>=7.0", "pytest-cov"],
+        "voice": [
+            "sounddevice>=0.4",
+            "numpy>=1.24",
+            "openai-whisper>=20230918",
+            "pyttsx3>=2.90",
+            "scipy>=1.11",
+        ],
+        "voice-neural": [
+            "TTS>=0.20",
+        ],
+        "cloud": [
+            "boto3>=1.28",
+            "requests>=2.31",
+        ],
+        "all": [
+            "sounddevice>=0.4",
+            "numpy>=1.24",
+            "openai-whisper>=20230918",
+            "pyttsx3>=2.90",
+            "scipy>=1.11",
+            "boto3>=1.28",
+            "requests>=2.31",
+        ],
     },
     entry_points={
         "console_scripts": [
-            "mkangel=glm.angel:main",
+            "mkangel=app.main:main",
         ],
     },
     classifiers=[
