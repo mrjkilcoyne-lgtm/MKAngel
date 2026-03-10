@@ -3,7 +3,7 @@ title = MKAngel
 package.name = mkangel
 package.domain = com.mrjkilcoyne
 source.dir = .
-source.include_exts = py,png,jpg,kv,atlas,json
+source.include_exts = py,png,jpg,kv,atlas,json,html,css,js
 version = 0.2.0
 
 # Entry point — buildozer requires main.py
@@ -13,7 +13,7 @@ version = 0.2.0
 requirements = python3,kivy
 
 # Android settings
-android.permissions = INTERNET
+android.permissions = INTERNET,RECORD_AUDIO
 android.api = 33
 android.minapi = 24
 android.ndk_api = 24

@@ -81,3 +81,20 @@ try:
     from app.puriel import GrammarIntegrityChecksum, PurityWhitelist
 except Exception:
     pass
+
+# ── Phase 1: First Light ──────────────────────────────────────────────
+
+try:
+    from app.vestments import get_vestment, vestment_to_css, ALL_VESTMENTS
+except Exception:
+    pass
+
+try:
+    from app.gestures import GestureDetector, GestureAction
+except Exception:
+    pass
+
+try:
+    from app.documents import DocumentManager, Document
+except Exception:
+    pass

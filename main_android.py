@@ -124,8 +124,8 @@ class _Bubble(BoxLayout):
             "user":    (_c("bubble_user"),  _c("text"),     [dp(18), dp(18), dp(4),  dp(18)]),
             "angel":   (_c("bubble_angel"), _c("text"),     [dp(4),  dp(18), dp(18), dp(18)]),
             "system":  ([0, 0, 0, 0],      _c("text_dim"), [dp(8)] * 4),
-            "success": ([0.40, 0.73, 0.42, 0.10], _c("success"), [dp(14)] * 4),
-            "error":   ([0.94, 0.33, 0.31, 0.10], _c("warning"), [dp(14)] * 4),
+            "success": (_c("success")[:3] + [0.10], _c("success"), [dp(14)] * 4),
+            "error":   (_c("error")[:3] + [0.10],  _c("warning"), [dp(14)] * 4),
         }
 
         bg, fg, radius = styles.get(kind, styles["angel"])
@@ -471,7 +471,7 @@ class _SkillsOverlay(_PanelBase):
         # Override bg for semi-transparency
         self.canvas.before.clear()
         with self.canvas.before:
-            Color(0, 0, 0, 0.85)
+            Color(*(_c("bg")[:3] + [0.85]))
             self._bg = Rectangle(pos=self.pos, size=self.size)
         self.bind(pos=self._upd_bg, size=self._upd_bg)
 
