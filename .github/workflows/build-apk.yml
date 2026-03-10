@@ -23,9 +23,21 @@ jobs:
           command: buildozer android debug
           buildozer_version: stable
 
+      - name: Find and collect APK
+        if: always()
+        run: |
+          echo "=== Searching for APK files ==="
+          find . -name "*.apk" -type f 2>/dev/null
+          echo "=== Buildozer output filename: ${{ steps.buildozer.outputs.filename }} ==="
+          mkdir -p apk-output
+          find . -name "*.apk" -type f -exec cp {} apk-output/ \; 2>/dev/null || true
+          ls -la apk-output/ 2>/dev/null || echo "No APKs found"
+
       - name: Upload APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: mkangel-apk
-          path: ${{ steps.buildozer.outputs.filename }}
+          path: apk-output/
+          if-no-files-found: warn
           retention-days: 30
