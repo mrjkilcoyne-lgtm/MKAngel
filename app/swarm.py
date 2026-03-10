@@ -225,6 +225,8 @@ class Swarm:
         self._messages: list[SwarmMessage] = []
         self._library = BorgesLibrary()
         self._results: dict[str, Any] = {}
+        self._angel: Any = None
+        self._angel_lock = threading.Lock()
 
     # -- Agent management --------------------------------------------------
 
@@ -451,6 +453,16 @@ class Swarm:
             "confidence": 0.7 if predictions else 0.4,
         }
 
+    def _get_angel(self) -> Any:
+        """Get or create the shared Angel instance (thread-safe)."""
+        if self._angel is None:
+            with self._angel_lock:
+                if self._angel is None:
+                    from glm.angel import Angel
+                    self._angel = Angel()
+                    self._angel.awaken()
+        return self._angel
+
     def _oracle_predict(
         self,
         agent: SwarmAgent,
@@ -459,9 +471,7 @@ class Swarm:
     ) -> dict[str, Any]:
         """Oracle uses strange loops for prediction."""
         try:
-            from glm.angel import Angel
-            angel = Angel()
-            angel.awaken()
+            angel = self._get_angel()
             forecast = angel.superforecast(
                 task.lower().split(),
                 domain=agent.domain if agent.domain != "general" else "linguistic",
