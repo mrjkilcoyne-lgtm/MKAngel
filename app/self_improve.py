@@ -26,10 +26,13 @@ constraints, user preferences).
 from __future__ import annotations
 
 import json
+import logging
 import time
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
+
+log = logging.getLogger(__name__)
 
 
 _IMPROVEMENT_DIR = Path.home() / ".mkangel" / "improvements"
@@ -54,6 +57,7 @@ class ImprovementRecord:
     timestamp: float = 0.0
     reversible: bool = True
     applied: bool = False
+    integrity_check_passed: bool = True
 
     def __post_init__(self):
         if not self.timestamp:
@@ -170,6 +174,16 @@ class SelfImprover:
             "domains_used": set(),
         }
 
+        # Puriel -- grammar integrity gate
+        self._integrity: Any = None
+        try:
+            from app.puriel import GrammarIntegrityChecksum
+            self._integrity = GrammarIntegrityChecksum()
+            log.info("Puriel integrity gate active (%d builders checksummed)",
+                     self._integrity.total_builders)
+        except Exception as exc:
+            log.warning("Puriel integrity gate unavailable: %s", exc)
+
         # Ensure directories exist
         _IMPROVEMENT_DIR.mkdir(parents=True, exist_ok=True)
 
@@ -189,9 +203,40 @@ class SelfImprover:
         output_data: Any,
         confidence: float = 0.8,
     ) -> None:
-        """Record a successful derivation for pattern learning."""
+        """Record a successful derivation for pattern learning.
+
+        Before strengthening a pattern the rule is passed through
+        Puriel's integrity gate to ensure it does not corrupt
+        the immutable grammar seeds.
+        """
         pattern_id = f"{domain}:{rule_name}"
 
+        # -- Puriel integrity gate -----------------------------------------
+        rule_data = {"rule": rule_name, "sample_input": str(input_data)[:200]}
+
+        if self._integrity is not None:
+            # Build a rule_data dict that the gate can validate
+            gate_data = {
+                "pattern": str(input_data)[:200],
+                "result": str(output_data)[:200],
+                "domain": domain,
+                "name": rule_name,
+            }
+            passed, reason = self._integrity.validate_learned_rule(domain, gate_data)
+            if not passed:
+                log.warning(
+                    "Puriel rejected pattern %s: %s", pattern_id, reason,
+                )
+                self._log_improvement(ImprovementRecord(
+                    action="integrity_rejection",
+                    domain=domain,
+                    description=f"Puriel rejected '{rule_name}': {reason}",
+                    confidence=confidence,
+                    integrity_check_passed=False,
+                ))
+                return  # Do NOT strengthen the pattern
+
+        # -- Pattern learning (passed integrity gate) ----------------------
         if pattern_id in self._patterns:
             pattern = self._patterns[pattern_id]
             pattern.success_count += 1
@@ -207,7 +252,7 @@ class SelfImprover:
                 pattern_id=pattern_id,
                 domain=domain,
                 description=f"Learned pattern from rule '{rule_name}'",
-                rule_data={"rule": rule_name, "sample_input": str(input_data)[:200]},
+                rule_data=rule_data,
                 success_count=1,
                 confidence=confidence,
                 created_at=time.time(),
@@ -474,6 +519,7 @@ class SelfImprover:
                 "confidence": record.confidence,
                 "timestamp": record.timestamp,
                 "reversible": record.reversible,
+                "integrity_check_passed": record.integrity_check_passed,
             }, default=str) + "\n")
 
     def _save_history(self) -> None:

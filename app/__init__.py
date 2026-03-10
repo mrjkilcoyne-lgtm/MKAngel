@@ -76,3 +76,8 @@ try:
     from app.self_improve import SelfImprover, LearnedPattern, SkillRequest
 except Exception:
     pass
+
+try:
+    from app.puriel import GrammarIntegrityChecksum, PurityWhitelist
+except Exception:
+    pass
