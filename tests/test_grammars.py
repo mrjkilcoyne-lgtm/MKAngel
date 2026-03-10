@@ -32,7 +32,7 @@ class TestLinguisticGrammars:
         g = build_syntactic_grammar()
         assert g.name
         assert len(g.rules) > 0 or len(g.productions) > 0
-        assert g.domain == "linguistic"
+        assert g.domain == "linguistics"
 
     def test_phonological_grammar(self):
         g = build_phonological_grammar()
@@ -48,7 +48,7 @@ class TestLinguisticGrammars:
 class TestEtymologicalGrammars:
     def test_etymology_grammar(self):
         g = build_etymology_grammar()
-        assert g.domain == "etymological"
+        assert g.domain == "etymology"
         assert len(g.rules) > 0
 
     def test_substrate_transfer(self):
@@ -63,7 +63,7 @@ class TestEtymologicalGrammars:
 class TestChemicalGrammars:
     def test_bonding_grammar(self):
         g = build_bonding_grammar()
-        assert g.domain == "chemical"
+        assert g.domain == "chemistry"
 
     def test_reaction_grammar(self):
         g = build_reaction_grammar()
@@ -77,7 +77,7 @@ class TestChemicalGrammars:
 class TestBiologicalGrammars:
     def test_genetic_grammar(self):
         g = build_genetic_grammar()
-        assert g.domain == "biological"
+        assert g.domain == "biology"
 
     def test_protein_grammar(self):
         g = build_protein_grammar()
@@ -91,7 +91,7 @@ class TestBiologicalGrammars:
 class TestComputationalGrammars:
     def test_syntax_grammar(self):
         g = build_syntax_grammar()
-        assert g.domain == "computational"
+        assert g.domain == "computation"
 
     def test_type_grammar(self):
         g = build_type_grammar()

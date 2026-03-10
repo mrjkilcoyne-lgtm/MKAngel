@@ -56,7 +56,7 @@ echo "  [2/4] Created $MKANGEL_HOME"
 echo "  [3/4] Installing MKAngel..."
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_DIR"
-pip install -e ".[dev]" 2>/dev/null || pip install -e . 2>/dev/null || python3 -m pip install -e .
+pip install -e ".[dev]" 2>/dev/null || pip install -e . 2>/dev/null || python3 -m pip install -e . || python3 -m pip install .
 
 # Verify installation
 echo "  [4/4] Verifying installation..."

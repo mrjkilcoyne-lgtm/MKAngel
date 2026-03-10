@@ -16,7 +16,8 @@ class TestRule:
             direction="forward",
         )
         assert rule.name == "assimilation"
-        assert rule.direction == "forward"
+        from glm.core.grammar import Direction
+        assert rule.direction == Direction.FORWARD
 
     def test_bidirectional_rule(self):
         rule = Rule(
@@ -25,7 +26,7 @@ class TestRule:
             result="eɪ",
             direction="bidirectional",
         )
-        assert rule.direction == "bidirectional"
+        assert rule.direction is None  # "bidirectional" maps to None
 
     def test_self_referential_rule(self):
         rule = Rule(
@@ -44,8 +45,8 @@ class TestProduction:
         assert prod.rhs == ["NP", "VP"]
 
     def test_production_with_grammar(self):
-        prod = Production(lhs="NP", rhs=["Det", "N"], grammar_name="syntax")
-        assert prod.grammar_name == "syntax"
+        prod = Production(lhs="NP", rhs=["Det", "N"], name="syntax")
+        assert prod.name == "syntax"
 
 
 class TestGrammar:
@@ -83,7 +84,7 @@ class TestSequence:
     def test_sequence_pattern_detection(self):
         syms = [Symbol(form=c) for c in "abcabc"]
         seq = Sequence(symbols=syms)
-        patterns = seq.find_patterns(min_length=2, max_length=4)
+        patterns = seq.find_repeating_patterns(min_length=2, max_length=4)
         assert len(patterns) > 0
 
 
@@ -96,8 +97,9 @@ class TestDerivationEngine:
         rule = Rule(name="r1", pattern="a", result="b", direction="forward")
         grammar = Grammar(name="test", domain="test", rules=[rule])
         engine = DerivationEngine()
-        derivations = engine.derive(["a"], grammar, direction="forward")
-        assert len(derivations) > 0
+        tree = engine.derive(["a"], grammar, direction="forward")
+        assert tree is not None
+        assert tree.all_forms()
 
     def test_detect_loops(self):
         rules = [
@@ -130,7 +132,6 @@ class TestLexicon:
         entry = LexicalEntry(
             form="water",
             meaning="H2O",
-            domain="linguistic",
             category="noun",
         )
         lexicon.add(entry)
@@ -138,8 +139,8 @@ class TestLexicon:
 
     def test_lookup(self):
         lexicon = Lexicon()
-        entry = LexicalEntry(form="water", meaning="H2O", domain="linguistic")
+        entry = LexicalEntry(form="water", meaning="H2O")
         lexicon.add(entry)
-        found = lexicon.lookup("water")
-        assert found is not None
-        assert found.meaning == "H2O"
+        found = lexicon.lookup(form="water")
+        assert len(found) > 0
+        assert found[0].meaning == "H2O"
