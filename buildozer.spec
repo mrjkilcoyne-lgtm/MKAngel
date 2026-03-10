@@ -29,8 +29,9 @@ fullscreen = 0
 # icon.filename = %(source.dir)s/assets/icon.png
 # presplash.filename = %(source.dir)s/assets/splash.png
 
-# Include the glm and app packages
-source.include_patterns = glm/**/*.py,app/**/*.py,main_android.py
+# source.include_exts = py (above) already includes ALL .py files recursively.
+# Do NOT set source.include_patterns — buildozer uses fnmatch internally
+# which does NOT support ** recursive globbing, breaking subdirectory includes.
 source.exclude_dirs = .github,tests,bin,.buildozer
 
 # iOS (future)

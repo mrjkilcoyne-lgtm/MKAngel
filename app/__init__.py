@@ -4,60 +4,75 @@ MKAngel Application Layer
 The user-facing shell around the Grammar Language Model.
 Works on Termux (Android), desktop Linux/macOS/Windows,
 and is installable via pip.
+
+Imports are individually guarded so a missing native dependency
+on one platform (e.g. Android/Kivy) does not break the entire
+package.
 """
 
 __version__ = "0.1.0"
 
-from app.settings import Settings, PROVIDERS
-from app.memory import Memory, MemoryEntry
-from app.providers import (
-    Provider,
-    LocalProvider,
-    APIProvider,
-    HybridProvider,
-    get_provider,
-)
-from app.coder import Coder
-from app.skills import SkillManager, Skill
-from app.cowork import CoworkSession
-from app.chat import ChatSession
-from app.voice import VoiceEngine, AudioSegment, TranscriptionResult, VoiceProfile
-from app.swarm import Swarm, SwarmHarness, BorgesLibrary, AgentRole
-from app.cloud import CloudManager, CloudStorage, LocalStorage, CloudConfig
-from app.self_improve import SelfImprover, LearnedPattern, SkillRequest
+# ── Core (always expected to work) ──────────────────────────────────────
 
-__all__ = [
-    "Settings",
-    "PROVIDERS",
-    "Memory",
-    "MemoryEntry",
-    "Provider",
-    "LocalProvider",
-    "APIProvider",
-    "HybridProvider",
-    "get_provider",
-    "Coder",
-    "SkillManager",
-    "Skill",
-    "CoworkSession",
-    "ChatSession",
-    # Voice
-    "VoiceEngine",
-    "AudioSegment",
-    "TranscriptionResult",
-    "VoiceProfile",
-    # Swarm
-    "Swarm",
-    "SwarmHarness",
-    "BorgesLibrary",
-    "AgentRole",
-    # Cloud
-    "CloudManager",
-    "CloudStorage",
-    "LocalStorage",
-    "CloudConfig",
-    # Self-improvement
-    "SelfImprover",
-    "LearnedPattern",
-    "SkillRequest",
-]
+try:
+    from app.settings import Settings, PROVIDERS
+except Exception:
+    pass
+
+try:
+    from app.memory import Memory, MemoryEntry
+except Exception:
+    pass
+
+try:
+    from app.providers import (
+        Provider,
+        LocalProvider,
+        APIProvider,
+        HybridProvider,
+        get_provider,
+    )
+except Exception:
+    pass
+
+try:
+    from app.coder import Coder
+except Exception:
+    pass
+
+try:
+    from app.skills import SkillManager, Skill
+except Exception:
+    pass
+
+try:
+    from app.cowork import CoworkSession
+except Exception:
+    pass
+
+try:
+    from app.chat import ChatSession
+except Exception:
+    pass
+
+# ── Optional / platform-dependent ──────────────────────────────────────
+
+try:
+    from app.voice import VoiceEngine, AudioSegment, TranscriptionResult, VoiceProfile
+except Exception:
+    pass
+
+try:
+    from app.swarm import Swarm, SwarmHarness, BorgesLibrary, AgentRole
+except Exception:
+    pass
+
+try:
+    from app.cloud import CloudManager, CloudStorage, LocalStorage, CloudConfig
+except Exception:
+    pass
+
+try:
+    from app.self_improve import SelfImprover, LearnedPattern, SkillRequest
+except Exception:
+    pass
