@@ -33,7 +33,11 @@ jobs:
             libssl-dev \
             autoconf \
             automake \
+            autopoint \
+            gettext \
             libtool \
+            libtool-bin \
+            m4 \
             pkg-config \
             zlib1g-dev \
             libncurses5-dev \
@@ -41,7 +45,8 @@ jobs:
             cmake \
             git \
             zip \
-            unzip
+            unzip \
+            lld
 
       - name: Install buildozer and cython
         run: |
