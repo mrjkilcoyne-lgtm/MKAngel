@@ -131,8 +131,8 @@ class MKAngelApp(App):
             self.angel.awaken()
         except Exception as exc:
             Clock.schedule_once(
-                lambda _: self.chat.append(
-                    f"[color=ffcc00]Warning: {exc}[/color]"
+                lambda _, e=str(exc): self.chat.append(
+                    f"[color=ffcc00]Warning: {e}[/color]"
                 )
             )
 
@@ -156,8 +156,8 @@ class MKAngelApp(App):
             )
         except Exception as exc:
             Clock.schedule_once(
-                lambda _: self.chat.append(
-                    f"[color=ffcc00]Session init: {exc}[/color]"
+                lambda _, e=str(exc): self.chat.append(
+                    f"[color=ffcc00]Session init: {e}[/color]"
                 )
             )
 
