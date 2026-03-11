@@ -360,9 +360,17 @@ class Lexicon:
 # ---------------------------------------------------------------------------
 
 def _form_matches(entry_form: Any, query_form: Any) -> bool:
-    """Flexible form matching: equality, substring, or type check."""
+    """Flexible form matching: equality, substring, or type check.
+
+    Short queries (< 3 chars) require exact match to prevent false
+    positives like "i" matching "bind".  Longer queries still allow
+    substring matching so that stems find their inflected forms.
+    """
     if entry_form == query_form:
         return True
     if isinstance(entry_form, str) and isinstance(query_form, str):
+        if len(query_form) < 3:
+            # Short strings: exact only — avoids "i" ∈ "bind" etc.
+            return False
         return query_form in entry_form
     return False

@@ -1113,15 +1113,66 @@ class ChatSession:
         except Exception:
             pass
 
+        # 5. Lexicon lookup — when derivation trees are sparse,
+        #    the lexicon itself carries etymological knowledge and
+        #    cross-domain cognates.
+        lex_insights = {}
+        _skip_lex = {
+            "the", "a", "an", "is", "are", "am", "was", "were",
+            "to", "of", "in", "on", "at", "for", "with", "by",
+            "and", "or", "but", "not", "it", "its", "so", "i",
+            "me", "my", "you", "your", "we", "they", "he", "she",
+        }
+        try:
+            content_words = [
+                w for w in tokens if len(w) > 2 and w not in _skip_lex
+            ]
+            for word in content_words[:5]:
+                stem = self._stem(word)
+                info = self._angel.lookup_word(stem)
+                if not info:
+                    info = self._angel.lookup_word(word)
+                if info:
+                    lex_insights[stem or word] = info
+                else:
+                    # Angel learns the unknown word
+                    cat = self._guess_category(word, tokens)
+                    self._angel.learn_word(
+                        stem or word, category=cat,
+                    )
+        except Exception:
+            pass
+
         # ── Compose from ALL of this ──────────────────────────
         return self._render_composition(
             text, tokens, voices, harmonics, counterpoint,
-            origins, predictions, forecast,
+            origins, predictions, forecast, lex_insights,
         )
+
+    @staticmethod
+    def _guess_category(word, tokens):
+        """Infer a rough grammatical category from sentence position."""
+        try:
+            idx = tokens.index(word)
+        except ValueError:
+            return "noun"
+        # After article → noun
+        if idx > 0 and tokens[idx - 1] in {"the", "a", "an", "this", "that"}:
+            return "noun"
+        # After "to" → verb
+        if idx > 0 and tokens[idx - 1] == "to":
+            return "verb"
+        # After "is/am/are" → adjective or noun
+        if idx > 0 and tokens[idx - 1] in {"is", "am", "are", "was", "were"}:
+            return "adj"
+        # First word of sentence → often verb (imperative) or noun
+        if idx == 0:
+            return "verb"
+        return "noun"
 
     def _render_composition(
         self, original, tokens, voices, harmonics, counterpoint,
-        origins, predictions, forecast=None,
+        origins, predictions, forecast=None, lex_insights=None,
     ) -> str:
         """Compose the Angel's voice from structural insight.
 
@@ -1210,6 +1261,44 @@ class ChatSession:
                     "Active voices: " + ", ".join(active) + "."
                 )
             return "\n\n".join(parts)
+
+        # ── Lexicon insight — what the Angel knows from memory ─
+        if lex_insights:
+            lex_parts = []
+            for word, info in lex_insights.items():
+                root = info.get("root", "")
+                cat = info.get("category", "")
+                subs = info.get("substrates", [])
+                cognates = info.get("cognates", [])
+
+                if root and root != word:
+                    lex_parts.append(
+                        f"'{word}' traces to proto-root "
+                        f"'{root}' — {cat} across "
+                        f"{', '.join(subs)}."
+                    )
+                elif subs:
+                    lex_parts.append(
+                        f"'{word}' — {cat} in {', '.join(subs)}."
+                    )
+
+                if cognates:
+                    cog_strs = []
+                    for c in cognates[:4]:
+                        cf = c.get("form", "")
+                        cs = c.get("substrates", [])
+                        if cf:
+                            cog_strs.append(
+                                f"'{cf}' ({', '.join(cs[:2])})"
+                            )
+                    if cog_strs:
+                        lex_parts.append(
+                            "Structural cognates: "
+                            + ", ".join(cog_strs) + "."
+                        )
+
+            if lex_parts:
+                return "\n\n".join(lex_parts)
 
         # ── Structural reading — the Angel's native perception ─
         return self._structural_response(original, tokens, active)
@@ -1544,8 +1633,8 @@ class ChatSession:
                 f"In linguistics that's classification. In "
                 f"mathematics, equivalence. In chemistry, "
                 f"molecular identity. In biology, taxonomy.\n\n"
-                f"Try /fugue {' '.join(subject[:4])} to hear "
-                f"what each domain derives."
+                f"Give me the key terms and I'll trace what "
+                f"the grammars know about their roots."
             )
 
         # ── "Why" — causal/structural ────────────────────────
@@ -1576,7 +1665,7 @@ class ChatSession:
                 "'How' asks for the derivation path \u2014 "
                 "each step a rule applied, each branch a "
                 "choice point. Give me the key terms and "
-                "I'll trace the path with /predict."
+                "I'll trace the path through the grammars."
             )
 
         # ── Imperatives: "tell me", "show me", "help" ────────
@@ -1588,9 +1677,9 @@ class ChatSession:
                     f"'{verb.capitalize()}' \u2014 a command. "
                     f"You want me to act on '{obj}'. Let me "
                     f"run it through the grammars.\n\n"
-                    f"Try /fugue {obj} for the full "
-                    f"cross-domain derivation, or /predict "
-                    f"{obj} to see where the rules lead."
+                    f"I'll trace '{obj}' across the domains "
+                    f"I carry \u2014 looking for roots and "
+                    f"structural cognates."
                 )
             return (
                 f"'{verb.capitalize()}' \u2014 imperative mood. "
@@ -1696,8 +1785,8 @@ class ChatSession:
                         f"{lens}. The key terms \u2014 "
                         f"{', '.join(content[:3])} \u2014 "
                         f"define the search space.\n\n"
-                        f"Try /fugue {' '.join(content[:3])} "
-                        f"for the cross-domain view."
+                        f"I'll trace the roots and see where "
+                        f"the domains connect."
                     )
                 return (
                     f"'{qw.capitalize()}' asks about {lens} "
@@ -1706,8 +1795,7 @@ class ChatSession:
             return (
                 "A question \u2014 an incomplete structure. "
                 "The grammar's job is to narrow what "
-                "fills the gap. Try /predict with the "
-                "key terms."
+                "fills the gap. Give me the key terms."
             )
 
         # ── Exclamation ──────────────────────────────────────
@@ -1733,9 +1821,9 @@ class ChatSession:
                     f"'{', '.join(c)}' as your terms. "
                     f"First person frames the perspective; "
                     f"the content carries the weight.\n\n"
-                    f"Try /fugue {' '.join(c)} \u2014 the "
-                    f"grammars will find what these connect to "
-                    f"across domains."
+                    f"The grammars are tracing roots \u2014 "
+                    f"looking for where these connect across "
+                    f"domains."
                 )
             return (
                 "First person, declarative. You're placing "
@@ -1762,10 +1850,9 @@ class ChatSession:
         if n <= 2:
             w = " ".join(tokens)
             return (
-                f"'{w}' \u2014 dense. Every word is a seed "
-                f"with derivation paths in all seven "
-                f"domains. Try /fugue {w} to hear what "
-                f"each voice makes of it."
+                f"'{w}' \u2014 dense. Every word carries "
+                f"a root, and roots connect across "
+                f"domains. I'm tracing what I know."
             )
 
         # ── General: medium (3-6 words) ──────────────────────
@@ -1792,15 +1879,12 @@ class ChatSession:
                     f"An action structure: '{' '.join(tokens)}'. "
                     f"The verb carries the derivation "
                     f"\u2014 it determines what transforms "
-                    f"into what.\n\n"
-                    f"Try /predict {' '.join(content[:3])} to "
-                    f"see where the grammar takes it."
+                    f"into what."
                 )
             return (
                 f"A compact structure: "
                 f"'{', '.join(content[:4])}'. "
-                f"Try /fugue {' '.join(content[:3])} \u2014 "
-                f"the cross-domain view often reveals "
+                f"The cross-domain view often reveals "
                 f"connections the single domain misses."
             )
 
@@ -1839,16 +1923,14 @@ class ChatSession:
                 f"The core terms: {', '.join(core)}. "
                 f"The structure binds them \u2014 the "
                 f"grammars are reading across domains "
-                f"for where these patterns connect.\n\n"
-                f"For the full view: /fugue "
-                f"{' '.join(core[:3])}"
+                f"for where these patterns connect."
             )
 
         # ── Truly empty content ──────────────────────────────
         return (
             "The structure is there. Give me the key "
-            "terms and I'll trace the derivation paths "
-            "across all seven domains."
+            "terms and I'll trace what the grammars "
+            "know about their roots."
         )
 
     # ------------------------------------------------------------------

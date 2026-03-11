@@ -144,11 +144,13 @@ class Angel:
         """Awaken the Angel — load grammars, substrates, and model.
 
         This is the boot sequence: first the substrates (the media),
-        then the grammars (the rules), then the model (the mind).
+        then the grammars (the rules), then the lexicon (the memory),
+        then the model (the mind).
         Like a child learning scales before playing Bach.
         """
         self._load_substrates()
         self._load_grammars()
+        self._load_lexicon()
         self._build_model()
         self._detect_strange_loops()
         self._initialised = True
@@ -241,6 +243,317 @@ class Angel:
             for grammar in grammars:
                 loops = self._engine.detect_loops(grammar)
                 self._strange_loops.extend(loops)
+
+    # ------------------------------------------------------------------
+    # Lexicon — the Angel's living vocabulary
+    # ------------------------------------------------------------------
+
+    def _load_lexicon(self) -> None:
+        """Load or seed the Angel's lexicon.
+
+        The lexicon is the Angel's memory of known forms.  Without it
+        the derivation engine has no atoms to transform.  On first boot
+        we seed ~130 core words; on subsequent boots we load the
+        persisted vocabulary that grew from conversation.
+        """
+        import os
+        # Try loading a persisted lexicon first
+        for base_dir in [
+            os.path.join(
+                os.path.dirname(os.path.abspath(__file__)), "..", "data"
+            ),
+            os.path.expanduser("~"),
+        ]:
+            path = os.path.join(base_dir, "lexicon.json")
+            try:
+                if os.path.exists(path):
+                    self._load_lexicon_file(path)
+                    return
+            except Exception:
+                continue
+        # No persisted lexicon — seed from core vocabulary
+        self._seed_lexicon()
+
+    def _seed_lexicon(self) -> None:
+        """Populate the lexicon with core vocabulary across all domains.
+
+        Each entry carries a proto-root as its first etymology element.
+        Entries sharing a proto-root are **cognates** — the lexicon's
+        ``find_cognates`` discovers them automatically, exposing the
+        cross-domain isomorphisms the GLM is designed to learn.
+
+        Format: (form, category, substrates, proto_root)
+        """
+        seeds = [
+            # ── Cross-domain: Binding (*bhendh-) ──────────────
+            ("bond",       "noun", ["linguistic", "chemical", "biological"],   "*bhendh-"),
+            ("bind",       "verb", ["linguistic", "computational"],            "*bhendh-"),
+            ("link",       "noun", ["linguistic", "computational"],            "*kleng-"),
+            ("connect",    "verb", ["linguistic", "computational", "physics"], "*nekt-"),
+            # ── Cross-domain: Form / Structure (*morph-) ──────
+            ("form",       "noun", ["linguistic", "mathematical", "chemical"], "*morph-"),
+            ("structure",  "noun", ["linguistic", "chemical", "biological"],   "*strew-"),
+            ("pattern",    "noun", ["linguistic", "mathematical", "computational"], "*pat-"),
+            ("shape",      "noun", ["linguistic", "mathematical", "physics"], "*skap-"),
+            ("symmetry",   "noun", ["mathematical", "physics", "chemical"],   "*sem-"),
+            # ── Cross-domain: Change / Transform ──────────────
+            ("change",     "verb", ["linguistic", "chemical", "physics"],      "*kemb-"),
+            ("transform",  "verb", ["linguistic", "mathematical"],            "*morph-"),
+            ("evolve",     "verb", ["biological", "linguistic"],              "*welh-"),
+            ("mutate",     "verb", ["biological", "linguistic"],              "*mew-"),
+            ("react",      "verb", ["chemical", "linguistic"],                "*ag-"),
+            # ── Cross-domain: Energy (*werg-) ─────────────────
+            ("energy",     "noun", ["physics", "chemical", "biological"],     "*werg-"),
+            ("force",      "noun", ["physics", "linguistic"],                 "*bhergh-"),
+            ("power",      "noun", ["physics", "linguistic", "computational"],"*potis-"),
+            ("work",       "noun", ["physics", "linguistic"],                 "*werg-"),
+            # ── Cross-domain: Growth (*ghre-) ─────────────────
+            ("grow",       "verb", ["biological", "linguistic", "mathematical"], "*ghre-"),
+            ("birth",      "noun", ["biological", "linguistic"],              "*bher-"),
+            ("death",      "noun", ["biological", "linguistic"],              "*dhew-"),
+            ("life",       "noun", ["biological", "linguistic"],              "*leip-"),
+            ("cell",       "noun", ["biological", "computational"],           "*kel-"),
+            # ── Cross-domain: Knowledge (*gneh-) ──────────────
+            ("know",       "verb", ["linguistic", "computational"],           "*gneh-"),
+            ("cognate",    "noun", ["linguistic", "etymological"],            "*gneh-"),
+            ("recognize",  "verb", ["linguistic", "computational"],           "*gneh-"),
+            ("logic",      "noun", ["mathematical", "computational", "linguistic"], "*leg-"),
+            ("reason",     "noun", ["linguistic", "mathematical"],            "*reh-"),
+            # ── Cross-domain: Sequence (*sekw-) ───────────────
+            ("sequence",   "noun", ["mathematical", "biological", "computational"], "*sekw-"),
+            ("order",      "noun", ["mathematical", "linguistic"],            "*ord-"),
+            ("chain",      "noun", ["chemical", "mathematical"],              "*kat-"),
+            ("series",     "noun", ["mathematical", "linguistic"],            "*ser-"),
+            ("code",       "noun", ["computational", "biological"],           "*kaud-"),
+            # ── Cross-domain: Truth (*deru-) ──────────────────
+            ("truth",      "noun", ["linguistic", "mathematical"],            "*deru-"),
+            ("proof",      "noun", ["mathematical", "linguistic"],            "*prob-"),
+            ("theorem",    "noun", ["mathematical"],                          "*dheh-"),
+            ("axiom",      "noun", ["mathematical", "linguistic"],            "*ag-"),
+            ("true",       "adj",  ["linguistic", "mathematical"],            "*deru-"),
+            ("trust",      "noun", ["linguistic"],                            "*deru-"),
+            # ── Cross-domain: Creation ────────────────────────
+            ("create",     "verb", ["linguistic", "computational"],           "*ker-"),
+            ("build",      "verb", ["linguistic", "computational"],           "*bhew-"),
+            ("make",       "verb", ["linguistic"],                            "*mag-"),
+            ("destroy",    "verb", ["linguistic", "physics"],                 "*strew-"),
+            # ── Physics ───────────────────────────────────────
+            ("wave",       "noun", ["physics", "mathematical"],               "*wegh-"),
+            ("particle",   "noun", ["physics", "chemical"],                   "*par-"),
+            ("field",      "noun", ["physics", "mathematical"],               "*pelh-"),
+            ("quantum",    "noun", ["physics"],                               "*kwant-"),
+            ("mass",       "noun", ["physics"],                               "*mag-"),
+            ("light",      "noun", ["physics", "linguistic"],                 "*leuk-"),
+            ("heat",       "noun", ["physics"],                               "*kai-"),
+            ("entropy",    "noun", ["physics", "mathematical"],               "*trep-"),
+            ("gravity",    "noun", ["physics"],                               "*gwreh-"),
+            ("time",       "noun", ["physics", "linguistic", "mathematical"], "*deh-"),
+            ("space",      "noun", ["physics", "mathematical"],               "*speh-"),
+            # ── Chemistry ─────────────────────────────────────
+            ("atom",       "noun", ["chemical", "physics"],                   "*temh-"),
+            ("molecule",   "noun", ["chemical", "biological"],                "*mol-"),
+            ("element",    "noun", ["chemical", "mathematical"],              "*al-"),
+            ("compound",   "noun", ["chemical", "linguistic"],                "*pon-"),
+            ("reaction",   "noun", ["chemical"],                              "*ag-"),
+            ("acid",       "noun", ["chemical"],                              "*ak-"),
+            ("ion",        "noun", ["chemical", "physics"],                   "*ei-"),
+            ("electron",   "noun", ["physics", "chemical"],                   "*lek-"),
+            # ── Biology ───────────────────────────────────────
+            ("gene",       "noun", ["biological"],                            "*gen-"),
+            ("protein",    "noun", ["biological", "chemical"],                "*protos-"),
+            ("species",    "noun", ["biological", "linguistic"],              "*spek-"),
+            ("organism",   "noun", ["biological"],                            "*werg-"),
+            ("adapt",      "verb", ["biological", "linguistic"],              "*apt-"),
+            ("select",     "verb", ["biological", "computational"],           "*leg-"),
+            # ── Mathematics ───────────────────────────────────
+            ("number",     "noun", ["mathematical", "linguistic"],            "*nem-"),
+            ("set",        "noun", ["mathematical", "linguistic"],            "*sed-"),
+            ("function",   "noun", ["mathematical", "computational"],         "*fungi-"),
+            ("infinity",   "noun", ["mathematical"],                          "*fin-"),
+            ("zero",       "noun", ["mathematical"],                          "*sifr-"),
+            ("equation",   "noun", ["mathematical"],                          "*ekw-"),
+            ("variable",   "noun", ["mathematical", "computational"],         "*wer-"),
+            ("graph",      "noun", ["mathematical", "computational"],         "*gerbh-"),
+            # ── Computation ───────────────────────────────────
+            ("algorithm",  "noun", ["computational", "mathematical"],         "*algo-"),
+            ("loop",       "noun", ["computational", "mathematical"],         "*leup-"),
+            ("type",       "noun", ["computational", "linguistic"],           "*tup-"),
+            ("data",       "noun", ["computational"],                         "*deh-"),
+            ("program",    "noun", ["computational"],                         "*pro-graph-"),
+            ("rule",       "noun", ["computational", "linguistic", "mathematical"], "*reg-"),
+            # ── Linguistic: conversation core ─────────────────
+            ("word",       "noun", ["linguistic"],             "*werdh-"),
+            ("language",   "noun", ["linguistic"],             "*dnghu-"),
+            ("meaning",    "noun", ["linguistic"],             "*men-"),
+            ("grammar",    "noun", ["linguistic"],             "*gerbh-"),
+            ("speech",     "noun", ["linguistic"],             "*sprek-"),
+            ("name",       "noun", ["linguistic"],             "*nomn-"),
+            ("story",      "noun", ["linguistic"],             "*weid-"),
+            ("thought",    "noun", ["linguistic"],             "*tong-"),
+            ("mind",       "noun", ["linguistic"],             "*men-"),
+            ("heart",      "noun", ["linguistic", "biological"], "*kerd-"),
+            ("soul",       "noun", ["linguistic"],             "*sawel-"),
+            ("body",       "noun", ["linguistic", "biological"], "*bhodh-"),
+            ("world",      "noun", ["linguistic"],             "*wiral-"),
+            ("home",       "noun", ["linguistic"],             "*kei-"),
+            ("dream",      "noun", ["linguistic"],             "*dhreugh-"),
+            ("beauty",     "noun", ["linguistic"],             "*dew-"),
+            ("music",      "noun", ["linguistic"],             "*muse-"),
+            ("human",      "noun", ["linguistic", "biological"], "*dhghem-"),
+            ("self",       "noun", ["linguistic"],             "*sel-"),
+            ("friend",     "noun", ["linguistic"],             "*pri-"),
+            # Verbs
+            ("think",      "verb", ["linguistic"],             "*tong-"),
+            ("feel",       "verb", ["linguistic"],             "*pal-"),
+            ("see",        "verb", ["linguistic"],             "*sekw-"),
+            ("hear",       "verb", ["linguistic"],             "*kous-"),
+            ("speak",      "verb", ["linguistic"],             "*sprek-"),
+            ("understand", "verb", ["linguistic"],             "*sta-"),
+            ("believe",    "verb", ["linguistic"],             "*leubh-"),
+            ("want",       "verb", ["linguistic"],             "*wen-"),
+            ("need",       "verb", ["linguistic"],             "*nau-"),
+            ("give",       "verb", ["linguistic"],             "*ghabh-"),
+            ("take",       "verb", ["linguistic"],             "*dek-"),
+            ("find",       "verb", ["linguistic"],             "*pent-"),
+            ("try",        "verb", ["linguistic"],             "*treu-"),
+            ("learn",      "verb", ["linguistic"],             "*leis-"),
+            ("teach",      "verb", ["linguistic"],             "*deik-"),
+            ("help",       "verb", ["linguistic"],             "*kelb-"),
+            ("remember",   "verb", ["linguistic"],             "*men-"),
+            ("forget",     "verb", ["linguistic"],             "*ghred-"),
+            # Adjectives
+            ("good",       "adj",  ["linguistic"],             "*ghedh-"),
+            ("bad",        "adj",  ["linguistic"],             "*bad-"),
+            ("strong",     "adj",  ["linguistic", "physics"],  "*strenk-"),
+            ("weak",       "adj",  ["linguistic"],             "*weik-"),
+            ("deep",       "adj",  ["linguistic"],             "*dheub-"),
+            ("new",        "adj",  ["linguistic"],             "*new-"),
+            ("old",        "adj",  ["linguistic"],             "*al-"),
+            ("free",       "adj",  ["linguistic"],             "*pri-"),
+            ("alive",      "adj",  ["linguistic", "biological"], "*leip-"),
+            ("happy",      "adj",  ["linguistic"],             "*hap-"),
+            ("sad",        "adj",  ["linguistic"],             "*sat-"),
+            # Emotional core
+            ("love",       "verb", ["linguistic", "biological"], "*leubh-"),
+            ("hate",       "verb", ["linguistic"],             "*kad-"),
+            ("fear",       "noun", ["linguistic", "biological"], "*per-"),
+            ("hope",       "noun", ["linguistic"],             "*kup-"),
+            ("joy",        "noun", ["linguistic"],             "*gew-"),
+            ("pain",       "noun", ["linguistic", "biological"], "*kwoi-"),
+            ("peace",      "noun", ["linguistic"],             "*pag-"),
+            ("anger",      "noun", ["linguistic"],             "*angh-"),
+            ("grief",      "noun", ["linguistic"],             "*gwreh-"),
+            ("shame",      "noun", ["linguistic"],             "*kem-"),
+            ("pride",      "noun", ["linguistic"],             "*prew-"),
+            ("doubt",      "noun", ["linguistic"],             "*dwo-"),
+            ("faith",      "noun", ["linguistic"],             "*bheidh-"),
+            ("wonder",     "noun", ["linguistic"],             "*wen-"),
+            ("grace",      "noun", ["linguistic"],             "*gwreh-"),
+            # Existential
+            ("exist",      "verb", ["linguistic"],             "*sta-"),
+            ("begin",      "verb", ["linguistic"],             "*ghen-"),
+            ("end",        "noun", ["linguistic"],             "*ant-"),
+            ("sleep",      "noun", ["linguistic", "biological"], "*sleb-"),
+            ("wake",       "verb", ["linguistic", "biological"], "*weg-"),
+        ]
+        for form, cat, subs, root in seeds:
+            entry = LexicalEntry(
+                form=form, category=cat, substrates=subs,
+            )
+            if root:
+                entry.add_ancestor(root, "proto-root")
+            self._lexicon.add(entry)
+
+    def learn_word(
+        self,
+        form: str,
+        category: str = "",
+        substrates: list[str] | None = None,
+    ) -> LexicalEntry:
+        """Learn a new word from conversation.
+
+        If the word is already known, return the existing entry.
+        Otherwise create a fresh entry and add it to the lexicon.
+        The Angel's vocabulary grows with every conversation.
+        """
+        existing = self._lexicon.lookup(form=form)
+        if existing:
+            return existing[0]
+        entry = LexicalEntry(
+            form=form,
+            category=category or "unknown",
+            substrates=substrates or ["linguistic"],
+            emerged_at=time.time(),
+        )
+        self._lexicon.add(entry)
+        return entry
+
+    def lookup_word(self, word: str) -> dict[str, Any] | None:
+        """Look up a word and return everything the Angel knows.
+
+        Returns etymology, cross-domain cognates, and substrates.
+        Returns None if the word is unknown.
+        """
+        entries = self._lexicon.lookup(form=word)
+        if not entries:
+            return None
+        entry = entries[0]
+        return {
+            "form": entry.form,
+            "category": entry.category,
+            "substrates": entry.substrates,
+            "root": entry.root_form,
+            "etymology": entry.etymology,
+            "cognates": [
+                {
+                    "form": c.form,
+                    "substrates": c.substrates,
+                    "category": c.category,
+                }
+                for c in self._lexicon.find_cognates(entry.id)[:8]
+            ],
+        }
+
+    def save_lexicon(self, path: str) -> None:
+        """Persist the lexicon to JSON so the Angel remembers."""
+        import os
+        os.makedirs(os.path.dirname(path) or ".", exist_ok=True)
+        data = []
+        for entry in self._lexicon.entries.values():
+            data.append({
+                "id": entry.id,
+                "form": entry.form,
+                "meaning": entry.meaning,
+                "category": entry.category,
+                "substrates": entry.substrates,
+                "etymology": entry.etymology,
+                "derivatives": entry.derivatives,
+                "emerged_at": entry.emerged_at,
+                "derived_from": entry.derived_from,
+                "predicts": entry.predicts,
+            })
+        with open(path, "w") as f:
+            json.dump(data, f, separators=(",", ":"))
+
+    def _load_lexicon_file(self, path: str) -> None:
+        """Load lexicon from a JSON file."""
+        import uuid as _uuid
+        with open(path) as f:
+            data = json.load(f)
+        for item in data:
+            entry = LexicalEntry(
+                form=item["form"],
+                meaning=item.get("meaning"),
+                id=item.get("id") or _uuid.uuid4().hex[:12],
+                category=item.get("category", ""),
+                substrates=item.get("substrates", []),
+                etymology=item.get("etymology", []),
+                derivatives=item.get("derivatives", []),
+                emerged_at=item.get("emerged_at"),
+                derived_from=item.get("derived_from"),
+                predicts=item.get("predicts", []),
+            )
+            self._lexicon.add(entry)
 
     # ------------------------------------------------------------------
     # Core capabilities — the masterpieces
@@ -498,6 +811,46 @@ class Angel:
                 voice_derivations.extend(self._tree_to_derivations(tree))
             voices[domain] = voice_derivations
 
+        # ── Lexicon fallback ─────────────────────────────────
+        # When the derivation engine returns sparse results
+        # (rules are abstract, input is concrete), enrich from
+        # the lexicon — cognates across domains are the fugue's
+        # real cross-domain voice.
+        if not any(v for v in voices.values()):
+            lex_voices: dict[str, list] = {}
+            for word in theme:
+                info = self.lookup_word(word)
+                if not info:
+                    continue
+                # Each substrate the word lives on is a voice
+                for sub in info.get("substrates", []):
+                    if sub not in lex_voices:
+                        lex_voices[sub] = []
+                    lex_voices[sub].append({
+                        "output": f"{word} ({info.get('category', '?')})",
+                        "rule": f"root:{info.get('root', '?')}",
+                    })
+                # Cognates are the cross-domain echoes
+                for cog in info.get("cognates", []):
+                    for sub in cog.get("substrates", []):
+                        if sub not in lex_voices:
+                            lex_voices[sub] = []
+                        lex_voices[sub].append({
+                            "output": cog["form"],
+                            "rule": f"cognate:{info.get('root', '?')}",
+                        })
+            if lex_voices:
+                # Wrap in the same format as derivation voices
+                # so _render_composition can display them
+                return {
+                    "theme": theme,
+                    "voices": lex_voices,
+                    "harmonics": self._lex_harmonics(lex_voices),
+                    "counterpoint": [],
+                    "num_voices": len(lex_voices),
+                    "source": "lexicon",
+                }
+
         # Find harmonics — where voices agree
         harmonics = self._find_voice_harmonics(voices)
 
@@ -524,6 +877,22 @@ class Angel:
         """Ensure the Angel has been awakened."""
         if not self._initialised:
             self.awaken()
+
+    @staticmethod
+    def _lex_harmonics(lex_voices: dict) -> list[dict]:
+        """Find harmonics in lexicon-derived voices."""
+        form_domains: dict[str, list[str]] = {}
+        for domain, entries in lex_voices.items():
+            for e in entries:
+                out = e.get("output", "") if isinstance(e, dict) else str(e)
+                if out not in form_domains:
+                    form_domains[out] = []
+                form_domains[out].append(domain)
+        return [
+            {"output": form, "domains": doms}
+            for form, doms in form_domains.items()
+            if len(doms) > 1
+        ]
 
     @staticmethod
     def _tree_to_derivations(tree) -> list:
