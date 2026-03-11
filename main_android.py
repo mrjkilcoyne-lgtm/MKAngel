@@ -366,6 +366,25 @@ class _InputBar(BoxLayout):
 class _SettingsPanel(BoxLayout):
     """Shows GLM status, provider, and memory stats — things that work."""
 
+    # Kivy's disabled property only propagates to children that exist
+    # at the time it's set.  Children added later in __init__ miss it,
+    # so the ScrollView eats touches even when the panel is invisible.
+    # Explicit passthrough fixes this once and for all.
+    def on_touch_down(self, touch):
+        if self.opacity == 0:
+            return False
+        return super().on_touch_down(touch)
+
+    def on_touch_move(self, touch):
+        if self.opacity == 0:
+            return False
+        return super().on_touch_move(touch)
+
+    def on_touch_up(self, touch):
+        if self.opacity == 0:
+            return False
+        return super().on_touch_up(touch)
+
     def __init__(self, on_back=None, **kw):
         kw.setdefault("orientation", "vertical")
         kw.setdefault("opacity", 0)
