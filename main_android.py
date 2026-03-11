@@ -328,6 +328,8 @@ class _InputBar(BoxLayout):
         self.inp = TextInput(
             hint_text="Talk to the Angel\u2026",
             multiline=False, font_size=sp(15),
+            input_type="text",
+            keyboard_suggestions=True,
             background_color=_c("surface_input"),
             foreground_color=_c("text"),
             hint_text_color=_c("text_dim"),
@@ -779,7 +781,17 @@ class MKAngelApp(App):
     def _process(self, text: str):
         try:
             if self.session:
-                resp = self.session.process_input(text)
+                import concurrent.futures as _cf
+                with _cf.ThreadPoolExecutor(max_workers=1) as pool:
+                    fut = pool.submit(self.session.process_input, text)
+                    try:
+                        resp = fut.result(timeout=8)
+                    except _cf.TimeoutError:
+                        resp = (
+                            "Still thinking... the grammar took "
+                            "a moment. Try a shorter phrase, or "
+                            "use /predict with a few key words."
+                        )
 
                 if resp == "__EXIT__":
                     self.session.save_session()

@@ -1059,6 +1059,11 @@ class ChatSession:
         tokens = text.lower().split()
 
         # ── Gather everything the Angel can hear ──────────────
+        # Keep this lightweight — runs on the phone, every keystroke
+        # must feel responsive.  compose_fugue already plays through
+        # ALL domains; no need for redundant superforecast.
+
+        # 1. Fugue — the main voice (all domains at once)
         fugue = {}
         try:
             fugue = self._angel.compose_fugue(tokens)
@@ -1069,28 +1074,42 @@ class ChatSession:
         harmonics = fugue.get("harmonics", [])
         counterpoint = fugue.get("counterpoint", [])
 
-        # Reconstruct — trace origins
+        # 2. Reconstruct — trace word origins (linguistic only,
+        #    for speed — etymological adds latency with little gain
+        #    when the derivation trees are young)
         origins = []
-        for domain in ["linguistic", "etymological"]:
-            try:
-                recon = self._angel.reconstruct(tokens, domain=domain, depth=3)
-                origins.extend(recon[:3])
-            except Exception:
-                pass
+        try:
+            recon = self._angel.reconstruct(
+                tokens, domain="linguistic", depth=2,
+            )
+            origins.extend(recon[:3])
+        except Exception:
+            pass
 
-        # Predict forward — where does the grammar say this goes?
+        # 3. Predict forward — just the top 2 active domains
         predictions = []
-        for domain in voices.keys() or ["linguistic"]:
+        active_keys = [d for d, v in voices.items() if v][:2]
+        for domain in active_keys or ["linguistic"]:
             try:
-                preds = self._angel.predict(tokens, domain=domain, horizon=3)
+                preds = self._angel.predict(
+                    tokens, domain=domain, horizon=2,
+                )
                 predictions.extend(preds[:2])
             except Exception:
                 pass
 
-        # Superforecast — the deep read
+        # 4. Superforecast — the deep read.  This adds strange-loop
+        #    detection and cross-domain reasoning that the fugue alone
+        #    doesn't give us.  Wrapped in a timeout so the phone stays
+        #    responsive even if the derivation trees are heavy.
         forecast = {}
         try:
-            forecast = self._angel.superforecast(tokens, horizon=5)
+            import concurrent.futures as _cf
+            with _cf.ThreadPoolExecutor(max_workers=1) as pool:
+                fut = pool.submit(
+                    self._angel.superforecast, tokens, None, "linguistic", 3,
+                )
+                forecast = fut.result(timeout=3)
         except Exception:
             pass
 
@@ -1102,7 +1121,7 @@ class ChatSession:
 
     def _render_composition(
         self, original, tokens, voices, harmonics, counterpoint,
-        origins, predictions, forecast,
+        origins, predictions, forecast=None,
     ) -> str:
         """Turn grammar structure into the Angel's voice.
 
@@ -1165,10 +1184,28 @@ class ChatSession:
                     f"Leads toward: {' '.join(pw)}"
                 )
 
-        # ── Superforecast — deep structural read ──────────────
-        fc_text = forecast.get("narrative", "") if isinstance(forecast, dict) else ""
-        if fc_text:
-            sections.append(fc_text)
+        # ── Superforecast — strange loops and reasoning ────────
+        if forecast and isinstance(forecast, dict):
+            loops = forecast.get("strange_loops", [])
+            if loops:
+                loop_desc = []
+                for lp in loops[:2]:
+                    pat = lp.get("pattern", "")
+                    cyc = lp.get("cycle_length", "")
+                    if pat:
+                        loop_desc.append(
+                            f"{pat} (cycle {cyc})" if cyc else str(pat)
+                        )
+                if loop_desc:
+                    sections.append(
+                        f"Strange loops: {'; '.join(loop_desc)}"
+                    )
+
+            reasoning = forecast.get("reasoning", [])
+            if reasoning:
+                sections.append(
+                    "Reasoning: " + " ".join(str(r) for r in reasoning[:3])
+                )
 
         # ── Counterpoint — productive disagreement ────────────
         if counterpoint:
