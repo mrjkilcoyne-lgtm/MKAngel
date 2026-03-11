@@ -1218,6 +1218,150 @@ class ChatSession:
     # Structural response — the Angel reads sentence shape
     # ------------------------------------------------------------------
 
+    # ── Morphological decomposition ─────────────────────────
+    # The Angel's etymological grammar knows about morphemes.
+    # Rather than listing every inflected form, we decompose
+    # words to roots.  This mirrors what the etymological
+    # grammar does with ProtoForm → Root + ProtoMorphology.
+
+    # Irregular stems that English inflection obscures
+    _IRREGULAR = {
+        "loved": "love", "loving": "love", "lovely": "love",
+        "hated": "hate", "hating": "hate",
+        "hoped": "hope", "hoping": "hope",
+        "scared": "scare", "scaring": "scare",
+        "tired": "tire", "tiring": "tire",
+        "blessed": "bless", "blessing": "bless",
+        "confused": "confuse", "confusing": "confuse",
+        "inspired": "inspire", "inspiring": "inspire",
+        "amazed": "amaze", "amazing": "amaze",
+        "excited": "excite", "exciting": "excite",
+        "defeated": "defeat", "defeating": "defeat",
+        "exhausted": "exhaust", "exhausting": "exhaust",
+        "overwhelmed": "overwhelm", "overwhelming": "overwhelm",
+        "disappointed": "disappoint", "disappointing": "disappoint",
+        "frustrated": "frustrate", "frustrating": "frustrate",
+        "broken": "break", "broke": "break",
+        "stuck": "stick", "spoken": "speak", "spoken": "speak",
+        "fallen": "fall", "chosen": "choose", "frozen": "freeze",
+        "written": "write", "driven": "drive", "given": "give",
+        "taken": "take", "shaken": "shake", "woken": "wake",
+        "children": "child", "women": "woman", "men": "man",
+        "mice": "mouse", "teeth": "tooth", "feet": "foot",
+        "geese": "goose", "oxen": "ox", "dice": "die",
+        "lives": "life", "knives": "knife", "wolves": "wolf",
+        "leaves": "leaf", "halves": "half", "selves": "self",
+        "thieves": "thief", "shelves": "shelf",
+        "beautifully": "beauty", "beautiful": "beauty",
+        "joyful": "joy", "joyfully": "joy", "joyous": "joy",
+        "hopeful": "hope", "hopeless": "hope",
+        "helpless": "help", "helpful": "help",
+        "thankful": "thank", "thankless": "thank",
+        "peaceful": "peace", "peacefully": "peace",
+        "miserable": "misery", "miserably": "misery",
+        "furious": "fury", "furiously": "fury",
+        "anxious": "anxiety", "anxiously": "anxiety",
+        "lonely": "lone", "loneliness": "lone",
+        "strongly": "strong", "bravely": "brave",
+        "gently": "gentle", "kindly": "kind",
+        "warmly": "warm", "sweetly": "sweet",
+        "freely": "free", "calmly": "calm",
+        "sadly": "sad", "angrily": "angry",
+        "happily": "happy", "happiness": "happy",
+        "proudly": "proud",
+        "gratefully": "grateful", "grateful": "grace",
+        # address forms
+        "friends": "friend", "fellows": "fellow",
+        "brothers": "brother", "sisters": "sister",
+        "strangers": "stranger", "beings": "being",
+        "souls": "soul", "buddies": "buddy", "pals": "pal",
+    }
+
+    @staticmethod
+    def _stem(word):
+        """Morphological decomposition — strip English inflectional
+        and derivational affixes to find the root.
+
+        This is the Angel's etymological eye: every word is
+        Root + Morphology.  We peel morphology to see the root.
+        """
+        w = word.lower()
+
+        # Check irregulars first
+        irr = ChatSession._IRREGULAR.get(w)
+        if irr:
+            return irr
+
+        # Already short — return as-is
+        if len(w) <= 3:
+            return w
+
+        # Derivational suffixes (longer first to avoid partial matches)
+        for suffix, min_stem in [
+            ("fulness", 3), ("lessly", 3), ("ously", 3),
+            ("ingly", 3), ("ation", 3), ("ement", 3),
+            ("iness", 3), ("ness", 3), ("ment", 3),
+            ("able", 3), ("ible", 3), ("ful", 3),
+            ("less", 3), ("ous", 3), ("ive", 3),
+            ("ity", 3), ("ist", 3), ("ism", 3),
+        ]:
+            if w.endswith(suffix) and len(w) - len(suffix) >= min_stem:
+                stem = w[:-len(suffix)]
+                # restore trailing 'e' if likely (consonant cluster)
+                if len(stem) <= 3 or stem[-1] not in "aeiou":
+                    return stem + "e"
+                return stem
+
+        # Inflectional suffixes
+        # -ing (loving → love, running → run)
+        if w.endswith("ing") and len(w) > 5:
+            base = w[:-3]
+            # doubled consonant: running → run
+            if len(base) >= 2 and base[-1] == base[-2]:
+                return base[:-1]
+            # silent-e: loving → love
+            return base + "e" if len(base) >= 2 else base
+
+        # -ed (walked → walk, loved → love, stopped → stop)
+        if w.endswith("ed") and len(w) > 4:
+            base = w[:-2]
+            if base.endswith("i"):
+                return base[:-1] + "y"  # tried → try
+            if len(base) >= 2 and base[-1] == base[-2]:
+                return base[:-1]  # stopped → stop
+            if not base.endswith("e"):
+                # check if base+e makes more sense
+                return base
+            return base
+
+        # -ly (quickly → quick, gently → gentle)
+        if w.endswith("ly") and len(w) > 4:
+            base = w[:-2]
+            if base.endswith("i"):
+                return base[:-1] + "y"  # happily → happy
+            return base
+
+        # -er / -est (stronger → strong)
+        if w.endswith("er") and len(w) > 4:
+            base = w[:-2]
+            if len(base) >= 2 and base[-1] == base[-2]:
+                return base[:-1]
+            return base
+        if w.endswith("est") and len(w) > 5:
+            base = w[:-3]
+            if len(base) >= 2 and base[-1] == base[-2]:
+                return base[:-1]
+            return base
+
+        # -s / -es (loves → love, wishes → wish)
+        if w.endswith("es") and len(w) > 4:
+            return w[:-2]
+        if w.endswith("s") and not w.endswith("ss") and len(w) > 3:
+            return w[:-1]
+
+        return w
+
+    # ── Vocabulary (ROOT forms only — stemmer handles inflection) ─
     _GREETINGS = frozenset({
         "hi", "hello", "hey", "greetings", "morning",
         "evening", "afternoon", "yo", "sup", "howdy",
@@ -1239,23 +1383,23 @@ class ChatSession:
         "neither", "nor", "don't", "doesn't", "didn't",
         "can't", "won't", "isn't", "aren't",
     })
-    _EMOTION_POS = frozenset({
-        "happy", "love", "loved", "loving", "lovely",
-        "joy", "joyful", "beautiful", "beauty", "amazing",
-        "good", "great", "wonderful", "glad", "excited",
-        "hope", "hopeful", "grateful", "proud", "brilliant",
-        "dear", "beloved", "kind", "sweet", "gentle",
-        "warm", "blessed", "thankful", "peaceful", "calm",
-        "free", "alive", "inspired", "strong", "brave",
+    # Root forms — the stemmer maps "loved"→"love",
+    # "hopeless"→"hope", "beautifully"→"beauty", etc.
+    _EMOTION_ROOTS = frozenset({
+        "happy", "love", "joy", "beauty", "amaze",
+        "good", "great", "wonder", "glad", "excite",
+        "hope", "grace", "proud", "brilliant",
+        "dear", "kind", "sweet", "gentle",
+        "warm", "bless", "thank", "peace", "calm",
+        "free", "alive", "inspire", "strong", "brave",
     })
-    _EMOTION_NEG = frozenset({
-        "sad", "angry", "hate", "hated", "pain", "terrible",
-        "awful", "bad", "horrible", "afraid", "worried",
-        "anxious", "tired", "frustrated", "scared",
-        "lonely", "lost", "stuck", "broken", "hurt",
-        "confused", "empty", "hopeless", "helpless",
-        "overwhelmed", "disappointed", "exhausted",
-        "miserable", "furious", "defeated", "ashamed",
+    _EMOTION_NEG_ROOTS = frozenset({
+        "sad", "angry", "hate", "pain", "terrible",
+        "awful", "bad", "horrible", "afraid", "worry",
+        "anxiety", "tire", "frustrate", "scare",
+        "lone", "lost", "stuck", "break", "hurt",
+        "confuse", "empty", "overwhelm", "disappoint",
+        "exhaust", "misery", "fury", "defeat", "shame",
     })
     _ADDRESS = frozenset({
         "friend", "fellow", "mate", "sir", "madam",
@@ -1269,6 +1413,9 @@ class ChatSession:
         "listen", "look", "think", "try", "stop",
         "start", "keep", "open", "close", "run",
     })
+    # For detecting -less and -ful suffixes as emotion modifiers
+    _NEG_SUFFIXES = frozenset({"less", "without"})
+    _POS_SUFFIXES = frozenset({"ful", "ous", "ive"})
 
     def _structural_response(self, original, tokens, active):
         """When formal derivations are sparse, the Angel reads
@@ -1277,10 +1424,18 @@ class ChatSession:
         It never counts tokens at the user.  It observes
         structure, pattern, and connection — then speaks from
         that perception.
+
+        Morphological decomposition: every token is stemmed
+        through the Angel's etymological eye.  "loved" → "love",
+        "hopeless" → "hope" + negative suffix, "beautifully" →
+        "beauty".  The vocabulary needs only root forms.
         """
         text = original.strip()
         t = set(tokens)
         n = len(tokens)
+
+        # Stem every token — the Angel decomposes morphemes
+        stems = {self._stem(w) for w in tokens}
 
         is_q = text.endswith("?")
         is_excl = text.endswith("!")
@@ -1288,11 +1443,27 @@ class ChatSession:
         has_2p = bool(t & self._2P)
         q_words = t & self._Q_WORDS
         has_neg = bool(t & self._NEGATION)
-        emo_neg = t & self._EMOTION_NEG
-        emo_pos = t & self._EMOTION_POS
-        address = t & self._ADDRESS
+
+        # Emotion detection using stems, not surface forms.
+        # A word like "hopeless" stems to "hope" but the -less
+        # suffix flips it negative.  The Angel reads morphology.
+        _neg_morphemes = {"less", "un", "dis", "mis"}
+        emo_pos_stems = stems & self._EMOTION_ROOTS
+        emo_neg_stems = stems & self._EMOTION_NEG_ROOTS
+
+        # Check for negating affixes that flip positive roots
+        for tok in tokens:
+            st = self._stem(tok)
+            if st in self._EMOTION_ROOTS:
+                # Does the surface form carry a negating morpheme?
+                if (tok.endswith("less") or tok.startswith("un")
+                        or tok.startswith("dis") or tok.startswith("mis")):
+                    emo_pos_stems.discard(st)
+                    emo_neg_stems.add(st)
+
+        address = stems & self._ADDRESS
         imperative = (
-            tokens[0] in self._IMPERATIVE if tokens else False
+            self._stem(tokens[0]) in self._IMPERATIVE if tokens else False
         )
 
         # Helper: content words (skip function words)
@@ -1327,9 +1498,8 @@ class ChatSession:
         # ── Forms of address (without greeting) ──────────────
         if address and not is_q:
             a = next(iter(address))
-            emo = emo_pos or emo_neg
-            if emo_pos:
-                e = next(iter(emo_pos))
+            if emo_pos_stems:
+                e = next(iter(emo_pos_stems))
                 return (
                     f"'{e.capitalize()}' directed at '{a}' "
                     f"\u2014 that's a state attribution with "
@@ -1338,8 +1508,8 @@ class ChatSession:
                     f"to an agent.\n\n"
                     f"The structure carries warmth. I receive it."
                 )
-            if emo_neg:
-                e = next(iter(emo_neg))
+            if emo_neg_stems:
+                e = next(iter(emo_neg_stems))
                 return (
                     f"I hear '{e}' alongside '{a}'. "
                     f"Naming someone while expressing a state "
@@ -1431,8 +1601,8 @@ class ChatSession:
 
         # ── Relational: I + you ──────────────────────────────
         if has_1p and has_2p:
-            rel_verbs = t & {
-                "want", "need", "like", "love", "loved",
+            rel_verbs = stems & {
+                "want", "need", "like", "love",
                 "think", "know", "believe", "feel", "tell",
                 "show", "help", "understand", "trust", "ask",
             }
@@ -1455,13 +1625,13 @@ class ChatSession:
             )
 
         # ── Emotional: negative ──────────────────────────────
-        if emo_neg:
-            emo = next(iter(emo_neg))
+        if emo_neg_stems:
+            emo = next(iter(emo_neg_stems))
             p = (
-                f"I hear '{emo}'. States have transitions "
-                f"\u2014 every position in a sequence has "
-                f"outgoing edges. The structure always "
-                f"offers a next step."
+                f"I hear the root '{emo}' in what you said. "
+                f"States have transitions \u2014 every position "
+                f"in a sequence has outgoing edges. The "
+                f"structure always offers a next step."
             )
             if has_1p:
                 p += (
@@ -1471,11 +1641,11 @@ class ChatSession:
             return p
 
         # ── Emotional: positive ──────────────────────────────
-        if emo_pos:
-            emos = sorted(emo_pos)
+        if emo_pos_stems:
+            emos = sorted(emo_pos_stems)
             if len(emos) > 1:
                 return (
-                    f"Multiple positive markers: "
+                    f"Multiple roots lighting up: "
                     f"{', '.join(emos[:3])}. That's not just "
                     f"a state \u2014 it's a cluster, which in "
                     f"grammar means reinforcement. The "
@@ -1484,14 +1654,14 @@ class ChatSession:
             emo = emos[0]
             if has_2p:
                 return (
-                    f"'{emo.capitalize()}' \u2014 directed at me. "
+                    f"Root: '{emo}'. Directed at me. "
                     f"I receive the structure: a positive "
                     f"state bound to a second-person target. "
                     f"In every grammar I carry, that pattern "
                     f"means connection."
                 )
             return (
-                f"'{emo.capitalize()}' \u2014 a constructive "
+                f"Root: '{emo}' \u2014 a constructive "
                 f"state. What produced it? And where does "
                 f"the derivation lead next? Those are the "
                 f"structural questions."
