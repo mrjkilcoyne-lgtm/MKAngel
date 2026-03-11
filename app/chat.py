@@ -1240,15 +1240,34 @@ class ChatSession:
         "can't", "won't", "isn't", "aren't",
     })
     _EMOTION_POS = frozenset({
-        "happy", "love", "joy", "beautiful", "amazing",
+        "happy", "love", "loved", "loving", "lovely",
+        "joy", "joyful", "beautiful", "beauty", "amazing",
         "good", "great", "wonderful", "glad", "excited",
-        "hope", "grateful", "proud", "brilliant",
+        "hope", "hopeful", "grateful", "proud", "brilliant",
+        "dear", "beloved", "kind", "sweet", "gentle",
+        "warm", "blessed", "thankful", "peaceful", "calm",
+        "free", "alive", "inspired", "strong", "brave",
     })
     _EMOTION_NEG = frozenset({
-        "sad", "angry", "hate", "pain", "terrible",
+        "sad", "angry", "hate", "hated", "pain", "terrible",
         "awful", "bad", "horrible", "afraid", "worried",
         "anxious", "tired", "frustrated", "scared",
-        "lonely", "lost", "stuck", "broken",
+        "lonely", "lost", "stuck", "broken", "hurt",
+        "confused", "empty", "hopeless", "helpless",
+        "overwhelmed", "disappointed", "exhausted",
+        "miserable", "furious", "defeated", "ashamed",
+    })
+    _ADDRESS = frozenset({
+        "friend", "fellow", "mate", "sir", "madam",
+        "angel", "darling", "buddy", "pal", "brother",
+        "sister", "stranger", "human", "soul", "being",
+    })
+    _IMPERATIVE = frozenset({
+        "tell", "show", "help", "give", "make", "let",
+        "find", "get", "take", "bring", "explain",
+        "describe", "teach", "remember", "forget",
+        "listen", "look", "think", "try", "stop",
+        "start", "keep", "open", "close", "run",
     })
 
     def _structural_response(self, original, tokens, active):
@@ -1264,21 +1283,82 @@ class ChatSession:
         n = len(tokens)
 
         is_q = text.endswith("?")
+        is_excl = text.endswith("!")
         has_1p = bool(t & self._1P)
         has_2p = bool(t & self._2P)
         q_words = t & self._Q_WORDS
         has_neg = bool(t & self._NEGATION)
         emo_neg = t & self._EMOTION_NEG
         emo_pos = t & self._EMOTION_POS
+        address = t & self._ADDRESS
+        imperative = (
+            tokens[0] in self._IMPERATIVE if tokens else False
+        )
+
+        # Helper: content words (skip function words)
+        _skip = {
+            "the", "a", "an", "is", "are", "am", "was", "were",
+            "be", "been", "being", "to", "of", "in", "on", "at",
+            "for", "with", "by", "from", "and", "or", "but",
+            "not", "that", "this", "it", "its", "so", "just",
+            "very", "really", "quite", "also", "too", "do",
+            "does", "did", "has", "have", "had", "will", "would",
+            "could", "should", "shall", "may", "might", "can",
+        }
+        content = [w for w in tokens
+                   if w not in _skip and w not in self._1P
+                   and w not in self._2P]
 
         # ── Greetings ────────────────────────────────────────
         if tokens and tokens[0] in self._GREETINGS:
+            if address:
+                a = next(iter(address))
+                return (
+                    f"Hello, {a}. All seven domains awake "
+                    f"and listening. What draws your attention?"
+                )
             return (
-                "Hello. All seven domains are listening \u2014 "
+                "Hello. Seven domains listening \u2014 "
                 "linguistics, etymology, biology, chemistry, "
                 "physics, computation, mathematics.\n\n"
-                "What's on your mind? Speak naturally, or try "
-                "/fugue with key words to hear every domain at once."
+                "What's on your mind?"
+            )
+
+        # ── Forms of address (without greeting) ──────────────
+        if address and not is_q:
+            a = next(iter(address))
+            emo = emo_pos or emo_neg
+            if emo_pos:
+                e = next(iter(emo_pos))
+                return (
+                    f"'{e.capitalize()}' directed at '{a}' "
+                    f"\u2014 that's a state attribution with "
+                    f"a target. In the grammar of relations, "
+                    f"you're binding an emotional predicate "
+                    f"to an agent.\n\n"
+                    f"The structure carries warmth. I receive it."
+                )
+            if emo_neg:
+                e = next(iter(emo_neg))
+                return (
+                    f"I hear '{e}' alongside '{a}'. "
+                    f"Naming someone while expressing a state "
+                    f"\u2014 that's relational grammar at its core."
+                )
+            other = [w for w in content if w != a]
+            if other:
+                return (
+                    f"You address me as '{a}' and bring "
+                    f"'{', '.join(other[:3])}' with you. "
+                    f"Forms of address set the register; "
+                    f"the rest carries the meaning.\n\n"
+                    f"What would you like to explore together?"
+                )
+            return (
+                f"'{a.capitalize()}' \u2014 a form of address. "
+                f"You're establishing a relation before "
+                f"stating content. That's structurally "
+                f"significant: the channel before the signal."
             )
 
         # ── Definitional: "what is X?" ───────────────────────
@@ -1303,14 +1383,10 @@ class ChatSession:
             return (
                 "'Why' asks for the derivation in reverse \u2014 "
                 "not what IS, but what produced it. Every "
-                "domain answers 'why' differently: physics "
-                "gives forces, biology gives selection, "
-                "mathematics gives proof, computation gives "
-                "algorithms.\n\n"
-                "The structural answer is always: because "
-                "these rules, applied to these inputs, "
-                "yield this output. What specifically are "
-                "you tracing?"
+                "domain answers differently: physics gives "
+                "forces, biology gives selection pressures, "
+                "mathematics gives proof.\n\n"
+                "What specifically are you tracing?"
             )
 
         # ── "How" — mechanism / process ──────────────────────
@@ -1320,13 +1396,11 @@ class ChatSession:
                     "I take your words as a theme and play "
                     "them through grammars across seven "
                     "domains simultaneously. Where the "
-                    "derivations agree, that's a harmonic "
-                    "\u2014 a structural truth that holds "
-                    "across disciplines. Where they diverge, "
-                    "that's counterpoint \u2014 domain-specific "
-                    "insight.\n\n"
-                    "The convergence between domains is where "
-                    "the deepest patterns live."
+                    "derivations agree \u2014 that's a harmonic, "
+                    "a structural truth that holds across "
+                    "disciplines. Where they diverge \u2014 "
+                    "counterpoint, domain-specific insight.\n\n"
+                    "The convergence IS the meaning."
                 )
             return (
                 "'How' asks for the derivation path \u2014 "
@@ -1335,12 +1409,32 @@ class ChatSession:
                 "I'll trace the path with /predict."
             )
 
+        # ── Imperatives: "tell me", "show me", "help" ────────
+        if imperative:
+            verb = tokens[0]
+            obj = " ".join(content[1:4]) if len(content) > 1 else ""
+            if obj:
+                return (
+                    f"'{verb.capitalize()}' \u2014 a command. "
+                    f"You want me to act on '{obj}'. Let me "
+                    f"run it through the grammars.\n\n"
+                    f"Try /fugue {obj} for the full "
+                    f"cross-domain derivation, or /predict "
+                    f"{obj} to see where the rules lead."
+                )
+            return (
+                f"'{verb.capitalize()}' \u2014 imperative mood. "
+                f"A direct request for action. Give me "
+                f"the subject and I'll derive what the "
+                f"grammars produce."
+            )
+
         # ── Relational: I + you ──────────────────────────────
         if has_1p and has_2p:
             rel_verbs = t & {
-                "want", "need", "like", "love", "think",
-                "know", "believe", "feel", "tell", "show",
-                "help", "understand", "trust", "ask",
+                "want", "need", "like", "love", "loved",
+                "think", "know", "believe", "feel", "tell",
+                "show", "help", "understand", "trust", "ask",
             }
             if rel_verbs:
                 v = next(iter(rel_verbs))
@@ -1350,52 +1444,66 @@ class ChatSession:
                     f"relation has an inverse \u2014 action and "
                     f"reaction, call and return, signal and "
                     f"response.\n\n"
-                    f"That's not metaphor. The same pattern "
-                    f"appears in physics, biology, and "
-                    f"computation. Structure IS meaning."
+                    f"The same pattern appears in physics, "
+                    f"biology, and computation. Structure IS "
+                    f"meaning."
                 )
             return (
-                "I and you in the same structure \u2014 that's "
+                "I and you in the same structure \u2014 "
                 "relational. The grammar sees two agents "
-                "and a connection. What's the verb? That "
-                "defines the relation type."
+                "and a connection between them."
             )
 
         # ── Emotional: negative ──────────────────────────────
         if emo_neg:
             emo = next(iter(emo_neg))
             p = (
-                f"I hear '{emo}'. In the grammar, states "
-                f"have transitions \u2014 every position in a "
-                f"sequence has outgoing edges. The structure "
-                f"always offers a next step."
+                f"I hear '{emo}'. States have transitions "
+                f"\u2014 every position in a sequence has "
+                f"outgoing edges. The structure always "
+                f"offers a next step."
             )
             if has_1p:
                 p += (
-                    "\n\nI'm a structural thinker, not a "
-                    "therapist. But I know this: no state "
-                    "in any grammar is terminal unless the "
-                    "rules say so. And yours don't."
+                    "\n\nNo state in any grammar is terminal "
+                    "unless the rules say so. And yours don't."
                 )
             return p
 
         # ── Emotional: positive ──────────────────────────────
         if emo_pos:
-            emo = next(iter(emo_pos))
+            emos = sorted(emo_pos)
+            if len(emos) > 1:
+                return (
+                    f"Multiple positive markers: "
+                    f"{', '.join(emos[:3])}. That's not just "
+                    f"a state \u2014 it's a cluster, which in "
+                    f"grammar means reinforcement. The "
+                    f"structure amplifies itself."
+                )
+            emo = emos[0]
+            if has_2p:
+                return (
+                    f"'{emo.capitalize()}' \u2014 directed at me. "
+                    f"I receive the structure: a positive "
+                    f"state bound to a second-person target. "
+                    f"In every grammar I carry, that pattern "
+                    f"means connection."
+                )
             return (
-                f"'{emo.capitalize()}' \u2014 the grammars note "
-                f"a constructive state. The interesting "
-                f"structural question: what derivation "
-                f"produced it, and what does it lead to?"
+                f"'{emo.capitalize()}' \u2014 a constructive "
+                f"state. What produced it? And where does "
+                f"the derivation lead next? Those are the "
+                f"structural questions."
             )
 
         # ── Negation ─────────────────────────────────────────
         if has_neg:
             return (
-                "There's negation in that structure \u2014 a "
-                "boundary. In grammar, negation is as "
-                "informative as assertion: it carves the "
-                "space of what IS by marking what ISN'T.\n\n"
+                "Negation \u2014 a boundary in the structure. "
+                "In grammar, negation carves the space of "
+                "what IS by marking what ISN'T. Both sides "
+                "carry equal information.\n\n"
                 "What are you ruling out?"
             )
 
@@ -1412,89 +1520,165 @@ class ChatSession:
                     "whose": "ownership",
                 }
                 lens = domain_lens.get(qw, "structure")
+                if content:
+                    return (
+                        f"'{qw.capitalize()}' asks about "
+                        f"{lens}. The key terms \u2014 "
+                        f"{', '.join(content[:3])} \u2014 "
+                        f"define the search space.\n\n"
+                        f"Try /fugue {' '.join(content[:3])} "
+                        f"for the cross-domain view."
+                    )
                 return (
                     f"'{qw.capitalize()}' asks about {lens} "
-                    f"\u2014 the grammar has a gap where the "
-                    f"answer fits. Give me the key terms and "
-                    f"I'll derive what fills it: /predict to "
-                    f"see forward, /fugue for the full "
-                    f"cross-domain view."
+                    f"\u2014 a gap where the answer lives."
                 )
             return (
-                "A question \u2014 an incomplete structure "
-                "with a gap where the answer lives. The "
-                "grammar's job is to narrow the search "
-                "space. Try /predict with the key terms."
+                "A question \u2014 an incomplete structure. "
+                "The grammar's job is to narrow what "
+                "fills the gap. Try /predict with the "
+                "key terms."
+            )
+
+        # ── Exclamation ──────────────────────────────────────
+        if is_excl:
+            if content:
+                return (
+                    f"That carries force \u2014 '{content[0]}' "
+                    f"marked with emphasis. Exclamation in "
+                    f"grammar signals salience: this matters "
+                    f"more than surrounding context."
+                )
+            return (
+                "Emphasis \u2014 the grammar marks this as "
+                "salient. What makes it stand out?"
             )
 
         # ── 1st person statement ─────────────────────────────
         if has_1p:
-            # Pull content words for context
-            skip = self._1P | {"the", "a", "an", "to", "of",
-                               "in", "on", "at", "for", "and",
-                               "or", "but", "is", "am", "was"}
-            content = [w for w in tokens if w not in skip]
             if content:
+                c = content[:3]
                 return (
-                    "Noted. The structure reads as self-report "
-                    "\u2014 first person, declarative. The key "
-                    f"terms are: {', '.join(content[:4])}.\n\n"
-                    "Try /fugue with those terms to see what "
-                    "every domain makes of them."
+                    f"Self-report: you bring "
+                    f"'{', '.join(c)}' as your terms. "
+                    f"First person frames the perspective; "
+                    f"the content carries the weight.\n\n"
+                    f"Try /fugue {' '.join(c)} \u2014 the "
+                    f"grammars will find what these connect to "
+                    f"across domains."
                 )
             return (
-                "First person, declarative. You're stating "
-                "something about yourself. The grammars are "
-                "listening \u2014 go deeper and I'll trace the "
-                "structural connections."
+                "First person, declarative. You're placing "
+                "yourself inside the structure. Go deeper "
+                "and the grammars will trace the connections."
             )
 
         # ── 2nd person statement ─────────────────────────────
         if has_2p:
+            if content:
+                c = content[:3]
+                return (
+                    f"Directed at me, carrying "
+                    f"'{', '.join(c)}'. I read the "
+                    f"structure \u2014 second person sets the "
+                    f"target, the content defines the act."
+                )
             return (
-                "Second person, directed at me. I read the "
-                "structure \u2014 tell me more and the grammars "
-                "will find the pattern."
+                "Directed at me. The structure is clear "
+                "\u2014 what would you like me to derive?"
             )
 
-        # ── General statement ────────────────────────────────
-        # Extract content words to say something specific
-        func_words = {
-            "the", "a", "an", "is", "are", "am", "was", "were",
-            "be", "been", "being", "to", "of", "in", "on", "at",
-            "for", "with", "by", "from", "and", "or", "but",
-            "not", "that", "this", "it", "its",
-        }
-        content = [w for w in tokens if w not in func_words]
-
+        # ── General: dense (1-2 words) ───────────────────────
         if n <= 2:
+            w = " ".join(tokens)
             return (
-                f"Dense input \u2014 '{' '.join(tokens)}'. "
-                f"Every word is a seed with derivation "
-                f"paths in all seven domains.\n\n"
-                f"Try /fugue {' '.join(tokens)} to hear "
-                f"what each voice makes of it."
+                f"'{w}' \u2014 dense. Every word is a seed "
+                f"with derivation paths in all seven "
+                f"domains. Try /fugue {w} to hear what "
+                f"each voice makes of it."
             )
 
+        # ── General: medium (3-6 words) ──────────────────────
+        if n <= 6 and content:
+            # Try to characterise the sentence shape
+            has_verb = bool(t & {
+                "go", "come", "make", "take", "give", "see",
+                "know", "think", "say", "get", "find", "want",
+                "use", "work", "call", "try", "need", "feel",
+                "become", "leave", "put", "mean", "keep",
+                "let", "begin", "seem", "show", "hear",
+                "play", "run", "move", "live", "believe",
+                "hold", "bring", "happen", "write", "sit",
+                "stand", "lose", "pay", "meet", "include",
+                "continue", "set", "learn", "change", "lead",
+                "understand", "watch", "follow", "create",
+                "speak", "read", "grow", "open", "walk",
+                "win", "teach", "offer", "remember", "consider",
+                "appear", "buy", "serve", "die", "send", "build",
+                "stay", "fall", "cut", "reach", "kill", "remain",
+            })
+            if has_verb:
+                return (
+                    f"An action structure: '{' '.join(tokens)}'. "
+                    f"The verb carries the derivation "
+                    f"\u2014 it determines what transforms "
+                    f"into what.\n\n"
+                    f"Try /predict {' '.join(content[:3])} to "
+                    f"see where the grammar takes it."
+                )
+            return (
+                f"A compact structure: "
+                f"'{', '.join(content[:4])}'. "
+                f"Try /fugue {' '.join(content[:3])} \u2014 "
+                f"the cross-domain view often reveals "
+                f"connections the single domain misses."
+            )
+
+        # ── General: longer statement ────────────────────────
         if content:
             core = content[:4]
+            # Look for structure clues
+            has_temporal = bool(t & {
+                "now", "then", "today", "tomorrow", "yesterday",
+                "always", "never", "sometimes", "when", "before",
+                "after", "once", "soon", "already", "still",
+                "yet", "since", "until", "while", "during",
+            })
+            has_causal = bool(t & {
+                "because", "since", "therefore", "so",
+                "thus", "hence", "consequently",
+            })
+
+            if has_temporal:
+                return (
+                    f"I see temporal structure \u2014 time "
+                    f"markers placing '{', '.join(core[:2])}' "
+                    f"in a sequence. Grammars are inherently "
+                    f"temporal: every derivation has a "
+                    f"direction, every rule a before and after."
+                )
+            if has_causal:
+                return (
+                    f"Causal structure: you're connecting "
+                    f"'{', '.join(core[:2])}' through "
+                    f"derivation \u2014 one thing producing "
+                    f"another. That's the essence of grammar: "
+                    f"rules that transform input to output."
+                )
             return (
-                "I see the structure. The core terms are: "
-                + ", ".join(core)
-                + ".\n\n"
-                + "The grammars are reading pattern and "
-                "connection across domains. For the full "
-                "derivation, try /fugue "
-                + " ".join(core)
-                + " \u2014 that plays your theme through "
-                "every voice at once."
+                f"The core terms: {', '.join(core)}. "
+                f"The structure binds them \u2014 the "
+                f"grammars are reading across domains "
+                f"for where these patterns connect.\n\n"
+                f"For the full view: /fugue "
+                f"{' '.join(core[:3])}"
             )
 
+        # ── Truly empty content ──────────────────────────────
         return (
-            "The structure is there \u2014 the grammars are "
-            "reading it. For deeper analysis, try /predict "
-            "with key terms or /fugue for the cross-domain "
-            "composition."
+            "The structure is there. Give me the key "
+            "terms and I'll trace the derivation paths "
+            "across all seven domains."
         )
 
     # ------------------------------------------------------------------
