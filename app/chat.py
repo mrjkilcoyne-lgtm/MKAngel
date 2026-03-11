@@ -15,6 +15,11 @@ import time
 import uuid
 from typing import Any
 
+try:
+    from glm.voice import Voice
+except Exception:
+    Voice = None  # type: ignore[assignment,misc]
+
 
 # ---------------------------------------------------------------------------
 # ANSI colour palette
@@ -1143,7 +1148,34 @@ class ChatSession:
         except Exception:
             pass
 
+        # ── Sense — the model's internal signals ─────────────
+        # Harmony (head agreement) and loop gates (self-reference)
+        # drive the Voice's mood: confident, careful, reflective.
+        signals = {"harmony": 0.5, "loop_gate": 0.1}
+        try:
+            signals = self._angel.sense(tokens)
+        except Exception:
+            pass
+
         # ── Compose from ALL of this ──────────────────────────
+        if Voice is not None:
+            try:
+                voice = Voice()
+                composed = voice.compose(
+                    text, tokens, voices, harmonics, counterpoint,
+                    origins, predictions, forecast, lex_insights,
+                    harmony=signals.get("harmony", 0.5),
+                    loop_gate=signals.get("loop_gate", 0.1),
+                )
+
+                # Voice always returns something — she never goes silent
+                # when she has knowledge.  But if somehow empty, fall back.
+                if composed and composed.strip():
+                    return composed
+            except Exception:
+                pass
+
+        # Fallback to the old renderer
         return self._render_composition(
             text, tokens, voices, harmonics, counterpoint,
             origins, predictions, forecast, lex_insights,

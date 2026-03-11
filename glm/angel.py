@@ -556,6 +556,46 @@ class Angel:
             self._lexicon.add(entry)
 
     # ------------------------------------------------------------------
+    # Sense — exposing the model's internal signals to the Voice
+    # ------------------------------------------------------------------
+
+    def sense(self, tokens: list[str]) -> dict[str, float]:
+        """Feel the harmony and loop-gate signals for a sequence.
+
+        Runs the neural model's forward pass and surfaces the internal
+        signals that the Voice needs to set her mood:
+            - harmony:   how much the attention heads agree (0–1)
+            - loop_gate: how self-referential the pattern is (0–1)
+
+        These are averaged across all layers — the overall feeling,
+        not the per-layer detail.
+
+        Args:
+            tokens: The user's words (lowercased strings).
+
+        Returns:
+            {"harmony": float, "loop_gate": float}
+        """
+        self._ensure_awake()
+        if not self._model or not tokens:
+            return {"harmony": 0.5, "loop_gate": 0.1}
+
+        try:
+            # Map string tokens → symbol IDs in the 512-symbol vocab
+            symbol_ids = [hash(t) % self.config.vocab_size for t in tokens]
+
+            result = self._model.forward(symbol_ids)
+            harmonies = result.get("harmonies", [])
+            loop_gates = result.get("loop_gates", [])
+
+            avg_h = sum(harmonies) / len(harmonies) if harmonies else 0.5
+            avg_l = sum(loop_gates) / len(loop_gates) if loop_gates else 0.1
+
+            return {"harmony": avg_h, "loop_gate": avg_l}
+        except Exception:
+            return {"harmony": 0.5, "loop_gate": 0.1}
+
+    # ------------------------------------------------------------------
     # Core capabilities — the masterpieces
     # ------------------------------------------------------------------
 
