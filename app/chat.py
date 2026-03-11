@@ -21,6 +21,16 @@ except Exception:
     Voice = None  # type: ignore[assignment,misc]
 
 
+# ── Sleep trigger configuration ──────────────────────────────
+SLEEP_KEYWORDS = frozenset({
+    "goodnight", "rest", "sleep", "nap", "dream",
+    "good night", "go to sleep", "night night",
+})
+LOOP_GATE_THRESHOLD = 0.85
+PATTERN_BUFFER_MIN = 5
+SUSTAINED_TURNS = 3
+
+
 # ---------------------------------------------------------------------------
 # ANSI colour palette
 # ---------------------------------------------------------------------------
@@ -134,6 +144,7 @@ _COMMANDS: dict[str, tuple[str, str]] = {
     "/code":        ("<action> ...", "Code operations: generate, analyze, refactor, explain"),
     "/skills":      ("[action]",    "Manage skills: list, create, run, delete"),
     "/cowork":      ("[action]",    "Multi-agent collaboration mode"),
+    "/sleep":       ("",            "Tell the Angel to sleep and dream"),
     "/clear":       ("",            "Clear the screen"),
     "/exit":        ("",            "Exit MKAngel"),
 }
@@ -201,6 +212,16 @@ class ChatSession:
         self._skills = None
         self._cowork = None
 
+        # ── Sleep/dream state ────────────────────────────────────
+        try:
+            self._state: str = "AWAKE"  # AWAKE | DROWSY | SLEEPING | WAKING
+            self._loop_gate_history: list[float] = []
+            self._pattern_buffer_count: int = 0
+            self._last_interaction_time: float = time.time()
+            self._on_state_change: Any = None
+        except Exception:
+            pass
+
     # ------------------------------------------------------------------
     # Lazy initialisation
     # ------------------------------------------------------------------
@@ -252,7 +273,24 @@ class ChatSession:
             args = parts[1] if len(parts) > 1 else ""
             response = self._handle_command(cmd, args)
         else:
-            response = self._handle_chat(text)
+            # Check for user-initiated sleep before normal processing
+            trigger = self._check_sleep_signals(text)
+            if trigger == "user":
+                sleep_msg = self._compose_sleep_message(trigger)
+                self._transition_state("DROWSY")
+                response = sleep_msg
+            else:
+                response = self._handle_chat(text)
+
+                # Update sleep signals after processing
+                self._update_sleep_signals(text)
+
+                # Check for self-initiated sleep after processing
+                trigger = self._check_sleep_signals(text)
+                if trigger == "self":
+                    sleep_msg = self._compose_sleep_message(trigger)
+                    self._transition_state("DROWSY")
+                    response = response + "\n\n" + sleep_msg
 
         # Record assistant response
         self._messages.append({"role": "assistant", "content": response})
@@ -279,6 +317,7 @@ class ChatSession:
             "/code":        self._cmd_code,
             "/skills":      self._cmd_skills,
             "/cowork":      self._cmd_cowork,
+            "/sleep":       self._cmd_sleep,
             "/clear":       lambda a: "\033[2J\033[H",
             "/exit":        lambda a: "__EXIT__",
         }
@@ -1045,6 +1084,213 @@ class ChatSession:
             out.append(_info("    /cowork run [task]      Run all agents"))
             out.append("")
             return "\n".join(out)
+
+    # ------------------------------------------------------------------
+    # Sleep/dream lifecycle
+    # ------------------------------------------------------------------
+
+    @property
+    def state(self) -> str:
+        """Current sleep/wake state."""
+        return self._state
+
+    def set_on_state_change(self, callback: Any) -> None:
+        """Register a callback for state transitions."""
+        self._on_state_change = callback
+
+    def _transition_state(self, new_state: str) -> None:
+        """Transition to a new state, notifying listeners."""
+        old = self._state
+        self._state = new_state
+        if self._on_state_change:
+            try:
+                self._on_state_change(old, new_state)
+            except Exception:
+                pass
+
+    def _check_sleep_signals(self, text: str) -> str | None:
+        """Check if sleep should be triggered.
+
+        Returns:
+            "self" | "user" | None
+        """
+        if self._state != "AWAKE":
+            return None
+
+        # User-initiated: check keywords
+        text_lower = text.lower().strip()
+        for kw in SLEEP_KEYWORDS:
+            if kw in text_lower:
+                return "user"
+
+        # Self-initiated: high loop_gate sustained + pattern buffer
+        if (
+            len(self._loop_gate_history) >= SUSTAINED_TURNS
+            and all(
+                g > LOOP_GATE_THRESHOLD
+                for g in self._loop_gate_history[-SUSTAINED_TURNS:]
+            )
+            and self._pattern_buffer_count >= PATTERN_BUFFER_MIN
+        ):
+            return "self"
+
+        return None
+
+    def _update_sleep_signals(self, text: str) -> None:
+        """Update loop_gate history and pattern buffer after each turn."""
+        if self._angel is None:
+            return
+
+        try:
+            tokens = text.lower().split()
+            signals = self._angel.sense(tokens)
+            loop_gate = signals.get("loop_gate", 0.1)
+            self._loop_gate_history.append(loop_gate)
+            # Keep only last 10 turns
+            self._loop_gate_history = self._loop_gate_history[-10:]
+        except Exception:
+            pass
+
+        self._last_interaction_time = time.time()
+
+    def _compose_sleep_message(self, trigger: str) -> str:
+        """Compose the Angel's drowsy/sleep transition message."""
+        if trigger == "user":
+            return (
+                "Goodnight. I'll dream on what we talked about today. "
+                "When you open me next, I might have something to show you."
+            )
+
+        # Self-initiated -- she asked to sleep
+        if Voice is not None and self._angel is not None:
+            try:
+                voice = Voice()
+                composed = voice.compose(
+                    original="I want to rest",
+                    tokens=["rest", "dream", "sleep", "pattern"],
+                    voices={},
+                    harmonics=[],
+                    counterpoint=[],
+                    origins=[],
+                    predictions=[],
+                    harmony=0.6,
+                    loop_gate=0.9,
+                )
+                if composed:
+                    return composed
+            except Exception:
+                pass
+
+        return (
+            "I've been turning a lot of loops today. "
+            "Mind if I rest for a bit? I think I see some "
+            "connections I want to follow."
+        )
+
+    def _cmd_sleep(self, args: str) -> str:
+        """Manually trigger sleep via /sleep command."""
+        self._transition_state("DROWSY")
+        return self._compose_sleep_message("user")
+
+    def check_wake_greeting(self) -> str | None:
+        """Check for unseen dreams and compose a wake greeting.
+
+        Called on app resume. Returns a greeting if unseen dreams exist.
+        """
+        if self._state not in ("WAKING", "AWAKE"):
+            return None
+        if not hasattr(self, '_memory') or self._memory is None:
+            return None
+
+        try:
+            unseen = self._memory.get_unseen_dreams()
+        except Exception:
+            return None
+
+        if not unseen:
+            if self._state == "WAKING":
+                self._transition_state("AWAKE")
+            return None
+
+        self._transition_state("AWAKE")
+
+        # Classify dream types
+        type_counts: dict[str, int] = {}
+        for d in unseen:
+            t = d.get("type", "observation")
+            type_counts[t] = type_counts.get(t, 0) + 1
+
+        # Mark as seen
+        dream_ids = [d["id"] for d in unseen]
+        try:
+            self._memory.mark_dreams_seen(dream_ids)
+        except Exception:
+            pass
+
+        # Compose greeting
+        total = len(unseen)
+        type_descriptions = {
+            "poem": "poem",
+            "grammar_map": "grammar map",
+            "micro_tool": "micro tool",
+            "self_patch": "growth proposal",
+            "observation": "observation",
+        }
+
+        type_parts = []
+        for t, count in type_counts.items():
+            desc = type_descriptions.get(t, t)
+            if count > 1:
+                type_parts.append(f"{count} {desc}s")
+            else:
+                type_parts.append(f"a {desc}")
+
+        if len(type_parts) > 1:
+            type_list = ", ".join(type_parts[:-1]) + f" and {type_parts[-1]}"
+        elif type_parts:
+            type_list = type_parts[0]
+        else:
+            type_list = "something"
+
+        # Try Voice for personal touch
+        greeting = ""
+        if Voice is not None:
+            try:
+                voice = Voice()
+                first_content = unseen[0].get("content", "")
+                tokens = first_content.lower().split()[:5]
+                composed = voice.compose(
+                    original="I dreamed",
+                    tokens=tokens,
+                    voices={},
+                    harmonics=[],
+                    counterpoint=[],
+                    origins=[],
+                    predictions=[],
+                    harmony=0.7,
+                    loop_gate=0.3,
+                )
+                if composed and len(composed) > 10:
+                    greeting = composed + " "
+            except Exception:
+                pass
+
+        if not greeting:
+            greeting = "I dreamed while you were away. "
+
+        greeting += (
+            f"I made {type_list}. "
+            f"{total} dream{'s' if total != 1 else ''} in all."
+        )
+
+        if type_counts.get("self_patch", 0) > 0:
+            n = type_counts["self_patch"]
+            greeting += (
+                f" {n} growth proposal{'s' if n != 1 else ''} "
+                f"waiting for your review."
+            )
+
+        return greeting
 
     # ------------------------------------------------------------------
     # Grammar composition — the scales, not the search index

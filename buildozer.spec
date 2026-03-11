@@ -13,7 +13,7 @@ version = 0.2.0
 requirements = python3,kivy
 
 # Android settings
-android.permissions = INTERNET,RECORD_AUDIO
+android.permissions = INTERNET,RECORD_AUDIO,FOREGROUND_SERVICE
 android.api = 33
 android.minapi = 24
 android.ndk_api = 24

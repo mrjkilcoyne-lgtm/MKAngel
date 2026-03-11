@@ -9,11 +9,14 @@ Run via buildozer:  buildozer android debug deploy run
 
 from __future__ import annotations
 
+import logging
 import os
 import re
 import sys
 import threading
 import time
+
+log = logging.getLogger(__name__)
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  Ensure app source directory is on sys.path (critical for Android)
@@ -658,6 +661,92 @@ class MKAngelApp(App):
         self._settings_panel.opacity = 0
         self._settings_panel.disabled = True
 
+    # ── Dream service ───────────────────────────────────────────
+
+    def _on_state_change(self, old_state: str, new_state: str):
+        """Called when ChatSession transitions sleep state."""
+        log.info("Angel state: %s -> %s", old_state, new_state)
+        if new_state == "DROWSY":
+            # Transition to SLEEPING and run the dream cycle
+            if self.session:
+                self.session._transition_state("SLEEPING")
+            self._run_dream_fallback()
+
+    def _run_dream_fallback(self):
+        """Run dream cycle in a background thread."""
+
+        def _dream():
+            try:
+                from app.dream_service import run_dream_cycle
+
+                voice = None
+                try:
+                    from glm.voice import Voice
+                    voice = Voice()
+                except Exception:
+                    pass
+
+                result = run_dream_cycle(
+                    angel=self.angel,
+                    memory=self._memory_obj,
+                    voice=voice,
+                    trigger_type="self",
+                )
+                if result["success"]:
+                    n = len(result["artifacts"])
+                    log.info("Dream cycle complete: %d artifacts", n)
+
+                    # Notify on main thread
+                    dim_hex = _css("text_dim").lstrip("#")
+                    accent_hex = _css("accent").lstrip("#")
+
+                    def _notify(_):
+                        if n > 0:
+                            self.chat.add(
+                                f"[color={accent_hex}][b]zzz...[/b][/color] "
+                                f"[color={dim_hex}]dreamed {n} "
+                                f"artifact{'s' if n != 1 else ''}[/color]",
+                                kind="system",
+                            )
+                    Clock.schedule_once(_notify)
+                else:
+                    log.warning("Dream cycle failed: %s", result.get("error"))
+
+                # Transition to WAKING
+                if self.session:
+                    self.session._transition_state("WAKING")
+
+            except Exception as exc:
+                log.error("Dream fallback failed: %s", exc)
+                if self.session:
+                    self.session._transition_state("AWAKE")
+
+        threading.Thread(target=_dream, daemon=True).start()
+
+    def _check_wake_greeting(self):
+        """Check for unseen dreams and show wake greeting."""
+        if self.session is None:
+            return
+        try:
+            greeting = self.session.check_wake_greeting()
+            if greeting:
+                accent_hex = _css("accent").lstrip("#")
+
+                def _show(_):
+                    self.chat.add(
+                        f"[color={accent_hex}]{greeting}[/color]",
+                        kind="angel",
+                    )
+                Clock.schedule_once(_show)
+        except Exception as exc:
+            log.warning("Wake greeting failed: %s", exc)
+
+    # ── App lifecycle ────────────────────────────────────────────
+
+    def on_resume(self):
+        """Called when the app returns to foreground on Android."""
+        self._check_wake_greeting()
+
     def _refresh_settings(self):
         angel_info = {}
         if self.angel:
@@ -718,6 +807,8 @@ class MKAngelApp(App):
                 settings=self._settings_obj,
                 provider=provider,
             )
+            # Wire up sleep/dream state callback
+            self.session.set_on_state_change(self._on_state_change)
         except Exception as exc:
             m = str(exc)
             Clock.schedule_once(
@@ -754,9 +845,12 @@ class MKAngelApp(App):
             f"[color={teal_hex}]Params[/color] {pa:,}\n\n"
             f"[color={dim_hex}]What's on your mind?[/color]"
         )
-        Clock.schedule_once(
-            lambda _: self.chat.add(status, kind="success")
-        )
+        def _show_status(_):
+            self.chat.add(status, kind="success")
+            # Check for unseen dreams on startup
+            self._check_wake_greeting()
+
+        Clock.schedule_once(_show_status)
 
     # ── Send handler (main thread) ────────────────────────────
     def _on_send(self, text: str):

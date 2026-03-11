@@ -10,6 +10,7 @@ Database lives at ~/.mkangel/memory.db
 
 from __future__ import annotations
 
+import datetime
 import json
 import sqlite3
 import time
@@ -89,6 +90,34 @@ class Memory:
             );
             CREATE INDEX IF NOT EXISTS idx_sessions_sid
                 ON sessions(session_id);
+
+            CREATE TABLE IF NOT EXISTS dreams (
+                id              INTEGER PRIMARY KEY AUTOINCREMENT,
+                type            TEXT    NOT NULL,
+                content         TEXT    NOT NULL,
+                source          TEXT    NOT NULL DEFAULT '[]',
+                surprise_score  REAL    NOT NULL DEFAULT 0.0,
+                position_x      REAL    NOT NULL DEFAULT 0.0,
+                position_y      REAL    NOT NULL DEFAULT 0.0,
+                vestment_hints  TEXT    NOT NULL DEFAULT '{}',
+                created_at      TEXT    NOT NULL,
+                status          TEXT    NOT NULL DEFAULT 'new'
+            );
+            CREATE INDEX IF NOT EXISTS idx_dreams_status
+                ON dreams(status);
+            CREATE INDEX IF NOT EXISTS idx_dreams_created
+                ON dreams(created_at);
+
+            CREATE TABLE IF NOT EXISTS dream_sessions (
+                id                      INTEGER PRIMARY KEY AUTOINCREMENT,
+                started_at              TEXT    NOT NULL,
+                ended_at                TEXT,
+                trigger_type            TEXT    NOT NULL,
+                artifacts_count         INTEGER NOT NULL DEFAULT 0,
+                pattern_buffer_snapshot  TEXT    NOT NULL DEFAULT '{}'
+            );
+            CREATE INDEX IF NOT EXISTS idx_dream_sessions_started
+                ON dream_sessions(started_at);
         """)
         conn.commit()
 
@@ -284,12 +313,165 @@ class Memory:
         preferences = conn.execute(
             "SELECT COUNT(*) FROM memory WHERE category = 'preference'"
         ).fetchone()[0]
+        dreams = conn.execute("SELECT COUNT(*) FROM dreams").fetchone()[0]
+        dream_sessions_count = conn.execute(
+            "SELECT COUNT(*) FROM dream_sessions"
+        ).fetchone()[0]
         return {
             "total_memories": total,
             "sessions": sessions,
             "patterns": patterns,
             "preferences": preferences,
+            "dreams": dreams,
+            "dream_sessions": dream_sessions_count,
         }
+
+    # ------------------------------------------------------------------
+    # Dream persistence
+    # ------------------------------------------------------------------
+
+    def save_dream(
+        self,
+        dream_type: str,
+        content: str,
+        source: list[str] | None = None,
+        surprise_score: float = 0.0,
+        position_x: float = 0.0,
+        position_y: float = 0.0,
+        vestment_hints: dict[str, Any] | None = None,
+        created_at: str | None = None,
+        status: str = "new",
+    ) -> int:
+        """Save a dream artifact. Returns the row id."""
+        conn = self._get_conn()
+        if created_at is None:
+            created_at = datetime.datetime.now(
+                datetime.timezone.utc
+            ).isoformat()
+        cur = conn.execute(
+            """
+            INSERT INTO dreams
+                (type, content, source, surprise_score,
+                 position_x, position_y, vestment_hints,
+                 created_at, status)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                dream_type,
+                content,
+                json.dumps(source or []),
+                surprise_score,
+                position_x,
+                position_y,
+                json.dumps(vestment_hints or {}),
+                created_at,
+                status,
+            ),
+        )
+        conn.commit()
+        return cur.lastrowid  # type: ignore[return-value]
+
+    def get_recent_dreams(self, limit: int = 20) -> list[dict[str, Any]]:
+        """Return the most recent dreams ordered by created_at DESC."""
+        conn = self._get_conn()
+        rows = conn.execute(
+            "SELECT * FROM dreams ORDER BY created_at DESC LIMIT ?",
+            (limit,),
+        ).fetchall()
+        return [self._dream_row_to_dict(r) for r in rows]
+
+    def get_unseen_dreams(self) -> list[dict[str, Any]]:
+        """Return all dreams with status='new'."""
+        conn = self._get_conn()
+        rows = conn.execute(
+            "SELECT * FROM dreams WHERE status = 'new' ORDER BY created_at DESC"
+        ).fetchall()
+        return [self._dream_row_to_dict(r) for r in rows]
+
+    def archive_dream(self, dream_id: int) -> bool:
+        """Set dream status to 'archived'. Returns True if row existed."""
+        conn = self._get_conn()
+        cur = conn.execute(
+            "UPDATE dreams SET status = 'archived' WHERE id = ?",
+            (dream_id,),
+        )
+        conn.commit()
+        return cur.rowcount > 0
+
+    def accept_patch(self, dream_id: int) -> dict[str, Any] | None:
+        """Accept a self_patch dream: set status to 'accepted', return content.
+
+        Only works on dreams with type='self_patch' and status in ('new', 'seen').
+        Returns the dream dict on success, None on failure.
+        """
+        conn = self._get_conn()
+        row = conn.execute(
+            """
+            SELECT * FROM dreams
+            WHERE id = ? AND type = 'self_patch' AND status IN ('new', 'seen')
+            """,
+            (dream_id,),
+        ).fetchone()
+        if row is None:
+            return None
+        conn.execute(
+            "UPDATE dreams SET status = 'accepted' WHERE id = ?",
+            (dream_id,),
+        )
+        conn.commit()
+        result = self._dream_row_to_dict(row)
+        result["status"] = "accepted"
+        return result
+
+    def mark_dreams_seen(self, dream_ids: list[int]) -> int:
+        """Set status='seen' for the given IDs. Returns count updated."""
+        if not dream_ids:
+            return 0
+        conn = self._get_conn()
+        placeholders = ",".join("?" for _ in dream_ids)
+        cur = conn.execute(
+            f"UPDATE dreams SET status = 'seen' WHERE id IN ({placeholders})",
+            dream_ids,
+        )
+        conn.commit()
+        return cur.rowcount
+
+    def start_dream_session(
+        self,
+        trigger_type: str,
+        pattern_buffer_snapshot: dict[str, Any] | None = None,
+    ) -> int:
+        """Create a dream_sessions row. Returns the row id."""
+        conn = self._get_conn()
+        now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        cur = conn.execute(
+            """
+            INSERT INTO dream_sessions
+                (started_at, trigger_type, pattern_buffer_snapshot)
+            VALUES (?, ?, ?)
+            """,
+            (now, trigger_type, json.dumps(pattern_buffer_snapshot or {})),
+        )
+        conn.commit()
+        return cur.lastrowid  # type: ignore[return-value]
+
+    def end_dream_session(
+        self,
+        session_id: int,
+        artifacts_count: int,
+    ) -> None:
+        """Set ended_at and artifacts_count for a dream session."""
+        conn = self._get_conn()
+        now = datetime.datetime.now(datetime.timezone.utc).isoformat()
+        conn.execute(
+            """
+            UPDATE dream_sessions
+            SET ended_at = ?, artifacts_count = ?
+            WHERE id = ?
+            """,
+            (now, artifacts_count, session_id),
+        )
+        conn.commit()
 
     # ------------------------------------------------------------------
     # Helpers
@@ -306,3 +488,18 @@ class Memory:
             created_at=row["created_at"],
             accessed_at=row["accessed_at"],
         )
+
+    @staticmethod
+    def _dream_row_to_dict(row: sqlite3.Row) -> dict[str, Any]:
+        return {
+            "id": row["id"],
+            "type": row["type"],
+            "content": row["content"],
+            "source": json.loads(row["source"]),
+            "surprise_score": row["surprise_score"],
+            "position_x": row["position_x"],
+            "position_y": row["position_y"],
+            "vestment_hints": json.loads(row["vestment_hints"]),
+            "created_at": row["created_at"],
+            "status": row["status"],
+        }
