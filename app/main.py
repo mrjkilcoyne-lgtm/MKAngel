@@ -194,6 +194,14 @@ def main() -> None:
     from app.settings import Settings
     settings = Settings.load()
 
+    # Initialise the Conductor (orchestrates all subsystems)
+    conductor = None
+    try:
+        from app.conductor import AngelConductor
+        conductor = AngelConductor()
+    except ImportError:
+        conductor = None
+
     # Initialise the Angel
     print(f"  {C.DIM}Awakening the Angel...{C.RESET}", end="", flush=True)
     start = time.time()
@@ -206,8 +214,19 @@ def main() -> None:
         print(f"\r  {C.YELLOW}Angel initialisation warning: {exc}{C.RESET}")
         print(f"  {C.DIM}Continuing with limited functionality.{C.RESET}")
 
-    elapsed = time.time() - start
-    print(f"\r  {C.GREEN}Angel awakened in {elapsed:.1f}s.{' ' * 20}{C.RESET}")
+    # Awaken the conductor (installs growth patches, inits compliance, etc.)
+    if conductor:
+        try:
+            conductor.awaken()
+            print(f"\r  {C.GREEN}Angel awakened (full orchestra) in {time.time() - start:.1f}s.{' ' * 10}{C.RESET}")
+        except Exception as exc:
+            err_msg = str(exc)
+            print(f"\r  {C.YELLOW}Conductor warning: {err_msg[:60]}{C.RESET}")
+            conductor = None
+
+    if not conductor:
+        elapsed = time.time() - start
+        print(f"\r  {C.GREEN}Angel awakened in {elapsed:.1f}s.{' ' * 20}{C.RESET}")
     print()
 
     # Show status
@@ -242,12 +261,28 @@ def main() -> None:
             if not text:
                 continue
 
-            # Process input
-            response = session.process_input(text)
+            # Try conductor commands first (compliance, growth, senses)
+            if conductor and text.startswith("/"):
+                cmd_response = conductor.handle_command(text)
+                if cmd_response is not None:
+                    print(cmd_response)
+                    continue
+
+            # Process input (through conductor if available, else chat session)
+            if conductor and not text.startswith("/"):
+                response = conductor.process(text)
+            else:
+                response = session.process_input(text)
 
             # Check for exit signal
             if response == "__EXIT__":
-                session.save_session()
+                # Graceful shutdown with growth reflection
+                if conductor:
+                    shutdown_msg = conductor.shutdown()
+                    print()
+                    print(shutdown_msg)
+                else:
+                    session.save_session()
                 print()
                 print(
                     f"  {C.DIM}Session saved. "
@@ -265,8 +300,15 @@ def main() -> None:
                 print(response)
 
     except KeyboardInterrupt:
-        # Graceful exit on Ctrl+C
-        session.save_session()
+        # Graceful exit on Ctrl+C — still reflect and save
+        if conductor:
+            try:
+                shutdown_msg = conductor.shutdown()
+                print(f"\n{shutdown_msg}")
+            except Exception:
+                session.save_session()
+        else:
+            session.save_session()
         print()
         print(f"\n  {C.DIM}Session saved. The Angel rests.{C.RESET}")
         print(f"  {C.BRIGHT_MAGENTA}{C.BOLD}Be not afraid.{C.RESET}")

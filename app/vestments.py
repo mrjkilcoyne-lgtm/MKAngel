@@ -112,14 +112,41 @@ MINIMAL_POWER = {
     "particle":      _token("#1A237E", 0.1),
 }
 
+ANGEL_GLASS = {
+    "name": "Angel Glass",
+    "id": "angel_glass",
+    "bg":            _token("#F0F4F8"),
+    "surface":       _token("#FFFFFF", 0.7),
+    "surface_head":  _token("#E8EEF4"),
+    "surface_input": _token("#F5F8FB", 0.85),
+    "accent":        _token("#8B5CF6"),       # soft lavender
+    "accent_sec":    _token("#EC4899"),       # rose
+    "teal":          _token("#06B6D4"),       # soft mint
+    "text":          _token("#1E293B"),       # dark slate
+    "text_sec":      _token("#64748B"),       # medium slate
+    "text_dim":      _token("#94A3B8"),       # light slate
+    "success":       _token("#10B981"),       # soft green
+    "warning":       _token("#F59E0B"),       # warm amber
+    "error":         _token("#EF4444"),       # soft rose
+    "separator":     _token("#000000", 0.06),
+    "bubble_user":   _token("#8B5CF6", 0.08),
+    "bubble_angel":  _token("#FFFFFF", 0.85),
+    "particle":      _token("#8B5CF6", 0.2),
+    # Glassmorphism extras
+    "glass_blur":    20,
+    "glass_border":  _token("#FFFFFF", 0.18),
+    "glass_shadow":  _token("#000000", 0.05),
+}
+
 ALL_VESTMENTS = {
     "celestial_dark": CELESTIAL_DARK,
     "ethereal_light": ETHEREAL_LIGHT,
     "living_gradient": LIVING_GRADIENT,
     "minimal_power": MINIMAL_POWER,
+    "angel_glass": ANGEL_GLASS,
 }
 
-DEFAULT_VESTMENT = "celestial_dark"
+DEFAULT_VESTMENT = "angel_glass"
 
 
 def get_vestment(name: str | None = None) -> dict:

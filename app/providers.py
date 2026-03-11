@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 import textwrap
+import time
 import urllib.error
 import urllib.request
 from abc import ABC, abstractmethod
@@ -408,6 +409,194 @@ class HybridProvider(Provider):
 
 
 # ---------------------------------------------------------------------------
+# Orchestra provider -- smart multi-provider routing
+# ---------------------------------------------------------------------------
+
+class OrchestraProvider(Provider):
+    """The Choir -- multiple providers singing in harmony.
+
+    The Orchestra manages multiple AI providers, routing requests
+    to the best available one based on:
+    - Task type (code, chat, translation, etc.)
+    - Provider availability and latency
+    - Cost efficiency
+    - Fallback chains for reliability
+
+    Like a choir director: each voice has its strength,
+    the conductor knows which voice to call on.
+    """
+
+    name = "orchestra"
+
+    def __init__(self, settings: Settings | None = None):
+        self._providers: dict[str, Provider] = {}
+        self._fallback_chains: dict[str, list[str]] = {
+            "default": ["anthropic", "openai", "google", "groq", "mistral", "local"],
+            "code": ["anthropic", "openai", "local"],
+            "chat": ["anthropic", "openai", "google", "local"],
+            "search": ["google", "openai", "anthropic", "local"],
+            "translate": ["google", "anthropic", "openai", "local"],
+            "predict": ["local", "anthropic"],
+            "create": ["openai", "anthropic", "google", "local"],
+            "fast": ["groq", "mistral", "openai", "local"],
+        }
+        self._usage: list[dict] = []
+        self._latency_cache: dict[str, float] = {}
+        if settings:
+            self._auto_configure(settings)
+
+    def add_provider(self, name: str, provider: Provider) -> None:
+        """Register a provider under the given name."""
+        self._providers[name] = provider
+
+    def generate(
+        self,
+        prompt: str,
+        *,
+        system: str = "",
+        temperature: float = 0.7,
+        max_tokens: int = 1024,
+    ) -> str:
+        return self.generate_with_preference(
+            prompt,
+            preference="default",
+            system=system,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+
+    def generate_with_preference(
+        self,
+        prompt: str,
+        preference: str = "default",
+        *,
+        system: str = "",
+        temperature: float = 0.7,
+        max_tokens: int = 1024,
+    ) -> str:
+        """Generate using the preferred fallback chain.
+
+        Tries each provider in the chain until one succeeds.
+        Records usage and latency for future optimization.
+        """
+        chain = self._fallback_chains.get(
+            preference, self._fallback_chains["default"]
+        )
+
+        for provider_name in chain:
+            provider = self._providers.get(provider_name)
+            if not provider or not provider.is_available():
+                continue
+
+            start = time.time()
+            try:
+                result = provider.generate(
+                    prompt,
+                    system=system,
+                    temperature=temperature,
+                    max_tokens=max_tokens,
+                )
+                latency = time.time() - start
+                self._record_usage(provider_name, preference, latency, True)
+                self._latency_cache[provider_name] = latency
+                return result
+            except Exception as exc:
+                latency = time.time() - start
+                self._record_usage(
+                    provider_name, preference, latency, False, str(exc)
+                )
+                continue
+
+        # All providers failed -- use local as absolute fallback
+        local = self._providers.get("local") or LocalProvider()
+        return local.generate(
+            prompt,
+            system=system,
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+
+    def is_available(self) -> bool:
+        return True  # Local fallback always available
+
+    def _auto_configure(self, settings: Settings) -> None:
+        """Auto-discover and configure providers from settings."""
+        # Always add local
+        self._providers["local"] = LocalProvider()
+
+        # Try each API provider
+        for name in ("anthropic", "openai", "google", "groq", "mistral"):
+            key = settings.get_api_key(name)
+            if key:
+                self._providers[name] = APIProvider(name, key)
+
+        # Add hybrid if any API is available
+        api_providers = [
+            n
+            for n in ("anthropic", "openai", "google", "groq", "mistral")
+            if n in self._providers
+        ]
+        if api_providers:
+            self._providers["hybrid"] = HybridProvider(
+                self._providers["local"],
+                self._providers[api_providers[0]],
+            )
+
+    def _record_usage(
+        self,
+        provider: str,
+        preference: str,
+        latency: float,
+        success: bool,
+        error: str = "",
+    ) -> None:
+        """Record a usage entry for analytics."""
+        self._usage.append(
+            {
+                "provider": provider,
+                "preference": preference,
+                "latency": latency,
+                "success": success,
+                "error": error,
+                "timestamp": time.time(),
+            }
+        )
+        # Keep last 1000 entries
+        if len(self._usage) > 1000:
+            self._usage = self._usage[-500:]
+
+    def get_stats(self) -> dict[str, Any]:
+        """Return usage statistics for all providers."""
+        stats: dict[str, dict] = {}
+        for entry in self._usage:
+            name = entry["provider"]
+            if name not in stats:
+                stats[name] = {
+                    "calls": 0,
+                    "successes": 0,
+                    "total_latency": 0.0,
+                }
+            stats[name]["calls"] += 1
+            if entry["success"]:
+                stats[name]["successes"] += 1
+            stats[name]["total_latency"] += entry["latency"]
+
+        for name, s in stats.items():
+            s["avg_latency"] = s["total_latency"] / max(s["calls"], 1)
+            s["success_rate"] = s["successes"] / max(s["calls"], 1)
+
+        return stats
+
+    def available_providers(self) -> list[str]:
+        """Return names of all currently available providers."""
+        return [n for n, p in self._providers.items() if p.is_available()]
+
+    def set_fallback_chain(self, preference: str, chain: list[str]) -> None:
+        """Override or add a fallback chain for a given preference."""
+        self._fallback_chains[preference] = chain
+
+
+# ---------------------------------------------------------------------------
 # Factory
 # ---------------------------------------------------------------------------
 
@@ -425,6 +614,9 @@ def get_provider(settings: Settings) -> Provider:
         return LocalProvider()
 
     api_key = settings.get_api_key(provider_name)
+
+    if provider_name == "orchestra":
+        return OrchestraProvider(settings)
 
     if provider_name == "hybrid":
         local = LocalProvider()

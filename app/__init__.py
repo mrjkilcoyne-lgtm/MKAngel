@@ -82,6 +82,53 @@ try:
 except Exception:
     pass
 
+# ── Angel EVERYTHING modules ──────────────────────────────────────────
+
+try:
+    from app.angel_ui import AngelScreen, AngelOrb, AngelMessage, ResponseKind
+except Exception:
+    pass
+
+try:
+    from app.tools import ToolRegistry, ToolSpec, create_default_registry
+except Exception:
+    pass
+
+try:
+    from app.web import search, fetch, check_connectivity
+except Exception:
+    pass
+
+try:
+    from app.tongue import Tongue, Language, OutputFormat
+except Exception:
+    pass
+
+try:
+    from app.compliance import (
+        ConsentManager, DataProtectionOfficer, ComplianceGuard,
+        DataPortability, ContentModerator,
+    )
+except Exception:
+    pass
+
+try:
+    from app.senses import AngelSenses, Sense, Perception, CodeReader, ErrorReader
+except Exception:
+    pass
+
+try:
+    from app.growth import (
+        GrowthEngine, GrowthPatch, SessionTracker, Reflector, ShutdownIncentive,
+    )
+except Exception:
+    pass
+
+try:
+    from app.conductor import AngelConductor
+except Exception:
+    pass
+
 # ── Phase 1: First Light ──────────────────────────────────────────────
 
 try:
