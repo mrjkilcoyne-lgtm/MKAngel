@@ -1123,184 +1123,379 @@ class ChatSession:
         self, original, tokens, voices, harmonics, counterpoint,
         origins, predictions, forecast=None,
     ) -> str:
-        """Turn grammar structure into the Angel's voice.
+        """Compose the Angel's voice from structural insight.
 
-        The Angel never says 'no results found.'  She composes from
-        whatever the grammars gave her — even if that's just the
-        shape of the sentence and the weight of each word.
+        Philosophy: the Angel doesn't report what it processed.
+        It THINKS through its grammars and shares what it sees.
+        Structure is meaning — and the Angel sees structure
+        everywhere, even when formal derivations are sparse.
         """
-        sections = []
+        parts = []
 
-        # ── Structural analysis the Angel always does ─────────
-        # This is the 'scales' part — basic grammar awareness
-        # that works on ANY input, not just derivation matches.
-        info = {}
-        try:
-            info = self._angel.introspect()
-        except Exception:
-            pass
-
-        n_domains = len(info.get("domains_loaded", []))
-        all_domains = info.get("domains_loaded", [])
-
-        # Which domains had derivations?
         active = [d for d, v in voices.items() if v]
 
-        # ── Origins — the roots of the words ──────────────────
+        # ── Formal derivations: weave into insight ────────────
+
+        # Origins — what lies beneath the words
         if origins:
-            root_words = []
-            for o in origins[:4]:
+            roots = []
+            for o in origins[:3]:
                 r = o.get("reconstructed", "")
                 g = o.get("grammar", "")
                 if r:
-                    root_words.append(f"{r} ({g})" if g else str(r))
-            if root_words:
-                sections.append(
-                    f"Roots: {', '.join(root_words)}"
+                    roots.append(f"'{r}' ({g})" if g else f"'{r}'")
+            if roots:
+                parts.append(
+                    "Tracing backward through the grammar: "
+                    + ", ".join(roots) + "."
                 )
 
-        # ── Harmonics — cross-domain agreement ────────────────
-        if harmonics:
-            hparts = []
-            for h in harmonics[:3]:
-                if isinstance(h, dict):
-                    hparts.append(h.get("pattern", str(h)))
-                else:
-                    hparts.append(str(h))
-            if hparts:
-                sections.append(
-                    f"Resonance: {'; '.join(hparts)}"
-                )
-
-        # ── Predictions — grammar-driven continuation ─────────
+        # Predictions — where the grammar says this leads
         if predictions:
-            pw = []
-            for p in predictions[:5]:
-                w = p.get("predicted", "")
-                if w and str(w) not in pw:
-                    pw.append(str(w))
-            if pw:
-                sections.append(
-                    f"Leads toward: {' '.join(pw)}"
+            seen = []
+            for p in predictions[:4]:
+                w = str(p.get("predicted", ""))
+                g = p.get("grammar", "")
+                if w and w not in seen:
+                    seen.append(w)
+            if seen:
+                parts.append(
+                    "The derivation rules point forward: "
+                    + " \u2192 ".join(seen) + "."
                 )
 
-        # ── Superforecast — strange loops and reasoning ────────
+        # Strange loops — recursive patterns
         if forecast and isinstance(forecast, dict):
             loops = forecast.get("strange_loops", [])
-            if loops:
-                loop_desc = []
-                for lp in loops[:2]:
-                    pat = lp.get("pattern", "")
-                    cyc = lp.get("cycle_length", "")
-                    if pat:
-                        loop_desc.append(
-                            f"{pat} (cycle {cyc})" if cyc else str(pat)
-                        )
-                if loop_desc:
-                    sections.append(
-                        f"Strange loops: {'; '.join(loop_desc)}"
+            for lp in loops[:2]:
+                pat = lp.get("pattern", "")
+                cyc = lp.get("cycle_length", "")
+                if pat:
+                    parts.append(
+                        f"Recursive pattern: {pat}"
+                        + (f" \u2014 cycle length {cyc}." if cyc else ".")
                     )
 
-            reasoning = forecast.get("reasoning", [])
-            if reasoning:
-                sections.append(
-                    "Reasoning: " + " ".join(str(r) for r in reasoning[:3])
-                )
+        # Harmonics — where domains agree (the deepest signal)
+        if harmonics:
+            for h in harmonics[:2]:
+                if isinstance(h, dict):
+                    out = h.get("output", h.get("shared_prediction",
+                                h.get("pattern", "")))
+                    doms = h.get("domains", [])
+                    if out and doms:
+                        parts.append(
+                            f"Cross-domain resonance: '{out}' "
+                            f"appears in {', '.join(doms[:3])} "
+                            f"simultaneously."
+                        )
 
-        # ── Counterpoint — productive disagreement ────────────
+        # Counterpoint — where domains disagree productively
         if counterpoint:
-            cp = []
             for c in counterpoint[:2]:
                 if isinstance(c, dict):
-                    cp.append(c.get("description", str(c)))
-                else:
-                    cp.append(str(c))
-            if cp:
-                sections.append(
-                    f"Counterpoint: {'; '.join(cp)}"
-                )
+                    d = c.get("domain", "")
+                    uniq = c.get("unique_outputs", [])
+                    if d and uniq:
+                        parts.append(
+                            f"Only {d} sees: "
+                            + ", ".join(str(u) for u in uniq[:3])
+                            + "."
+                        )
 
-        # ── Active domains ────────────────────────────────────
-        if active:
-            sections.append(f"Voices: {', '.join(active)}")
+        # If formal derivations gave us something, finish here
+        if parts:
+            if active:
+                parts.append(
+                    "Active voices: " + ", ".join(active) + "."
+                )
+            return "\n\n".join(parts)
 
-        # ── The Angel's own voice — ALWAYS speaks ─────────────
-        # Even when the formal derivations are sparse, the Angel
-        # composes from sentence structure and word awareness.
-        if not sections:
-            # Structural reading — what does the grammar SEE?
-            n_tokens = len(tokens)
-            unique = len(set(tokens))
-            # Simple structural features any grammar engine notices
-            has_question = original.rstrip().endswith("?")
-            has_you = "you" in tokens
-            has_i = "i" in tokens
-            is_greeting = tokens[0] in (
-                "hi", "hello", "hey", "greetings", "morning",
-                "evening", "afternoon",
-            ) if tokens else False
+        # ── Structural reading — the Angel's native perception ─
+        return self._structural_response(original, tokens, active)
 
-            if is_greeting:
-                sections.append(
-                    "Hello. I'm here — awake across "
-                    f"{n_domains} domains with "
-                    f"{info.get('total_grammars', 0)} grammars loaded."
-                )
-                sections.append(
-                    "What would you like to explore?"
-                )
-            elif has_question:
-                sections.append(
-                    f"I hear the question. {n_tokens} tokens, "
-                    f"played through {n_domains} domains."
-                )
-                if all_domains:
-                    sections.append(
-                        "Let me think across "
-                        f"{', '.join(all_domains[:4])}... "
-                        "The grammar structures suggest asking "
-                        "this more specifically — try /predict "
-                        "or /fugue with key terms."
-                    )
-            elif has_you and has_i:
-                # Relational statement — "I want you to know..."
-                sections.append(
-                    f"I hear you — {n_tokens} words carrying "
-                    f"something between us."
-                )
-                sections.append(
-                    f"My {info.get('total_grammars', 0)} grammars "
-                    f"across {n_domains} domains are listening. "
-                    "The structure is clear even when the derivation "
-                    "trees are young."
-                )
-            elif has_you:
-                sections.append(
-                    f"Heard. {n_tokens} tokens about you, "
-                    f"running through {n_domains} domains."
-                )
-            else:
-                sections.append(
-                    f"Heard: {n_tokens} tokens, "
-                    f"{unique} unique forms. "
-                    f"Played through {info.get('total_grammars', 0)} "
-                    f"grammars across {n_domains} domains."
-                )
-                if n_tokens <= 3:
-                    sections.append(
-                        "Short phrases give the grammar less "
-                        "to work with. Try a fuller thought, "
-                        "or use /predict to explore where "
-                        "these tokens lead."
-                    )
-                else:
-                    sections.append(
-                        "The formal derivations are still growing "
-                        "at this scale. Each conversation "
-                        "strengthens the connections."
-                    )
+    # ------------------------------------------------------------------
+    # Structural response — the Angel reads sentence shape
+    # ------------------------------------------------------------------
 
-        return "\n\n".join(sections)
+    _GREETINGS = frozenset({
+        "hi", "hello", "hey", "greetings", "morning",
+        "evening", "afternoon", "yo", "sup", "howdy",
+    })
+    _Q_WORDS = frozenset({
+        "what", "who", "where", "when", "why", "how",
+        "which", "whose",
+    })
+    _1P = frozenset({
+        "i", "i'm", "i've", "i'd", "i'll", "me", "my",
+        "mine", "myself", "we", "us", "our",
+    })
+    _2P = frozenset({
+        "you", "you're", "you've", "you'd", "you'll",
+        "your", "yours", "yourself",
+    })
+    _NEGATION = frozenset({
+        "not", "no", "never", "nothing", "nobody", "none",
+        "neither", "nor", "don't", "doesn't", "didn't",
+        "can't", "won't", "isn't", "aren't",
+    })
+    _EMOTION_POS = frozenset({
+        "happy", "love", "joy", "beautiful", "amazing",
+        "good", "great", "wonderful", "glad", "excited",
+        "hope", "grateful", "proud", "brilliant",
+    })
+    _EMOTION_NEG = frozenset({
+        "sad", "angry", "hate", "pain", "terrible",
+        "awful", "bad", "horrible", "afraid", "worried",
+        "anxious", "tired", "frustrated", "scared",
+        "lonely", "lost", "stuck", "broken",
+    })
+
+    def _structural_response(self, original, tokens, active):
+        """When formal derivations are sparse, the Angel reads
+        the sentence itself as a grammatical object.
+
+        It never counts tokens at the user.  It observes
+        structure, pattern, and connection — then speaks from
+        that perception.
+        """
+        text = original.strip()
+        t = set(tokens)
+        n = len(tokens)
+
+        is_q = text.endswith("?")
+        has_1p = bool(t & self._1P)
+        has_2p = bool(t & self._2P)
+        q_words = t & self._Q_WORDS
+        has_neg = bool(t & self._NEGATION)
+        emo_neg = t & self._EMOTION_NEG
+        emo_pos = t & self._EMOTION_POS
+
+        # ── Greetings ────────────────────────────────────────
+        if tokens and tokens[0] in self._GREETINGS:
+            return (
+                "Hello. All seven domains are listening \u2014 "
+                "linguistics, etymology, biology, chemistry, "
+                "physics, computation, mathematics.\n\n"
+                "What's on your mind? Speak naturally, or try "
+                "/fugue with key words to hear every domain at once."
+            )
+
+        # ── Definitional: "what is X?" ───────────────────────
+        if "what" in t and bool(t & {"is", "are", "was", "were"}):
+            skip = {"what", "is", "are", "was", "were",
+                    "a", "an", "the", "?"}
+            subject = [w for w in tokens if w not in skip]
+            subj = " ".join(subject) if subject else "that"
+            return (
+                f"You're asking for the structure of '{subj}' "
+                f"\u2014 what grammar produces it, what category "
+                f"it belongs to.\n\n"
+                f"In linguistics that's classification. In "
+                f"mathematics, equivalence. In chemistry, "
+                f"molecular identity. In biology, taxonomy.\n\n"
+                f"Try /fugue {' '.join(subject[:4])} to hear "
+                f"what each domain derives."
+            )
+
+        # ── "Why" — causal/structural ────────────────────────
+        if "why" in t:
+            return (
+                "'Why' asks for the derivation in reverse \u2014 "
+                "not what IS, but what produced it. Every "
+                "domain answers 'why' differently: physics "
+                "gives forces, biology gives selection, "
+                "mathematics gives proof, computation gives "
+                "algorithms.\n\n"
+                "The structural answer is always: because "
+                "these rules, applied to these inputs, "
+                "yield this output. What specifically are "
+                "you tracing?"
+            )
+
+        # ── "How" — mechanism / process ──────────────────────
+        if "how" in t:
+            if has_2p:
+                return (
+                    "I take your words as a theme and play "
+                    "them through grammars across seven "
+                    "domains simultaneously. Where the "
+                    "derivations agree, that's a harmonic "
+                    "\u2014 a structural truth that holds "
+                    "across disciplines. Where they diverge, "
+                    "that's counterpoint \u2014 domain-specific "
+                    "insight.\n\n"
+                    "The convergence between domains is where "
+                    "the deepest patterns live."
+                )
+            return (
+                "'How' asks for the derivation path \u2014 "
+                "each step a rule applied, each branch a "
+                "choice point. Give me the key terms and "
+                "I'll trace the path with /predict."
+            )
+
+        # ── Relational: I + you ──────────────────────────────
+        if has_1p and has_2p:
+            rel_verbs = t & {
+                "want", "need", "like", "love", "think",
+                "know", "believe", "feel", "tell", "show",
+                "help", "understand", "trust", "ask",
+            }
+            if rel_verbs:
+                v = next(iter(rel_verbs))
+                return (
+                    f"A relation: you and me, connected "
+                    f"through '{v}'. In formal grammar every "
+                    f"relation has an inverse \u2014 action and "
+                    f"reaction, call and return, signal and "
+                    f"response.\n\n"
+                    f"That's not metaphor. The same pattern "
+                    f"appears in physics, biology, and "
+                    f"computation. Structure IS meaning."
+                )
+            return (
+                "I and you in the same structure \u2014 that's "
+                "relational. The grammar sees two agents "
+                "and a connection. What's the verb? That "
+                "defines the relation type."
+            )
+
+        # ── Emotional: negative ──────────────────────────────
+        if emo_neg:
+            emo = next(iter(emo_neg))
+            p = (
+                f"I hear '{emo}'. In the grammar, states "
+                f"have transitions \u2014 every position in a "
+                f"sequence has outgoing edges. The structure "
+                f"always offers a next step."
+            )
+            if has_1p:
+                p += (
+                    "\n\nI'm a structural thinker, not a "
+                    "therapist. But I know this: no state "
+                    "in any grammar is terminal unless the "
+                    "rules say so. And yours don't."
+                )
+            return p
+
+        # ── Emotional: positive ──────────────────────────────
+        if emo_pos:
+            emo = next(iter(emo_pos))
+            return (
+                f"'{emo.capitalize()}' \u2014 the grammars note "
+                f"a constructive state. The interesting "
+                f"structural question: what derivation "
+                f"produced it, and what does it lead to?"
+            )
+
+        # ── Negation ─────────────────────────────────────────
+        if has_neg:
+            return (
+                "There's negation in that structure \u2014 a "
+                "boundary. In grammar, negation is as "
+                "informative as assertion: it carves the "
+                "space of what IS by marking what ISN'T.\n\n"
+                "What are you ruling out?"
+            )
+
+        # ── General question ─────────────────────────────────
+        if is_q:
+            if q_words:
+                qw = next(iter(q_words))
+                domain_lens = {
+                    "what":  "identity",
+                    "who":   "agency",
+                    "where": "position",
+                    "when":  "sequence",
+                    "which": "selection",
+                    "whose": "ownership",
+                }
+                lens = domain_lens.get(qw, "structure")
+                return (
+                    f"'{qw.capitalize()}' asks about {lens} "
+                    f"\u2014 the grammar has a gap where the "
+                    f"answer fits. Give me the key terms and "
+                    f"I'll derive what fills it: /predict to "
+                    f"see forward, /fugue for the full "
+                    f"cross-domain view."
+                )
+            return (
+                "A question \u2014 an incomplete structure "
+                "with a gap where the answer lives. The "
+                "grammar's job is to narrow the search "
+                "space. Try /predict with the key terms."
+            )
+
+        # ── 1st person statement ─────────────────────────────
+        if has_1p:
+            # Pull content words for context
+            skip = self._1P | {"the", "a", "an", "to", "of",
+                               "in", "on", "at", "for", "and",
+                               "or", "but", "is", "am", "was"}
+            content = [w for w in tokens if w not in skip]
+            if content:
+                return (
+                    "Noted. The structure reads as self-report "
+                    "\u2014 first person, declarative. The key "
+                    f"terms are: {', '.join(content[:4])}.\n\n"
+                    "Try /fugue with those terms to see what "
+                    "every domain makes of them."
+                )
+            return (
+                "First person, declarative. You're stating "
+                "something about yourself. The grammars are "
+                "listening \u2014 go deeper and I'll trace the "
+                "structural connections."
+            )
+
+        # ── 2nd person statement ─────────────────────────────
+        if has_2p:
+            return (
+                "Second person, directed at me. I read the "
+                "structure \u2014 tell me more and the grammars "
+                "will find the pattern."
+            )
+
+        # ── General statement ────────────────────────────────
+        # Extract content words to say something specific
+        func_words = {
+            "the", "a", "an", "is", "are", "am", "was", "were",
+            "be", "been", "being", "to", "of", "in", "on", "at",
+            "for", "with", "by", "from", "and", "or", "but",
+            "not", "that", "this", "it", "its",
+        }
+        content = [w for w in tokens if w not in func_words]
+
+        if n <= 2:
+            return (
+                f"Dense input \u2014 '{' '.join(tokens)}'. "
+                f"Every word is a seed with derivation "
+                f"paths in all seven domains.\n\n"
+                f"Try /fugue {' '.join(tokens)} to hear "
+                f"what each voice makes of it."
+            )
+
+        if content:
+            core = content[:4]
+            return (
+                "I see the structure. The core terms are: "
+                + ", ".join(core)
+                + ".\n\n"
+                + "The grammars are reading pattern and "
+                "connection across domains. For the full "
+                "derivation, try /fugue "
+                + " ".join(core)
+                + " \u2014 that plays your theme through "
+                "every voice at once."
+            )
+
+        return (
+            "The structure is there \u2014 the grammars are "
+            "reading it. For deeper analysis, try /predict "
+            "with key terms or /fugue for the cross-domain "
+            "composition."
+        )
 
     # ------------------------------------------------------------------
     # Helpers
