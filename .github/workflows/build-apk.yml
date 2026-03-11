@@ -83,6 +83,12 @@ jobs:
           # Buildozer requires main.py as the entry point
           cp main_android.py main.py
 
+          # CRITICAL: Remove setup.py and pyproject.toml so p4a doesn't think
+          # this is a pip-installable package. When p4a sees these files, it only
+          # copies main.py into private.tar and skips ALL subdirectories (glm/, app/).
+          # Belt-and-suspenders with p4a.setup_py=false in buildozer.spec.
+          rm -f setup.py pyproject.toml
+
           # Build — 'yes' answers SDK license prompts; tee captures logs
           yes | buildozer -v android debug 2>&1 | tee /tmp/build.log || true
 
@@ -100,27 +106,48 @@ jobs:
           echo "✅ APK built successfully:"
           ls -lh bin/*.apk
 
-      - name: Verify packaged modules
+      - name: Verify packaged modules in ACTUAL APK
         run: |
-          echo "=== Verifying bundled packages ==="
+          echo "=== Verifying packages inside the ACTUAL APK ==="
+          APK=$(ls bin/*.apk | head -1)
+          echo "APK: $APK"
+
+          # Extract private.tar from the APK and check its contents
+          mkdir -p /tmp/apk_verify
+          unzip -o "$APK" assets/private.tar -d /tmp/apk_verify
+
+          echo ""
+          echo "--- private.tar contents ---"
+          tar tf /tmp/apk_verify/assets/private.tar | head -80
+
+          echo ""
+          echo "--- private.tar size ---"
+          ls -lh /tmp/apk_verify/assets/private.tar
+
           MISSING=0
-          ls .buildozer/android/app/glm/__init__.py > /dev/null 2>&1 || { echo "FATAL: glm/ not packaged in APK"; MISSING=1; }
-          ls .buildozer/android/app/app/__init__.py > /dev/null 2>&1 || { echo "FATAL: app/ not packaged in APK"; MISSING=1; }
-          ls .buildozer/android/app/glm/grammars/__init__.py > /dev/null 2>&1 || { echo "FATAL: glm/grammars/ not packaged"; MISSING=1; }
+          tar tf /tmp/apk_verify/assets/private.tar | grep -q "glm/__init__" || { echo "FATAL: glm/ not in private.tar!"; MISSING=1; }
+          tar tf /tmp/apk_verify/assets/private.tar | grep -q "app/__init__" || { echo "FATAL: app/ not in private.tar!"; MISSING=1; }
+          tar tf /tmp/apk_verify/assets/private.tar | grep -q "glm/grammars/__init__" || { echo "FATAL: glm/grammars/ not in private.tar!"; MISSING=1; }
+
           if [ $MISSING -ne 0 ]; then
             echo ""
             echo "========================================="
-            echo "BUILD FAILED — critical packages missing!"
+            echo "BUILD FAILED — critical packages missing from APK!"
             echo "========================================="
-            echo "Files in build app dir:"
+            echo "Full private.tar contents:"
+            tar tf /tmp/apk_verify/assets/private.tar
+            echo ""
+            echo "Staging dir contents (these files EXIST but didn't make it to APK):"
             find .buildozer/android/app/ -name "*.py" 2>/dev/null | head -50
             exit 1
           fi
-          echo "✅ glm/, app/, glm/grammars/ verified in build"
-          echo "Grammar modules:"
-          ls .buildozer/android/app/glm/grammars/*.py 2>/dev/null | wc -l
-          echo "App modules:"
-          ls .buildozer/android/app/app/*.py 2>/dev/null | wc -l
+
+          echo ""
+          echo "✅ glm/, app/, glm/grammars/ verified INSIDE the APK"
+          echo "Grammar modules in APK:"
+          tar tf /tmp/apk_verify/assets/private.tar | grep "glm/grammars/" | wc -l
+          echo "App modules in APK:"
+          tar tf /tmp/apk_verify/assets/private.tar | grep "^app/" | wc -l
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

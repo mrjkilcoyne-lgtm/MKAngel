@@ -34,6 +34,13 @@ fullscreen = 0
 # which does NOT support ** recursive globbing, breaking subdirectory includes.
 source.exclude_dirs = .github,tests,bin,.buildozer
 
+# CRITICAL: Disable setup.py/pyproject.toml detection in python-for-android.
+# When p4a finds setup.py or pyproject.toml, it assumes all app packages are
+# pip-installed into site-packages and ONLY copies main.py into private.tar.
+# Our glm/ and app/ packages are app source code, not pip packages, so we
+# must force p4a to copy the FULL source tree into the APK.
+p4a.setup_py = false
+
 # iOS (future)
 ios.kivy_ios_url = https://github.com/kivy/kivy-ios
 ios.kivy_ios_branch = master
