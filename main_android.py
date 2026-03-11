@@ -9,9 +9,18 @@ Run via buildozer:  buildozer android debug deploy run
 
 from __future__ import annotations
 
+import os
 import re
+import sys
 import threading
 import time
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  Ensure app source directory is on sys.path (critical for Android)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+_app_dir = os.path.dirname(os.path.abspath(__file__))
+if _app_dir not in sys.path:
+    sys.path.insert(0, _app_dir)
 
 from kivy.animation import Animation
 from kivy.app import App
@@ -56,7 +65,7 @@ except ImportError:
 try:
     from app.gestures import GestureDetector, GestureAction
 except ImportError:
-    # Stub if gestures module unavailable
+    # Stub if gestures module unavailable — MUST pass through all touches
     class GestureAction:
         CHAT = "chat"; VOICE = "voice"; HOSTS = "hosts"
         WINGS = "wings"; SKILLS = "skills"; ASPECTS = "aspects"
@@ -64,7 +73,15 @@ except ImportError:
     class GestureDetector(Widget):
         def __init__(self, callback=None, **kw):
             super().__init__(**kw)
-        def set_callback(self, fn): pass
+            self._cb = callback
+        def set_callback(self, fn):
+            self._cb = fn
+        def on_touch_down(self, touch):
+            return False  # pass to widgets below
+        def on_touch_move(self, touch):
+            return False
+        def on_touch_up(self, touch):
+            return False
 
 try:
     from app.documents import DocumentManager
@@ -132,6 +149,16 @@ class _Bubble(BoxLayout):
         halign = "center" if kind == "system" else "left"
         pad = dp(14)
 
+        # Determine glow colour for depth effect
+        self._has_glow = kind in ("angel", "success")
+        if kind == "angel":
+            glow_c = _c("accent")[:3] + [0.07]
+        elif kind == "success":
+            glow_c = _c("success")[:3] + [0.07]
+        else:
+            glow_c = [0, 0, 0, 0]
+        self._glow_radius = [r + dp(3) for r in radius]
+
         self._label = Label(
             text=text, markup=True, font_size=sp(14),
             color=fg, size_hint_y=None,
@@ -144,6 +171,15 @@ class _Bubble(BoxLayout):
         ))
 
         with self.canvas.before:
+            # Outer glow (subtle border halo)
+            if self._has_glow:
+                Color(*glow_c)
+                self._glow = RoundedRectangle(
+                    pos=(self.x - dp(2), self.y - dp(2)),
+                    size=(self.width + dp(4), self.height + dp(4)),
+                    radius=self._glow_radius,
+                )
+            # Main background
             Color(*bg)
             self._bg = RoundedRectangle(
                 pos=self.pos, size=self.size, radius=radius,
@@ -158,6 +194,9 @@ class _Bubble(BoxLayout):
             self.height = self._label.height + dp(4)
 
     def _canvas_upd(self, *_):
+        if self._has_glow:
+            self._glow.pos = (self.x - dp(2), self.y - dp(2))
+            self._glow.size = (self.width + dp(4), self.height + dp(4))
         self._bg.pos = self.pos
         self._bg.size = self.size
 
@@ -215,6 +254,11 @@ class _Header(BoxLayout):
         with self.canvas.before:
             Color(*_c("surface_head"))
             self._bg = Rectangle(pos=self.pos, size=self.size)
+            # Subtle gold accent line at bottom edge
+            Color(*(_c("accent")[:3] + [0.15]))
+            self._accent_line = Rectangle(
+                pos=(self.x, self.y), size=(self.width, dp(1)),
+            )
         self.bind(pos=self._upd, size=self._upd)
 
         t = Label(
@@ -237,6 +281,8 @@ class _Header(BoxLayout):
     def _upd(self, *_):
         self._bg.pos = self.pos
         self._bg.size = self.size
+        self._accent_line.pos = (self.x, self.y)
+        self._accent_line.size = (self.width, dp(1))
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -294,6 +340,12 @@ class _InputBar(BoxLayout):
         self._cb = on_send
 
         with self.canvas.before:
+            # Top edge glow to lift input bar from chat
+            Color(*(_c("accent")[:3] + [0.08]))
+            self._top_glow = Rectangle(
+                pos=(self.x, self.y + self.height - dp(1)),
+                size=(self.width, dp(1)),
+            )
             Color(*_c("surface_head"))
             self._bg = Rectangle(pos=self.pos, size=self.size)
         self.bind(pos=self._upd, size=self._upd)
@@ -326,6 +378,8 @@ class _InputBar(BoxLayout):
         self.inp.text = ""
 
     def _upd(self, *_):
+        self._top_glow.pos = (self.x, self.y + self.height - dp(1))
+        self._top_glow.size = (self.width, dp(1))
         self._bg.pos = self.pos
         self._bg.size = self.size
 

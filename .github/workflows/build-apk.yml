@@ -101,15 +101,26 @@ jobs:
           ls -lh bin/*.apk
 
       - name: Verify packaged modules
-        if: always()
         run: |
-          echo "=== Python files in build app directory ==="
-          find .buildozer/android/app/ -name "*.py" 2>/dev/null | sort | head -80 || echo "Build dir not found"
-          echo ""
-          echo "=== glm package in build ==="
-          ls -la .buildozer/android/app/glm/ 2>/dev/null || echo "glm/ NOT FOUND in build — packaging issue!"
-          echo "=== app package in build ==="
-          ls -la .buildozer/android/app/app/ 2>/dev/null || echo "app/ NOT FOUND in build — packaging issue!"
+          echo "=== Verifying bundled packages ==="
+          MISSING=0
+          ls .buildozer/android/app/glm/__init__.py > /dev/null 2>&1 || { echo "FATAL: glm/ not packaged in APK"; MISSING=1; }
+          ls .buildozer/android/app/app/__init__.py > /dev/null 2>&1 || { echo "FATAL: app/ not packaged in APK"; MISSING=1; }
+          ls .buildozer/android/app/glm/grammars/__init__.py > /dev/null 2>&1 || { echo "FATAL: glm/grammars/ not packaged"; MISSING=1; }
+          if [ $MISSING -ne 0 ]; then
+            echo ""
+            echo "========================================="
+            echo "BUILD FAILED — critical packages missing!"
+            echo "========================================="
+            echo "Files in build app dir:"
+            find .buildozer/android/app/ -name "*.py" 2>/dev/null | head -50
+            exit 1
+          fi
+          echo "✅ glm/, app/, glm/grammars/ verified in build"
+          echo "Grammar modules:"
+          ls .buildozer/android/app/glm/grammars/*.py 2>/dev/null | wc -l
+          echo "App modules:"
+          ls .buildozer/android/app/app/*.py 2>/dev/null | wc -l
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
