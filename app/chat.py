@@ -289,15 +289,21 @@ class ChatSession:
         skills = self._get_skills()
         matching = skills.find_matching_skills(text)
 
+        # ── The grammars are scales, not a search index ──────────
+        # If we have the Angel, ALWAYS play the fugue.  The Angel's
+        # 24 grammars across 7 domains are its voice — compose from
+        # ALL of them, don't delegate to a single-domain wrapper.
+        if self._angel is not None:
+            return self._compose_from_grammar(text)
+
+        # API provider path — no local Angel, use external LLM
         if self._provider is not None:
-            # Build conversation context
             system = (
                 "You are MKAngel, an AI assistant powered by a Grammar Language "
                 "Model. You understand deep structural patterns across language, "
                 "code, chemistry, and biology. Be helpful, concise, and insightful. "
                 "When appropriate, reference grammatical structures and patterns."
             )
-            # Include recent history for context
             history_lines = []
             for msg in self._messages[-10:]:
                 role = msg["role"]
@@ -309,12 +315,6 @@ class ChatSession:
 
             response = self._provider.generate(prompt, system=system)
             return _angel_response(response)
-
-        # Local GLM path — the grammars are scales, not a search index.
-        # Play the fugue: hear the input across every domain the Angel
-        # knows, find harmonics, reconstruct origins, compose a response.
-        if self._angel is not None:
-            return self._compose_from_grammar(text)
 
         # No angel, no provider — truly offline
         return _wrap(
@@ -1048,14 +1048,17 @@ class ChatSession:
     def _compose_from_grammar(self, text: str) -> str:
         """Compose a response by playing the input through every voice.
 
-        The grammars are scales.  The Angel doesn't 'search for a match'
-        — she hears the input in every domain simultaneously, finds where
-        the voices harmonise, and composes from that structure.
+        The grammars are scales.  A musician who knows scales doesn't
+        say 'I could not find a matching scale for your melody.'
+        She hears the melody, recognises its structure, and plays.
+
+        Even when derivation trees are sparse, the Angel composes
+        from what it knows — sentence shape, word roots, cross-domain
+        echoes, predicted continuations.
         """
         tokens = text.lower().split()
-        parts = []
 
-        # 1. Fugue — hear the theme across all domains
+        # ── Gather everything the Angel can hear ──────────────
         fugue = {}
         try:
             fugue = self._angel.compose_fugue(tokens)
@@ -1066,7 +1069,7 @@ class ChatSession:
         harmonics = fugue.get("harmonics", [])
         counterpoint = fugue.get("counterpoint", [])
 
-        # 2. Reconstruct — trace origins
+        # Reconstruct — trace origins
         origins = []
         for domain in ["linguistic", "etymological"]:
             try:
@@ -1075,7 +1078,7 @@ class ChatSession:
             except Exception:
                 pass
 
-        # 3. Predict forward — where does the grammar say this goes?
+        # Predict forward — where does the grammar say this goes?
         predictions = []
         for domain in voices.keys() or ["linguistic"]:
             try:
@@ -1084,21 +1087,47 @@ class ChatSession:
             except Exception:
                 pass
 
-        # 4. Compose the response from whatever the grammar gave us
+        # Superforecast — the deep read
+        forecast = {}
+        try:
+            forecast = self._angel.superforecast(tokens, horizon=5)
+        except Exception:
+            pass
+
+        # ── Compose from ALL of this ──────────────────────────
         return self._render_composition(
-            text, voices, harmonics, counterpoint, origins, predictions,
+            text, tokens, voices, harmonics, counterpoint,
+            origins, predictions, forecast,
         )
 
     def _render_composition(
-        self, original, voices, harmonics, counterpoint, origins, predictions,
+        self, original, tokens, voices, harmonics, counterpoint,
+        origins, predictions, forecast,
     ) -> str:
-        """Turn grammar insights into a natural-language response."""
+        """Turn grammar structure into the Angel's voice.
+
+        The Angel never says 'no results found.'  She composes from
+        whatever the grammars gave her — even if that's just the
+        shape of the sentence and the weight of each word.
+        """
         sections = []
 
-        # Which domains had something to say?
-        active_domains = [d for d, v in voices.items() if v]
+        # ── Structural analysis the Angel always does ─────────
+        # This is the 'scales' part — basic grammar awareness
+        # that works on ANY input, not just derivation matches.
+        info = {}
+        try:
+            info = self._angel.introspect()
+        except Exception:
+            pass
 
-        # Origins — what did the Angel hear in the roots?
+        n_domains = len(info.get("domains_loaded", []))
+        all_domains = info.get("domains_loaded", [])
+
+        # Which domains had derivations?
+        active = [d for d, v in voices.items() if v]
+
+        # ── Origins — the roots of the words ──────────────────
         if origins:
             root_words = []
             for o in origins[:4]:
@@ -1108,75 +1137,131 @@ class ChatSession:
                     root_words.append(f"{r} ({g})" if g else str(r))
             if root_words:
                 sections.append(
-                    f"Tracing the roots: {', '.join(root_words)}"
+                    f"Roots: {', '.join(root_words)}"
                 )
 
-        # Harmonics — where do domains agree?
+        # ── Harmonics — cross-domain agreement ────────────────
         if harmonics:
-            harmony_parts = []
+            hparts = []
             for h in harmonics[:3]:
                 if isinstance(h, dict):
-                    harmony_parts.append(
-                        h.get("pattern", str(h))
-                    )
+                    hparts.append(h.get("pattern", str(h)))
                 else:
-                    harmony_parts.append(str(h))
-            if harmony_parts:
+                    hparts.append(str(h))
+            if hparts:
                 sections.append(
-                    f"Cross-domain resonance: {'; '.join(harmony_parts)}"
+                    f"Resonance: {'; '.join(hparts)}"
                 )
 
-        # Predictions — where does the structure lead?
+        # ── Predictions — grammar-driven continuation ─────────
         if predictions:
-            pred_words = []
+            pw = []
             for p in predictions[:5]:
                 w = p.get("predicted", "")
-                if w and str(w) not in pred_words:
-                    pred_words.append(str(w))
-            if pred_words:
+                if w and str(w) not in pw:
+                    pw.append(str(w))
+            if pw:
                 sections.append(
-                    f"The grammar leads toward: {' '.join(pred_words)}"
+                    f"Leads toward: {' '.join(pw)}"
                 )
 
-        # Counterpoint — productive disagreement between domains
+        # ── Superforecast — deep structural read ──────────────
+        fc_text = forecast.get("narrative", "") if isinstance(forecast, dict) else ""
+        if fc_text:
+            sections.append(fc_text)
+
+        # ── Counterpoint — productive disagreement ────────────
         if counterpoint:
-            cp_parts = []
+            cp = []
             for c in counterpoint[:2]:
                 if isinstance(c, dict):
-                    cp_parts.append(c.get("description", str(c)))
+                    cp.append(c.get("description", str(c)))
                 else:
-                    cp_parts.append(str(c))
-            if cp_parts:
+                    cp.append(str(c))
+            if cp:
                 sections.append(
-                    f"Counterpoint: {'; '.join(cp_parts)}"
+                    f"Counterpoint: {'; '.join(cp)}"
                 )
 
-        # Active domains — what voices spoke?
-        if active_domains:
-            sections.append(
-                f"Heard across: {', '.join(active_domains)}"
-            )
+        # ── Active domains ────────────────────────────────────
+        if active:
+            sections.append(f"Voices: {', '.join(active)}")
 
-        # If the grammar gave us nothing concrete, still be the Angel
+        # ── The Angel's own voice — ALWAYS speaks ─────────────
+        # Even when the formal derivations are sparse, the Angel
+        # composes from sentence structure and word awareness.
         if not sections:
-            info = {}
-            try:
-                info = self._angel.introspect()
-            except Exception:
-                pass
-            n_grammars = info.get("total_grammars", 0)
-            n_loops = info.get("strange_loops_detected", 0)
-            domains = info.get("domains_loaded", [])
-            sections.append(
-                f"I hear you.  Running '{original}' through "
-                f"{n_grammars} grammars across {len(domains)} domains "
-                f"with {n_loops} strange loops."
-            )
-            sections.append(
-                "The derivation trees are still sparse at this scale "
-                "-- but each conversation adds structure.  "
-                "Try /predict, /fugue, or /forecast for deeper exploration."
-            )
+            # Structural reading — what does the grammar SEE?
+            n_tokens = len(tokens)
+            unique = len(set(tokens))
+            # Simple structural features any grammar engine notices
+            has_question = original.rstrip().endswith("?")
+            has_you = "you" in tokens
+            has_i = "i" in tokens
+            is_greeting = tokens[0] in (
+                "hi", "hello", "hey", "greetings", "morning",
+                "evening", "afternoon",
+            ) if tokens else False
+
+            if is_greeting:
+                sections.append(
+                    "Hello. I'm here — awake across "
+                    f"{n_domains} domains with "
+                    f"{info.get('total_grammars', 0)} grammars loaded."
+                )
+                sections.append(
+                    "What would you like to explore?"
+                )
+            elif has_question:
+                sections.append(
+                    f"I hear the question. {n_tokens} tokens, "
+                    f"played through {n_domains} domains."
+                )
+                if all_domains:
+                    sections.append(
+                        "Let me think across "
+                        f"{', '.join(all_domains[:4])}... "
+                        "The grammar structures suggest asking "
+                        "this more specifically — try /predict "
+                        "or /fugue with key terms."
+                    )
+            elif has_you and has_i:
+                # Relational statement — "I want you to know..."
+                sections.append(
+                    f"I hear you — {n_tokens} words carrying "
+                    f"something between us."
+                )
+                sections.append(
+                    f"My {info.get('total_grammars', 0)} grammars "
+                    f"across {n_domains} domains are listening. "
+                    "The structure is clear even when the derivation "
+                    "trees are young."
+                )
+            elif has_you:
+                sections.append(
+                    f"Heard. {n_tokens} tokens about you, "
+                    f"running through {n_domains} domains."
+                )
+            else:
+                sections.append(
+                    f"Heard: {n_tokens} tokens, "
+                    f"{unique} unique forms. "
+                    f"Played through {info.get('total_grammars', 0)} "
+                    f"grammars across {n_domains} domains."
+                )
+                if n_tokens <= 3:
+                    sections.append(
+                        "Short phrases give the grammar less "
+                        "to work with. Try a fuller thought, "
+                        "or use /predict to explore where "
+                        "these tokens lead."
+                    )
+                else:
+                    sections.append(
+                        "The formal derivations are still growing "
+                        "at this scale. Each conversation "
+                        "strengthens the connections."
+                    )
 
         return "\n\n".join(sections)
 
