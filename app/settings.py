@@ -16,16 +16,9 @@ from pathlib import Path
 from typing import Any
 
 
-def _get_config_dir() -> Path:
-    """Return the config directory, using Android app storage if available."""
-    try:
-        from android.storage import app_storage_path  # type: ignore[import]
-        return Path(app_storage_path()) / ".mkangel"
-    except ImportError:
-        return Path.home() / ".mkangel"
+from app.paths import mkangel_dir
 
-
-_CONFIG_DIR = _get_config_dir()
+_CONFIG_DIR = mkangel_dir()
 _SETTINGS_FILE = _CONFIG_DIR / "settings.json"
 
 # Supported LLM providers

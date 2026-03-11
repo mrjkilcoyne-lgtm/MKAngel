@@ -15,7 +15,9 @@ from pathlib import Path
 from typing import Any
 
 
-_SKILLS_DIR = Path.home() / ".mkangel" / "skills"
+from app.paths import mkangel_dir
+
+_SKILLS_DIR = mkangel_dir() / "skills"
 
 
 @dataclass

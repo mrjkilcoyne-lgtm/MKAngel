@@ -34,7 +34,9 @@ from pathlib import Path
 from typing import Any, Callable, Optional
 
 
-_VOICE_DIR = Path.home() / ".mkangel" / "voice"
+from app.paths import mkangel_dir
+
+_VOICE_DIR = mkangel_dir() / "voice"
 _RECORDINGS_DIR = _VOICE_DIR / "recordings"
 _CLONES_DIR = _VOICE_DIR / "clones"
 _MODELS_DIR = _VOICE_DIR / "models"

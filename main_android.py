@@ -228,7 +228,7 @@ class _Header(BoxLayout):
         top.add_widget(Widget(size_hint_x=None, width=dp(40)))
 
         title = Label(
-            text="[b]\u2727  M K A N G E L  \u2727[/b]", markup=True,
+            text="[b]~  M K A N G E L  ~[/b]", markup=True,
             font_size=sp(20), color=_c("accent"),
             halign="center", valign="bottom",
         )
@@ -236,7 +236,7 @@ class _Header(BoxLayout):
         top.add_widget(title)
 
         cog = Button(
-            text="\u2699", font_size=sp(22),
+            text="@", font_size=sp(22),
             size_hint=(None, 1), width=dp(40),
             background_color=[0, 0, 0, 0], color=_c("text_dim"),
         )
@@ -339,7 +339,7 @@ class _InputBar(BoxLayout):
         self.add_widget(self.inp)
 
         btn = Button(
-            text="\u25b6", font_size=sp(18), bold=True,
+            text=">", font_size=sp(18), bold=True,
             size_hint_x=0.18,
             background_color=_c("accent"), color=[1, 1, 1, 1],
         )
@@ -402,7 +402,7 @@ class _SettingsPanel(BoxLayout):
         hdr = BoxLayout(size_hint_y=None, height=dp(56), padding=[0, dp(8)])
 
         back = Button(
-            text="\u2190 Back", font_size=sp(14),
+            text="< Back", font_size=sp(14),
             size_hint=(None, 1), width=dp(80),
             background_color=[0, 0, 0, 0], color=_c("accent"),
         )
@@ -412,7 +412,7 @@ class _SettingsPanel(BoxLayout):
 
         accent_hex = _css("accent").lstrip("#")
         title = Label(
-            text=f"[b][color={accent_hex}]\u2727 Settings[/color][/b]",
+            text=f"[b][color={accent_hex}]~ Settings[/color][/b]",
             markup=True, font_size=sp(18),
             halign="center", valign="middle",
         )
@@ -463,7 +463,7 @@ class _SettingsPanel(BoxLayout):
         pa = angel_info.get("model_params", 0)
 
         glm = (
-            f"[color={accent}][b]\u2727 Grammar Language Model[/b][/color]\n\n"
+            f"[color={accent}][b]~ Grammar Language Model[/b][/color]\n\n"
             f"[color={teal}]Domains[/color]   [color={text_hex}]{len(domains)}[/color]\n"
             f"[color={teal}]Grammars[/color]  [color={text_hex}]{g}[/color]    "
             f"[color={teal}]Rules[/color]  [color={text_hex}]{ru}[/color]\n"
@@ -479,7 +479,7 @@ class _SettingsPanel(BoxLayout):
         mode = "offline" if offline else "online"
 
         prov = (
-            f"[color={accent}][b]\u2727 Provider[/b][/color]\n\n"
+            f"[color={accent}][b]~ Provider[/b][/color]\n\n"
             f"[color={teal}]Active[/color]   [color={text_hex}]{provider}[/color]\n"
             f"[color={teal}]Mode[/color]     [color={text_hex}]{mode}[/color]"
         )
@@ -491,7 +491,7 @@ class _SettingsPanel(BoxLayout):
         mpr = memory_info.get("preferences", 0)
 
         mem = (
-            f"[color={accent}][b]\u2727 Memory[/b][/color]\n\n"
+            f"[color={accent}][b]~ Memory[/b][/color]\n\n"
             f"[color={teal}]Sessions[/color]  [color={text_hex}]{ms}[/color]    "
             f"[color={teal}]Patterns[/color]  [color={text_hex}]{mp}[/color]    "
             f"[color={teal}]Prefs[/color]  [color={text_hex}]{mpr}[/color]"
@@ -694,7 +694,7 @@ class MKAngelApp(App):
             Clock.schedule_once(
                 lambda _, m=m: self.chat.add(
                     f"[color={_css('warning').lstrip('#')}]"
-                    f"\u26a0 GLM: {m}[/color]", kind="error",
+                    f"GLM: {m}[/color]", kind="error",
                 )
             )
 
@@ -721,7 +721,7 @@ class MKAngelApp(App):
             Clock.schedule_once(
                 lambda _, m=m: self.chat.add(
                     f"[color={_css('warning').lstrip('#')}]"
-                    f"\u26a0 Session: {m}[/color]", kind="error",
+                    f"Session: {m}[/color]", kind="error",
                 )
             )
 
@@ -744,7 +744,7 @@ class MKAngelApp(App):
         dim_hex     = _css("text_dim").lstrip("#")
 
         status = (
-            f"[color={success_hex}][b]\u2726 Angel awakened[/b]  {elapsed:.1f}s[/color]\n\n"
+            f"[color={success_hex}][b]Angel awakened[/b]  {elapsed:.1f}s[/color]\n\n"
             f"[color={teal_hex}]Domains[/color]   {domains}\n"
             f"[color={teal_hex}]Grammars[/color]  {g}    "
             f"[color={teal_hex}]Rules[/color]  {ru}\n"

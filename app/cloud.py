@@ -32,8 +32,10 @@ from pathlib import Path
 from typing import Any, BinaryIO, Iterator
 
 
-_CLOUD_CONFIG_PATH = Path.home() / ".mkangel" / "cloud.json"
-_LOCAL_CACHE_DIR = Path.home() / ".mkangel" / "cloud_cache"
+from app.paths import mkangel_dir
+
+_CLOUD_CONFIG_PATH = mkangel_dir() / "cloud.json"
+_LOCAL_CACHE_DIR = mkangel_dir() / "cloud_cache"
 
 
 # ---------------------------------------------------------------------------

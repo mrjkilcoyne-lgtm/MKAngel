@@ -35,7 +35,9 @@ from typing import Any
 log = logging.getLogger(__name__)
 
 
-_IMPROVEMENT_DIR = Path.home() / ".mkangel" / "improvements"
+from app.paths import mkangel_dir
+
+_IMPROVEMENT_DIR = mkangel_dir() / "improvements"
 _IMPROVEMENT_LOG = _IMPROVEMENT_DIR / "log.jsonl"
 _SKILL_REGISTRY = _IMPROVEMENT_DIR / "skill_registry.json"
 _LEARNED_PATTERNS = _IMPROVEMENT_DIR / "learned_patterns.json"

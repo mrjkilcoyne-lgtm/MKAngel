@@ -38,7 +38,9 @@ log = logging.getLogger(__name__)
 # Paths
 # ---------------------------------------------------------------------------
 
-_MKANGEL_DIR = Path.home() / ".mkangel"
+from app.paths import mkangel_dir
+
+_MKANGEL_DIR = mkangel_dir()
 _SETTINGS_DIR = _MKANGEL_DIR / "settings"
 _WHITELIST_FILE = _SETTINGS_DIR / "whitelist.json"
 _INCIDENTS_DB = _MKANGEL_DIR / "incidents.db"

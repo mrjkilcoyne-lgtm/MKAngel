@@ -16,7 +16,9 @@ from dataclasses import dataclass, field
 from pathlib import Path
 
 
-DOCS_DIR = Path.home() / ".mkangel" / "documents"
+from app.paths import mkangel_dir
+
+DOCS_DIR = mkangel_dir() / "documents"
 
 
 @dataclass

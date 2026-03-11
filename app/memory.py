@@ -18,16 +18,9 @@ from pathlib import Path
 from typing import Any
 
 
-def _get_data_dir() -> Path:
-    """Return the data directory, using Android app storage if available."""
-    try:
-        from android.storage import app_storage_path  # type: ignore[import]
-        return Path(app_storage_path()) / ".mkangel"
-    except ImportError:
-        return Path.home() / ".mkangel"
+from app.paths import mkangel_dir
 
-
-_DB_PATH = _get_data_dir() / "memory.db"
+_DB_PATH = mkangel_dir() / "memory.db"
 
 
 @dataclass
