@@ -1,8 +1,8 @@
 """
 MKAngel -- Android (Kivy) entry point.
 
-Gesture-driven panel system for the Grammar Language Model.
-Eight panels accessible via swipe, tap, long-press, and pinch gestures.
+Clean chat interface for the Grammar Language Model.
+Settings accessible via the cog icon. Android back button supported.
 
 Run via buildozer:  buildozer android debug deploy run
 """
@@ -22,7 +22,6 @@ _app_dir = os.path.dirname(os.path.abspath(__file__))
 if _app_dir not in sys.path:
     sys.path.insert(0, _app_dir)
 
-from kivy.animation import Animation
 from kivy.app import App
 from kivy.clock import Clock
 from kivy.core.window import Window
@@ -41,10 +40,8 @@ from kivy.uix.widget import Widget
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 try:
-    from app.vestments import get_vestment, vestment_to_css, ALL_VESTMENTS
+    from app.vestments import get_vestment
 except ImportError:
-    # Minimal fallback if vestments module unavailable
-    ALL_VESTMENTS = {}
     def get_vestment(name=None):
         from kivy.utils import get_color_from_hex as _h
         _t = lambda c, a=1.0: {"kivy": list(_h(c))[:3] + [a], "css": c}
@@ -60,51 +57,19 @@ except ImportError:
             "bubble_user": _t("#bb86fc", 0.10),
             "bubble_angel": _t("#0e0e14"),
         }
-    def vestment_to_css(v): return ""
 
-try:
-    from app.gestures import GestureDetector, GestureAction
-except ImportError:
-    # Stub if gestures module unavailable — MUST pass through all touches
-    class GestureAction:
-        CHAT = "chat"; VOICE = "voice"; HOSTS = "hosts"
-        WINGS = "wings"; SKILLS = "skills"; ASPECTS = "aspects"
-        VESTMENTS = "vestments"; DOCUMENTS = "documents"
-    class GestureDetector(Widget):
-        def __init__(self, callback=None, **kw):
-            super().__init__(**kw)
-            self._cb = callback
-        def set_callback(self, fn):
-            self._cb = fn
-        def on_touch_down(self, touch):
-            return False  # pass to widgets below
-        def on_touch_move(self, touch):
-            return False
-        def on_touch_up(self, touch):
-            return False
-
-try:
-    from app.documents import DocumentManager
-except ImportError:
-    DocumentManager = None
-
-# Load active vestment
 V = get_vestment()
-
 Window.clearcolor = V["bg"]["kivy"]
 
 
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Helper — colour shorthand
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-def _c(token_name: str) -> list:
+def _c(token: str) -> list:
     """Pull a kivy rgba list from the active vestment."""
-    return V[token_name]["kivy"]
+    return V[token]["kivy"]
 
-def _css(token_name: str) -> str:
+
+def _css(token: str) -> str:
     """Pull the CSS hex from the active vestment."""
-    return V[token_name]["css"]
+    return V[token]["css"]
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -131,7 +96,7 @@ class _Sep(Widget):
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class _Bubble(BoxLayout):
-    """Single message with rounded-rectangle background."""
+    """Single message with rounded-rectangle background and subtle glow."""
 
     def __init__(self, text: str, kind: str = "angel", **kw):
         kw.setdefault("size_hint_y", None)
@@ -149,7 +114,7 @@ class _Bubble(BoxLayout):
         halign = "center" if kind == "system" else "left"
         pad = dp(14)
 
-        # Determine glow colour for depth effect
+        # Glow only on angel and success bubbles
         self._has_glow = kind in ("angel", "success")
         if kind == "angel":
             glow_c = _c("accent")[:3] + [0.07]
@@ -171,7 +136,6 @@ class _Bubble(BoxLayout):
         ))
 
         with self.canvas.before:
-            # Outer glow (subtle border halo)
             if self._has_glow:
                 Color(*glow_c)
                 self._glow = RoundedRectangle(
@@ -179,7 +143,6 @@ class _Bubble(BoxLayout):
                     size=(self.width + dp(4), self.height + dp(4)),
                     radius=self._glow_radius,
                 )
-            # Main background
             Color(*bg)
             self._bg = RoundedRectangle(
                 pos=self.pos, size=self.size, radius=radius,
@@ -241,42 +204,55 @@ class ChatView(ScrollView):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Header
+#  Header with settings cog
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class _Header(BoxLayout):
-    def __init__(self, **kw):
+    def __init__(self, on_settings=None, **kw):
         kw.setdefault("size_hint_y", None)
         kw.setdefault("height", dp(68))
-        kw.setdefault("padding", [dp(16), dp(10), dp(16), dp(4)])
+        kw.setdefault("padding", [dp(16), dp(10), dp(8), dp(4)])
         super().__init__(orientation="vertical", **kw)
 
         with self.canvas.before:
             Color(*_c("surface_head"))
             self._bg = Rectangle(pos=self.pos, size=self.size)
-            # Subtle gold accent line at bottom edge
             Color(*(_c("accent")[:3] + [0.15]))
             self._accent_line = Rectangle(
                 pos=(self.x, self.y), size=(self.width, dp(1)),
             )
         self.bind(pos=self._upd, size=self._upd)
 
-        t = Label(
+        # Top row: spacer + title + cog
+        top = BoxLayout(size_hint_y=0.58)
+        top.add_widget(Widget(size_hint_x=None, width=dp(40)))
+
+        title = Label(
             text="[b]\u2727  M K A N G E L  \u2727[/b]", markup=True,
             font_size=sp(20), color=_c("accent"),
-            size_hint_y=0.58, halign="center", valign="bottom",
+            halign="center", valign="bottom",
         )
-        t.bind(size=lambda *_: setattr(t, "text_size", (t.width, None)))
+        title.bind(size=lambda *_: setattr(title, "text_size", (title.width, None)))
+        top.add_widget(title)
 
-        s = Label(
+        cog = Button(
+            text="\u2699", font_size=sp(22),
+            size_hint=(None, 1), width=dp(40),
+            background_color=[0, 0, 0, 0], color=_c("text_dim"),
+        )
+        if on_settings:
+            cog.bind(on_press=lambda *_: on_settings())
+        top.add_widget(cog)
+
+        self.add_widget(top)
+
+        sub = Label(
             text="Grammar Language Model", font_size=sp(11),
             color=_c("text_dim"), size_hint_y=0.42,
             halign="center", valign="top",
         )
-        s.bind(size=lambda *_: setattr(s, "text_size", (s.width, None)))
-
-        self.add_widget(t)
-        self.add_widget(s)
+        sub.bind(size=lambda *_: setattr(sub, "text_size", (sub.width, None)))
+        self.add_widget(sub)
 
     def _upd(self, *_):
         self._bg.pos = self.pos
@@ -340,7 +316,6 @@ class _InputBar(BoxLayout):
         self._cb = on_send
 
         with self.canvas.before:
-            # Top edge glow to lift input bar from chat
             Color(*(_c("accent")[:3] + [0.08]))
             self._top_glow = Rectangle(
                 pos=(self.x, self.y + self.height - dp(1)),
@@ -385,17 +360,17 @@ class _InputBar(BoxLayout):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Panel base — shared background + layout for secondary panels
+#  Settings panel — live data, no placeholders
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-class _PanelBase(BoxLayout):
-    """Base for non-chat panels. Full-screen with vestment background."""
+class _SettingsPanel(BoxLayout):
+    """Shows GLM status, provider, and memory stats — things that work."""
 
-    def __init__(self, **kw):
+    def __init__(self, on_back=None, **kw):
         kw.setdefault("orientation", "vertical")
         kw.setdefault("opacity", 0)
-        kw.setdefault("padding", [dp(20), dp(16)])
-        kw.setdefault("spacing", dp(12))
+        kw.setdefault("padding", [dp(16), dp(12)])
+        kw.setdefault("spacing", dp(8))
         super().__init__(**kw)
         self.disabled = True
 
@@ -404,416 +379,157 @@ class _PanelBase(BoxLayout):
             self._bg = Rectangle(pos=self.pos, size=self.size)
         self.bind(pos=self._upd_bg, size=self._upd_bg)
 
+        # ── Header row ───────────────────────────────────────
+        hdr = BoxLayout(size_hint_y=None, height=dp(56), padding=[0, dp(8)])
+
+        back = Button(
+            text="\u2190 Back", font_size=sp(14),
+            size_hint=(None, 1), width=dp(80),
+            background_color=[0, 0, 0, 0], color=_c("accent"),
+        )
+        if on_back:
+            back.bind(on_press=lambda *_: on_back())
+        hdr.add_widget(back)
+
+        accent_hex = _css("accent").lstrip("#")
+        title = Label(
+            text=f"[b][color={accent_hex}]\u2727 Settings[/color][/b]",
+            markup=True, font_size=sp(18),
+            halign="center", valign="middle",
+        )
+        title.bind(size=lambda *_: setattr(title, "text_size", title.size))
+        hdr.add_widget(title)
+
+        # Spacer to balance the back button
+        hdr.add_widget(Widget(size_hint_x=None, width=dp(80)))
+
+        self.add_widget(hdr)
+        self.add_widget(_Sep())
+
+        # ── Scrollable content ───────────────────────────────
+        sv = ScrollView(size_hint=(1, 1))
+        self._content = BoxLayout(
+            orientation="vertical", size_hint_y=None,
+            spacing=dp(12), padding=[dp(4), dp(8)],
+        )
+        self._content.bind(minimum_height=self._content.setter("height"))
+        sv.add_widget(self._content)
+        self.add_widget(sv)
+
+        # Initial placeholder
+        self._placeholder = Label(
+            text="Loading\u2026", markup=True, font_size=sp(13),
+            color=_c("text_sec"), size_hint_y=None, height=dp(40),
+            halign="center", valign="middle",
+        )
+        self._placeholder.bind(size=lambda *_: setattr(
+            self._placeholder, "text_size", self._placeholder.size
+        ))
+        self._content.add_widget(self._placeholder)
+
+    def update_info(self, angel_info, settings_info, memory_info):
+        """Refresh settings display with live data."""
+        self._content.clear_widgets()
+
+        accent = _css("accent").lstrip("#")
+        teal = _css("teal").lstrip("#")
+        dim = _css("text_dim").lstrip("#")
+        text_hex = _css("text").lstrip("#")
+
+        # ── GLM card ─────────────────────────────────────────
+        domains = angel_info.get("domains_loaded", [])
+        g = angel_info.get("total_grammars", 0)
+        ru = angel_info.get("total_rules", 0)
+        lo = angel_info.get("strange_loops_detected", 0)
+        pa = angel_info.get("model_params", 0)
+
+        glm = (
+            f"[color={accent}][b]\u2727 Grammar Language Model[/b][/color]\n\n"
+            f"[color={teal}]Domains[/color]   [color={text_hex}]{len(domains)}[/color]\n"
+            f"[color={teal}]Grammars[/color]  [color={text_hex}]{g}[/color]    "
+            f"[color={teal}]Rules[/color]  [color={text_hex}]{ru}[/color]\n"
+            f"[color={teal}]Loops[/color]     [color={text_hex}]{lo}[/color]    "
+            f"[color={teal}]Params[/color] [color={text_hex}]{pa:,}[/color]\n\n"
+            f"[color={dim}]{', '.join(domains) if domains else 'None loaded'}[/color]"
+        )
+        self._content.add_widget(self._make_card(glm))
+
+        # ── Provider card ────────────────────────────────────
+        provider = settings_info.get("provider", "local")
+        offline = settings_info.get("offline", True)
+        mode = "offline" if offline else "online"
+
+        prov = (
+            f"[color={accent}][b]\u2727 Provider[/b][/color]\n\n"
+            f"[color={teal}]Active[/color]   [color={text_hex}]{provider}[/color]\n"
+            f"[color={teal}]Mode[/color]     [color={text_hex}]{mode}[/color]"
+        )
+        self._content.add_widget(self._make_card(prov))
+
+        # ── Memory card ──────────────────────────────────────
+        ms = memory_info.get("sessions", 0)
+        mp = memory_info.get("patterns", 0)
+        mpr = memory_info.get("preferences", 0)
+
+        mem = (
+            f"[color={accent}][b]\u2727 Memory[/b][/color]\n\n"
+            f"[color={teal}]Sessions[/color]  [color={text_hex}]{ms}[/color]    "
+            f"[color={teal}]Patterns[/color]  [color={text_hex}]{mp}[/color]    "
+            f"[color={teal}]Prefs[/color]  [color={text_hex}]{mpr}[/color]"
+        )
+        self._content.add_widget(self._make_card(mem))
+
+        # ── Version ──────────────────────────────────────────
+        ver = (
+            f"\n[color={dim}]MKAngel v0.2.0[/color]\n"
+            f"[color={dim}]Celestial Dark vestment[/color]\n"
+        )
+        ver_lbl = Label(
+            text=ver, markup=True, font_size=sp(12),
+            color=_c("text_dim"), size_hint_y=None, height=dp(50),
+            halign="center", valign="middle",
+        )
+        ver_lbl.bind(size=lambda *_: setattr(ver_lbl, "text_size", ver_lbl.size))
+        self._content.add_widget(ver_lbl)
+
+    def _make_card(self, markup_text):
+        """Rounded card with surface background."""
+        card = BoxLayout(
+            orientation="vertical", size_hint_y=None,
+            padding=[dp(16), dp(12)],
+        )
+        with card.canvas.before:
+            Color(*_c("surface"))
+            card._bg = RoundedRectangle(
+                pos=card.pos, size=card.size, radius=[dp(12)],
+            )
+        card.bind(
+            pos=lambda w, *_: setattr(w._bg, "pos", w.pos),
+            size=lambda w, *_: setattr(w._bg, "size", w.size),
+        )
+
+        lbl = Label(
+            text=markup_text, markup=True, font_size=sp(13),
+            color=_c("text"), size_hint_y=None,
+            halign="left", valign="top",
+        )
+        lbl.bind(texture_size=lambda w, ts: setattr(w, "height", ts[1] + dp(8)))
+        lbl.bind(width=lambda w, *_: setattr(w, "text_size", (w.width, None)))
+        lbl.bind(height=lambda w, h: setattr(card, "height", h + dp(24)))
+        card.add_widget(lbl)
+        return card
+
     def _upd_bg(self, *_):
         self._bg.pos = self.pos
         self._bg.size = self.size
 
-    def _make_title(self, text: str) -> Label:
-        accent_hex = _css("accent").lstrip("#")
-        lbl = Label(
-            text=f"[b][color={accent_hex}]{text}[/color][/b]",
-            markup=True, font_size=sp(22), color=_c("text"),
-            size_hint_y=None, height=dp(48),
-            halign="center", valign="middle",
-        )
-        lbl.bind(size=lambda *_: setattr(lbl, "text_size", lbl.size))
-        return lbl
-
-    def _make_back_btn(self, callback) -> Button:
-        return Button(
-            text="\u2190 Back to Chat", font_size=sp(14),
-            size_hint=(1, None), height=dp(44),
-            background_color=_c("surface"),
-            color=_c("accent"),
-            on_press=callback,
-        )
-
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Voice panel — swipe up
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-class _VoicePanel(_PanelBase):
-    def __init__(self, go_back=None, **kw):
-        super().__init__(**kw)
-
-        self.add_widget(self._make_title("\u2727 Voice"))
-        self.add_widget(Widget(size_hint_y=0.2))
-
-        # Mic icon placeholder
-        mic = Label(
-            text="\U0001F399", font_size=sp(72),
-            size_hint_y=None, height=dp(100),
-            halign="center", valign="middle",
-        )
-        mic.bind(size=lambda *_: setattr(mic, "text_size", mic.size))
-        self.add_widget(mic)
-
-        hint = Label(
-            text="Swipe up to speak", font_size=sp(16),
-            color=_c("text_sec"), size_hint_y=None, height=dp(40),
-            halign="center", valign="middle",
-        )
-        hint.bind(size=lambda *_: setattr(hint, "text_size", hint.size))
-        self.add_widget(hint)
-
-        sub = Label(
-            text="Voice mode coming in Phase 2",
-            font_size=sp(12), color=_c("text_dim"),
-            size_hint_y=None, height=dp(30),
-            halign="center", valign="middle",
-        )
-        sub.bind(size=lambda *_: setattr(sub, "text_size", sub.size))
-        self.add_widget(sub)
-
-        self.add_widget(Widget(size_hint_y=1))
-
-        if go_back:
-            self.add_widget(self._make_back_btn(go_back))
-
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Host panel — swipe right
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-class _HostPanel(_PanelBase):
-    def __init__(self, go_back=None, **kw):
-        super().__init__(**kw)
-
-        self.add_widget(self._make_title("\u2727 Hosts"))
-        self.add_widget(Widget(size_hint_y=0.1))
-
-        self._status = Label(
-            text="No hosts deployed", font_size=sp(14),
-            color=_c("text_sec"), size_hint_y=None, height=dp(40),
-            halign="center", valign="middle",
-        )
-        self._status.bind(size=lambda *_: setattr(
-            self._status, "text_size", self._status.size
-        ))
-        self.add_widget(self._status)
-
-        deploy_btn = Button(
-            text="Deploy Host", font_size=sp(16),
-            size_hint=(0.6, None), height=dp(48),
-            pos_hint={"center_x": 0.5},
-            background_color=_c("accent"), color=[1, 1, 1, 1],
-        )
-        deploy_btn.bind(on_press=self._deploy)
-        self.add_widget(deploy_btn)
-
-        self.add_widget(Widget(size_hint_y=1))
-
-        if go_back:
-            self.add_widget(self._make_back_btn(go_back))
-
-    def _deploy(self, *_):
-        self._status.text = "Host deployment coming in Phase 2"
-        self._status.color = _c("warning")
-
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Skills overlay — long press
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-class _SkillsOverlay(_PanelBase):
-    """Semi-transparent floating overlay with skill list."""
-
-    def __init__(self, go_back=None, **kw):
-        super().__init__(**kw)
-
-        # Override bg for semi-transparency
-        self.canvas.before.clear()
-        with self.canvas.before:
-            Color(*(_c("bg")[:3] + [0.85]))
-            self._bg = Rectangle(pos=self.pos, size=self.size)
-        self.bind(pos=self._upd_bg, size=self._upd_bg)
-
-        self.add_widget(self._make_title("\u2727 Skills"))
-
-        _skills = [
-            ("/help", "Show available commands"),
-            ("/code", "Generate or edit code"),
-            ("/doc", "Create a document"),
-            ("/search", "Search the web"),
-            ("/voice", "Toggle voice mode"),
-            ("/clear", "Clear conversation"),
-        ]
-
-        for cmd, desc in _skills:
-            row = BoxLayout(
-                size_hint_y=None, height=dp(40),
-                spacing=dp(8), padding=[dp(8), 0],
-            )
-            accent_hex = _css("accent").lstrip("#")
-            cmd_lbl = Label(
-                text=f"[b][color={accent_hex}]{cmd}[/color][/b]",
-                markup=True, font_size=sp(14),
-                size_hint_x=0.3, halign="right", valign="middle",
-            )
-            cmd_lbl.bind(size=lambda w, *_: setattr(w, "text_size", w.size))
-            desc_lbl = Label(
-                text=desc, font_size=sp(13),
-                color=_c("text_sec"),
-                size_hint_x=0.7, halign="left", valign="middle",
-            )
-            desc_lbl.bind(size=lambda w, *_: setattr(w, "text_size", w.size))
-            row.add_widget(cmd_lbl)
-            row.add_widget(desc_lbl)
-            self.add_widget(row)
-
-        self.add_widget(Widget(size_hint_y=1))
-
-        if go_back:
-            self.add_widget(self._make_back_btn(go_back))
-
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Aspect switcher — swipe down
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-class _AspectSwitcher(_PanelBase):
-    """Four aspect cards — the Angel's modes of being."""
-
-    _ASPECTS = [
-        ("Awakening",       "Initial boot state",              "\u2726"),
-        ("Companion",       "Personal assistant, warm & kind",  "\u2665"),
-        ("Command Centre",  "Power mode, tools & hosts",        "\u2318"),
-        ("Oracle",          "Deep analysis & foresight",        "\u2609"),
-    ]
-
-    def __init__(self, on_select=None, go_back=None, **kw):
-        super().__init__(**kw)
-        self._on_select = on_select
-
-        self.add_widget(self._make_title("\u2727 Aspects"))
-
-        for name, desc, icon in self._ASPECTS:
-            card = BoxLayout(
-                size_hint_y=None, height=dp(64),
-                spacing=dp(12), padding=[dp(12), dp(6)],
-            )
-            with card.canvas.before:
-                Color(*_c("surface"))
-                card._bg = RoundedRectangle(
-                    pos=card.pos, size=card.size, radius=[dp(12)],
-                )
-            card.bind(
-                pos=lambda w, *_: setattr(w._bg, "pos", w.pos),
-                size=lambda w, *_: setattr(w._bg, "size", w.size),
-            )
-
-            icon_lbl = Label(
-                text=icon, font_size=sp(28),
-                size_hint_x=0.15, halign="center", valign="middle",
-            )
-            icon_lbl.bind(size=lambda w, *_: setattr(w, "text_size", w.size))
-
-            info = BoxLayout(orientation="vertical", size_hint_x=0.85)
-            n_lbl = Label(
-                text=f"[b]{name}[/b]", markup=True,
-                font_size=sp(15), color=_c("text"),
-                size_hint_y=0.55, halign="left", valign="bottom",
-            )
-            n_lbl.bind(size=lambda w, *_: setattr(w, "text_size", w.size))
-            d_lbl = Label(
-                text=desc, font_size=sp(12),
-                color=_c("text_dim"),
-                size_hint_y=0.45, halign="left", valign="top",
-            )
-            d_lbl.bind(size=lambda w, *_: setattr(w, "text_size", w.size))
-            info.add_widget(n_lbl)
-            info.add_widget(d_lbl)
-
-            card.add_widget(icon_lbl)
-            card.add_widget(info)
-            self.add_widget(card)
-
-        self.add_widget(Widget(size_hint_y=1))
-
-        if go_back:
-            self.add_widget(self._make_back_btn(go_back))
-
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Vestment switcher — double tap
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-class _VestmentSwitcher(_PanelBase):
-    """Four mini-preview cards for each vestment."""
-
-    _VESTMENTS = [
-        ("celestial_dark",  "Celestial Dark",  "OLED black + gold"),
-        ("ethereal_light",  "Ethereal Light",  "Warm white + silver"),
-        ("living_gradient", "Living Gradient",  "Aurora animation"),
-        ("minimal_power",   "Minimal Power",   "Monochrome typography"),
-    ]
-
-    def __init__(self, on_select=None, go_back=None, **kw):
-        super().__init__(**kw)
-        self._on_select = on_select
-
-        self.add_widget(self._make_title("\u2727 Vestments"))
-
-        for vid, name, desc in self._VESTMENTS:
-            try:
-                vest = ALL_VESTMENTS.get(vid, V)
-                preview_bg = vest["surface"]["kivy"]
-                preview_accent = vest["accent"]["kivy"]
-            except Exception:
-                preview_bg = _c("surface")
-                preview_accent = _c("accent")
-
-            card = BoxLayout(
-                size_hint_y=None, height=dp(56),
-                spacing=dp(10), padding=[dp(12), dp(4)],
-            )
-            with card.canvas.before:
-                Color(*preview_bg)
-                card._bg = RoundedRectangle(
-                    pos=card.pos, size=card.size, radius=[dp(10)],
-                )
-            card.bind(
-                pos=lambda w, *_: setattr(w._bg, "pos", w.pos),
-                size=lambda w, *_: setattr(w._bg, "size", w.size),
-            )
-
-            swatch = Widget(size_hint_x=0.08)
-            with swatch.canvas:
-                Color(*preview_accent)
-                swatch._dot = RoundedRectangle(
-                    pos=swatch.pos, size=(dp(20), dp(20)),
-                    radius=[dp(10)],
-                )
-            swatch.bind(
-                pos=lambda w, *_: setattr(w._dot, "pos", (
-                    w.x + w.width / 2 - dp(10),
-                    w.y + w.height / 2 - dp(10),
-                )),
-            )
-
-            info = BoxLayout(orientation="vertical", size_hint_x=0.92)
-            n_lbl = Label(
-                text=f"[b]{name}[/b]", markup=True,
-                font_size=sp(14), color=preview_accent,
-                size_hint_y=0.55, halign="left", valign="bottom",
-            )
-            n_lbl.bind(size=lambda w, *_: setattr(w, "text_size", w.size))
-            d_lbl = Label(
-                text=desc, font_size=sp(11),
-                color=_c("text_dim"),
-                size_hint_y=0.45, halign="left", valign="top",
-            )
-            d_lbl.bind(size=lambda w, *_: setattr(w, "text_size", w.size))
-            info.add_widget(n_lbl)
-            info.add_widget(d_lbl)
-
-            card.add_widget(swatch)
-            card.add_widget(info)
-            self.add_widget(card)
-
-        self.add_widget(Widget(size_hint_y=1))
-
-        if go_back:
-            self.add_widget(self._make_back_btn(go_back))
-
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Document panel — pinch
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-class _DocumentPanel(_PanelBase):
-    """Placeholder for the Quill.js WebView editor."""
-
-    def __init__(self, go_back=None, **kw):
-        super().__init__(**kw)
-
-        self.add_widget(self._make_title("\u2727 Documents"))
-        self.add_widget(Widget(size_hint_y=0.15))
-
-        icon = Label(
-            text="\U0001F4C4", font_size=sp(64),
-            size_hint_y=None, height=dp(80),
-            halign="center", valign="middle",
-        )
-        icon.bind(size=lambda *_: setattr(icon, "text_size", icon.size))
-        self.add_widget(icon)
-
-        info = Label(
-            text="Document Editor", font_size=sp(18),
-            color=_c("text"), size_hint_y=None, height=dp(36),
-            halign="center", valign="middle",
-        )
-        info.bind(size=lambda *_: setattr(info, "text_size", info.size))
-        self.add_widget(info)
-
-        sub = Label(
-            text="Pinch to open \u2014 WebView loads on Android device",
-            font_size=sp(12), color=_c("text_dim"),
-            size_hint_y=None, height=dp(30),
-            halign="center", valign="middle",
-        )
-        sub.bind(size=lambda *_: setattr(sub, "text_size", sub.size))
-        self.add_widget(sub)
-
-        self.add_widget(Widget(size_hint_y=1))
-
-        if go_back:
-            self.add_widget(self._make_back_btn(go_back))
-
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Wings panel — swipe left
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-
-class _WingsPanel(_PanelBase):
-    """Placeholder for Phase 2 extensions system."""
-
-    def __init__(self, go_back=None, **kw):
-        super().__init__(**kw)
-
-        self.add_widget(self._make_title("\u2727 Wings"))
-        self.add_widget(Widget(size_hint_y=0.2))
-
-        icon = Label(
-            text="\U0001F54A", font_size=sp(64),
-            size_hint_y=None, height=dp(80),
-            halign="center", valign="middle",
-        )
-        icon.bind(size=lambda *_: setattr(icon, "text_size", icon.size))
-        self.add_widget(icon)
-
-        info = Label(
-            text="Extensions & integrations", font_size=sp(16),
-            color=_c("text_sec"), size_hint_y=None, height=dp(36),
-            halign="center", valign="middle",
-        )
-        info.bind(size=lambda *_: setattr(info, "text_size", info.size))
-        self.add_widget(info)
-
-        sub = Label(
-            text="Wings unfold in Phase 2",
-            font_size=sp(12), color=_c("text_dim"),
-            size_hint_y=None, height=dp(30),
-            halign="center", valign="middle",
-        )
-        sub.bind(size=lambda *_: setattr(sub, "text_size", sub.size))
-        self.add_widget(sub)
-
-        self.add_widget(Widget(size_hint_y=1))
-
-        if go_back:
-            self.add_widget(self._make_back_btn(go_back))
-
-
-# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Chat panel — wraps header + chat view + thinking + input bar
+#  Chat panel — header + scrollable chat + thinking + input
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class _ChatPanel(BoxLayout):
-    """The default panel: header, scrollable chat, thinking indicator, input."""
-
-    def __init__(self, on_send=None, **kw):
+    def __init__(self, on_send=None, on_settings=None, **kw):
         kw.setdefault("orientation", "vertical")
         super().__init__(**kw)
 
@@ -822,7 +538,7 @@ class _ChatPanel(BoxLayout):
             self._bg = Rectangle(pos=self.pos, size=self.size)
         self.bind(pos=self._upd_bg, size=self._upd_bg)
 
-        self.header = _Header()
+        self.header = _Header(on_settings=on_settings)
         self.add_widget(self.header)
         self.add_widget(_Sep())
 
@@ -842,82 +558,43 @@ class _ChatPanel(BoxLayout):
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-#  Application — the Angel's body
+#  Application
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class MKAngelApp(App):
-    """MKAngel Android application — gesture-driven panel system."""
-
     title = "MKAngel"
 
     def build(self):
         Window.softinput_mode = "below_target"
+        Window.bind(on_keyboard=self._on_key)
 
         self.angel = None
         self.session = None
+        self._settings_obj = None
+        self._memory_obj = None
         self._ready = False
-        self._current_panel = GestureAction.CHAT
+        self._showing_settings = False
 
-        # ── Root: FloatLayout to stack panels + gesture overlay ───────
+        # ── Two-panel layout: chat (default) + settings (hidden) ──
         root = FloatLayout()
 
-        # ── Build panels ─────────────────────────────────────────────
-        go_back = lambda *_: self._show_panel(GestureAction.CHAT)
-
-        self._chat_panel = _ChatPanel(on_send=self._on_send)
+        self._chat_panel = _ChatPanel(
+            on_send=self._on_send,
+            on_settings=self._show_settings,
+        )
         self._chat_panel.size_hint = (1, 1)
 
-        self._voice_panel = _VoicePanel(go_back=go_back)
-        self._voice_panel.size_hint = (1, 1)
+        self._settings_panel = _SettingsPanel(on_back=self._show_chat)
+        self._settings_panel.size_hint = (1, 1)
 
-        self._host_panel = _HostPanel(go_back=go_back)
-        self._host_panel.size_hint = (1, 1)
+        root.add_widget(self._chat_panel)
+        root.add_widget(self._settings_panel)
 
-        self._skills_overlay = _SkillsOverlay(go_back=go_back)
-        self._skills_overlay.size_hint = (1, 1)
-
-        self._aspect_switcher = _AspectSwitcher(go_back=go_back)
-        self._aspect_switcher.size_hint = (1, 1)
-
-        self._vestment_switcher = _VestmentSwitcher(go_back=go_back)
-        self._vestment_switcher.size_hint = (1, 1)
-
-        self._document_panel = _DocumentPanel(go_back=go_back)
-        self._document_panel.size_hint = (1, 1)
-
-        self._wings_panel = _WingsPanel(go_back=go_back)
-        self._wings_panel.size_hint = (1, 1)
-
-        # Panel registry — maps gesture action to panel widget
-        self._panels = {
-            GestureAction.CHAT:       self._chat_panel,
-            GestureAction.VOICE:      self._voice_panel,
-            GestureAction.HOSTS:      self._host_panel,
-            GestureAction.SKILLS:     self._skills_overlay,
-            GestureAction.ASPECTS:    self._aspect_switcher,
-            GestureAction.VESTMENTS:  self._vestment_switcher,
-            GestureAction.DOCUMENTS:  self._document_panel,
-            GestureAction.WINGS:      self._wings_panel,
-        }
-
-        # Add panels to root (chat first = bottom layer, visible by default)
-        for name, panel in self._panels.items():
-            root.add_widget(panel)
-
-        # Chat starts visible
-        self._chat_panel.opacity = 1
-        self._chat_panel.disabled = False
-
-        # ── Gesture detector (topmost transparent layer) ─────────────
-        self.gesture = GestureDetector(callback=self._on_gesture)
-        self.gesture.size_hint = (1, 1)
-        root.add_widget(self.gesture)
-
-        # ── Convenience aliases ──────────────────────────────────────
+        # Convenience aliases
         self.chat = self._chat_panel.chat
         self.thinking = self._chat_panel.thinking
 
-        # ── Welcome — Companion aspect greeting ──────────────────────
+        # ── Welcome ──────────────────────────────────────────
         accent_hex = _css("accent").lstrip("#")
         self.chat.add(
             f"[color={accent_hex}][b]BE NOT AFRAID[/b][/color]",
@@ -931,29 +608,60 @@ class MKAngelApp(App):
         threading.Thread(target=self._boot, daemon=True).start()
         return root
 
-    # ── gesture callback ─────────────────────────────────────────────
-    def _on_gesture(self, action: str):
-        self._show_panel(action)
+    # ── Android back / ESC ────────────────────────────────────
+    def _on_key(self, window, key, *args):
+        if key == 27:  # Back on Android, ESC on desktop
+            if self._showing_settings:
+                self._show_chat()
+                return True  # consumed — stay in app
+            return False  # let system handle (exit)
+        return False
 
-    # ── panel switching with fade animation ──────────────────────────
-    def _show_panel(self, name: str):
-        if name == self._current_panel:
+    # ── Panel switching ───────────────────────────────────────
+    def _show_settings(self):
+        if self._showing_settings:
             return
-        if name not in self._panels:
+        self._showing_settings = True
+        self._settings_panel.disabled = False
+        self._settings_panel.opacity = 1
+        self._chat_panel.opacity = 0
+        self._chat_panel.disabled = True
+        self._refresh_settings()
+
+    def _show_chat(self):
+        if not self._showing_settings:
             return
+        self._showing_settings = False
+        self._chat_panel.disabled = False
+        self._chat_panel.opacity = 1
+        self._settings_panel.opacity = 0
+        self._settings_panel.disabled = True
 
-        for pname, panel in self._panels.items():
-            if pname == name:
-                panel.opacity = 0
-                panel.disabled = False
-                Animation(opacity=1, d=0.2).start(panel)
-            else:
-                Animation(opacity=0, d=0.2).start(panel)
-                panel.disabled = True
+    def _refresh_settings(self):
+        angel_info = {}
+        if self.angel:
+            try:
+                angel_info = self.angel.introspect()
+            except Exception:
+                pass
 
-        self._current_panel = name
+        settings_info = {}
+        if self._settings_obj:
+            settings_info = {
+                "provider": self._settings_obj.model_provider,
+                "offline": self._settings_obj.offline_mode,
+            }
 
-    # ── background boot ──────────────────────────────────────────────
+        memory_info = {}
+        if self._memory_obj:
+            try:
+                memory_info = self._memory_obj.stats()
+            except Exception:
+                pass
+
+        self._settings_panel.update_info(angel_info, settings_info, memory_info)
+
+    # ── Background boot ───────────────────────────────────────
     def _boot(self):
         t0 = time.time()
 
@@ -980,13 +688,13 @@ class MKAngelApp(App):
             from app.providers import get_provider
             from app.chat import ChatSession
 
-            settings = Settings.load()
-            memory = Memory()
-            provider = get_provider(settings)
+            self._settings_obj = Settings.load()
+            self._memory_obj = Memory()
+            provider = get_provider(self._settings_obj)
             self.session = ChatSession(
                 angel=self.angel,
-                memory=memory,
-                settings=settings,
+                memory=self._memory_obj,
+                settings=self._settings_obj,
                 provider=provider,
             )
         except Exception as exc:
@@ -1029,11 +737,10 @@ class MKAngelApp(App):
             lambda _: self.chat.add(status, kind="success")
         )
 
-    # ── send handler (main thread) ───────────────────────────────────
+    # ── Send handler (main thread) ────────────────────────────
     def _on_send(self, text: str):
-        # If not on chat panel, switch to it
-        if self._current_panel != GestureAction.CHAT:
-            self._show_panel(GestureAction.CHAT)
+        if self._showing_settings:
+            self._show_chat()
 
         self.chat.add(text, kind="user")
 
@@ -1049,7 +756,7 @@ class MKAngelApp(App):
             target=self._process, args=(text,), daemon=True,
         ).start()
 
-    # ── process input (background thread) ────────────────────────────
+    # ── Process input (background thread) ─────────────────────
     def _process(self, text: str):
         try:
             if self.session:
