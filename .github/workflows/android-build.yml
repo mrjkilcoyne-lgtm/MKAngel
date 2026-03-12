@@ -23,6 +23,13 @@ jobs:
         with:
           python-version: '3.12'
 
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Generate Gradle wrapper
+        working-directory: android
+        run: gradle wrapper --gradle-version 8.5
+
       - name: Build APK
         working-directory: android
         run: ./gradlew assembleDebug
