@@ -16,13 +16,6 @@ android {
         versionName = "0.1.0"
 
         ndk { abiFilters += listOf("arm64-v8a") }
-
-        python {
-            buildPython("python3")
-            pip {
-                // No external deps — pure Python GLM
-            }
-        }
     }
 
     buildFeatures { compose = true }
@@ -54,6 +47,7 @@ dependencies {
 chaquopy {
     defaultConfig {
         version = "3.12"
+        buildPython("python3")
     }
     sourceSets {
         getByName("main") {
