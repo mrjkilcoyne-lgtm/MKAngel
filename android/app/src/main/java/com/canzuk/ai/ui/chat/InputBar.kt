@@ -6,6 +6,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.Mic
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -17,9 +18,11 @@ import com.canzuk.ai.ui.theme.*
 @Composable
 fun InputBar(
     onSend: (String) -> Unit,
+    onMicTap: () -> Unit = {},
     enabled: Boolean = true,
 ) {
     var text by remember { mutableStateOf("") }
+    val hasText = text.isNotBlank()
 
     Row(
         modifier = Modifier
@@ -48,24 +51,41 @@ fun InputBar(
 
         Spacer(Modifier.width(8.dp))
 
-        IconButton(
-            onClick = {
-                if (text.isNotBlank()) {
+        if (hasText) {
+            // Send button — shown when text is present
+            IconButton(
+                onClick = {
                     onSend(text)
                     text = ""
-                }
-            },
-            modifier = Modifier
-                .size(48.dp)
-                .clip(CircleShape)
-                .background(if (text.isNotBlank()) CanzukRed else TextDim.copy(alpha = 0.2f)),
-            enabled = text.isNotBlank() && enabled,
-        ) {
-            Icon(
-                Icons.Filled.ArrowUpward,
-                contentDescription = "Send",
-                tint = CanzukWhite,
-            )
+                },
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(CanzukRed),
+                enabled = enabled,
+            ) {
+                Icon(
+                    Icons.Filled.ArrowUpward,
+                    contentDescription = "Send",
+                    tint = CanzukWhite,
+                )
+            }
+        } else {
+            // Mic button — shown when text field is empty
+            IconButton(
+                onClick = onMicTap,
+                modifier = Modifier
+                    .size(48.dp)
+                    .clip(CircleShape)
+                    .background(CanzukRed),
+                enabled = enabled,
+            ) {
+                Icon(
+                    Icons.Filled.Mic,
+                    contentDescription = "Voice mode",
+                    tint = CanzukWhite,
+                )
+            }
         }
     }
 }
