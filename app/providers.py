@@ -156,6 +156,81 @@ class LocalProvider(Provider):
 
 
 # ---------------------------------------------------------------------------
+# NLG provider -- MNEMO-native generation
+# ---------------------------------------------------------------------------
+
+class NLGProvider(Provider):
+    """Uses the MNEMO NLG engine for native generation.
+
+    Three-stage pipeline: ENCODE (NL->MNEMO) -> PROCESS -> DECODE (MNEMO->NL).
+    No API dependency — the GLM IS the engine.
+    """
+
+    name = "nlg"
+
+    def __init__(self) -> None:
+        self._encoder = None
+        self._decoder = None
+        self._substrate = None
+        self._dispatcher = None
+
+    def _ensure_loaded(self) -> None:
+        """Lazy-load NLG components."""
+        if self._encoder is None:
+            from glm.nlg.encoder import MnemoEncoder
+            from glm.nlg.decoder import MnemoDecoder
+            from glm.core.mnemo_substrate import MnemoSubstrate
+            from glm.nlg.processors import create_default_dispatcher
+            self._substrate = MnemoSubstrate()
+            self._encoder = MnemoEncoder(substrate=self._substrate)
+            self._decoder = MnemoDecoder(substrate=self._substrate)
+            self._dispatcher = create_default_dispatcher()
+
+    def generate(
+        self,
+        prompt: str,
+        *,
+        system: str = "",
+        temperature: float = 0.7,
+        max_tokens: int = 1024,
+    ) -> str:
+        """Generate via MNEMO NLG pipeline.
+
+        1. ENCODE: Natural language -> MNEMO
+        2. PROCESS: (future: grammar derivation + attention in MNEMO space)
+        3. DECODE: MNEMO -> Natural language
+        """
+        self._ensure_loaded()
+
+        # Stage 1: ENCODE
+        mnemo_seq = self._encoder.encode(prompt)
+
+        # Stage 2: PROCESS — domain-specific API enrichment
+        domain = self._encoder.detect_domain(prompt)
+        api_slots = self._dispatcher.process(domain, prompt, mnemo_seq)
+        extra_slots = {"content": prompt}
+        extra_slots.update(api_slots)
+
+        # Stage 3: DECODE
+        result = self._decoder.decode(
+            mnemo_seq,
+            language="en",
+            extra_slots=extra_slots,
+        )
+
+        if result:
+            domain = self._encoder.detect_domain(prompt)
+            source, confidence, temporal = self._decoder._extract_evidentials(mnemo_seq)
+            header = f"[NLG | domain: {domain} | {source}/{confidence}/{temporal}]"
+            return f"{header}\n\n{result}"
+
+        return "[NLG] Processed through MNEMO pipeline. No strong derivation."
+
+    def is_available(self) -> bool:
+        return True
+
+
+# ---------------------------------------------------------------------------
 # API provider -- external LLM services
 # ---------------------------------------------------------------------------
 
