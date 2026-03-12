@@ -49,6 +49,13 @@ from .physics import (
     build_quantum_grammar,
     build_relativity_grammar,
 )
+from .reasoning import (
+    build_reasoning_grammar,
+    build_inference_grammar,
+    build_causal_grammar,
+    build_structural_grammar,
+    build_meta_grammar,
+)
 
 __all__ = [
     # Linguistic
@@ -82,4 +89,10 @@ __all__ = [
     "build_thermodynamics_grammar",
     "build_quantum_grammar",
     "build_relativity_grammar",
+    # Reasoning
+    "build_reasoning_grammar",
+    "build_inference_grammar",
+    "build_causal_grammar",
+    "build_structural_grammar",
+    "build_meta_grammar",
 ]

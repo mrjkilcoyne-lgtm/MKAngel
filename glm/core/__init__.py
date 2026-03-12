@@ -3,6 +3,7 @@
 from .grammar import Rule, Production, Grammar, StrangeLoop, Direction
 from .lexicon import Lexicon, LexicalEntry
 from .engine import DerivationEngine, Derivation, DerivationTree
+from .reasoning import ReasoningEngine, ReasoningChain, ReasoningStep
 
 # Substrate imports are deferred — the module may not exist yet.
 try:
@@ -24,4 +25,7 @@ __all__ = [
     "DerivationEngine",
     "Derivation",
     "DerivationTree",
+    "ReasoningEngine",
+    "ReasoningChain",
+    "ReasoningStep",
 ]

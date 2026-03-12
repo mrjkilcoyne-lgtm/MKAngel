@@ -30,6 +30,7 @@ from glm.core.grammar import Grammar, Rule, Production, StrangeLoop
 from glm.core.substrate import Substrate, Symbol, Sequence
 from glm.core.lexicon import Lexicon, LexicalEntry
 from glm.core.engine import DerivationEngine, Derivation, DerivationTree
+from glm.core.reasoning import ReasoningEngine, ReasoningChain, ReasoningStep
 
 from glm.grammars.linguistic import (
     build_syntactic_grammar,
@@ -69,6 +70,7 @@ from glm.grammars.physics import (
     build_quantum_grammar,
     build_relativity_grammar,
 )
+from glm.grammars.reasoning import build_reasoning_grammar
 
 from glm.substrates.phonological import PhonologicalSubstrate
 from glm.substrates.morphological import MorphologicalSubstrate
@@ -109,6 +111,7 @@ class AngelConfig:
         "computational",
         "mathematical",
         "physics",
+        "reasoning",
     ])
 
 
@@ -214,6 +217,7 @@ class Angel:
         self._initialised = False
         self._word_categories: dict[str, str] = dict(self._DEFAULT_CATEGORIES)
         self._learned_words: dict[str, int] = {}  # word → encounter count
+        self._reasoner: ReasoningEngine | None = None
 
     # ------------------------------------------------------------------
     # Initialisation — loading the scales
@@ -229,6 +233,7 @@ class Angel:
         self._load_substrates()
         self._load_grammars()
         self._build_model()
+        self._build_reasoner()
         self._detect_strange_loops()
         self._initialised = True
         return self
@@ -290,6 +295,9 @@ class Angel:
                 build_quantum_grammar,
                 build_relativity_grammar,
             ],
+            "reasoning": [
+                build_reasoning_grammar,
+            ],
         }
         for domain in self.config.domains:
             builders = grammar_builders.get(domain, [])
@@ -307,6 +315,16 @@ class Angel:
             loop_depth=cfg.loop_depth,
         )
         self._model = GrammarLanguageModel(model_config)
+
+    def _build_reasoner(self) -> None:
+        """Construct the reasoning engine — the chain-of-thought reasoner."""
+        self._reasoner = ReasoningEngine(
+            engine=self._engine,
+            grammars=self._grammars,
+            beam_width=5,
+            max_depth=20,
+            min_confidence=0.01,
+        )
 
     def _detect_strange_loops(self) -> None:
         """Find strange loops across all loaded grammars.
@@ -545,6 +563,9 @@ class Angel:
         # Morphological insights
         morpho_insights = self._analyze_morphology(tokens)
 
+        # Reasoning — the GLM's chain-of-thought pipeline
+        reasoning_result = self.reason(text, max_depth=10)
+
         # Build a response
         info = self.introspect()
 
@@ -556,6 +577,14 @@ class Angel:
             "new_words": new_words,
             "known_words": known_words,
             "morphological": morpho_insights,
+            "reasoning": {
+                "chain_depth": reasoning_result["chain_depth"],
+                "confidence": reasoning_result["confidence"],
+                "domains_used": reasoning_result["domains_used"],
+                "trace": reasoning_result["trace"][:10],  # Top 10 steps
+                "answer": reasoning_result["answer"],
+                "analogies": reasoning_result["analogies_used"],
+            },
             "mnemo": mnemo,
             "mnemo_decoded": mnemo_decoded.get("description", ""),
             "mnemo_domain": mnemo_domain,
@@ -729,6 +758,263 @@ class Angel:
             ),
         }
 
+    # ------------------------------------------------------------------
+    # Reasoning pipeline — the GLM's superpower
+    # ------------------------------------------------------------------
+
+    def reason(
+        self,
+        question: str,
+        *,
+        domains: list[str] | None = None,
+        goal: Any | None = None,
+        max_depth: int = 15,
+    ) -> dict[str, Any]:
+        """Reason about a question via grammar derivation chains.
+
+        This is the GLM's core advantage over LLMs: instead of
+        predicting the next token by statistics, it derives conclusions
+        from rules.  Each step is justified.  Each chain is verifiable.
+
+        The pipeline:
+        1. Parse input into symbolic form
+        2. Identify relevant domains via MNEMO
+        3. Chain grammar derivations via beam search
+        4. When stuck, try analogical transfer
+        5. Self-improve by learning from successful chains
+        6. Return a verifiable reasoning trace
+
+        Args:
+            question: Natural language question or problem.
+            domains:  Which domains to reason in (None = all).
+            goal:     Optional target conclusion to reach.
+            max_depth: Maximum reasoning chain depth.
+
+        Returns:
+            Dict with reasoning_chain, trace, answer, confidence,
+            domains_used, analogies_used, stats.
+        """
+        self._ensure_awake()
+
+        # Step 1: Parse to symbolic form
+        tokens = question.lower().split()
+        categories = self.categorize_tokens(tokens)
+
+        # Step 2: Identify domains via MNEMO
+        try:
+            mnemo = mnemo_encode(question)
+            mnemo_decoded = mnemo_decode(mnemo)
+        except Exception:
+            mnemo = "*a"
+            mnemo_decoded = {"description": "universal analyze", "is_valid": True}
+
+        mnemo_domain = mnemo_decoded.get("operations", [{}])[0].get(
+            "domain", "reasoning"
+        ) if mnemo_decoded.get("operations") else "reasoning"
+
+        # Determine which domains to search
+        if domains is None:
+            domains = ["reasoning"]  # Always include reasoning
+            if mnemo_domain != "reasoning" and mnemo_domain in self._grammars:
+                domains.append(mnemo_domain)
+            # Add linguistic for natural language questions
+            if "linguistic" not in domains:
+                domains.append("linguistic")
+
+        # Step 3: Build symbolic start form
+        # Try multiple representations to maximize rule firing
+        start_forms = self._build_start_forms(question, tokens, categories)
+
+        # Step 4: Run the reasoning engine on each start form
+        best_chain = ReasoningChain(question=question)
+        for start_form in start_forms:
+            chain = self._reasoner.reason(
+                question=question,
+                start_form=start_form,
+                goal=goal,
+                domains=domains,
+                max_depth=max_depth,
+            )
+            if chain.confidence > best_chain.confidence:
+                best_chain = chain
+
+        # Step 5: Build structured response
+        return {
+            "question": question,
+            "reasoning_chain": [
+                {
+                    "step": i + 1,
+                    "from": step.input,
+                    "to": step.output,
+                    "rule": step.rule_name,
+                    "domain": step.domain,
+                    "confidence": step.confidence,
+                    "justification": step.justification,
+                }
+                for i, step in enumerate(best_chain.steps)
+            ],
+            "trace": best_chain.trace,
+            "answer": best_chain.answer,
+            "confidence": best_chain.confidence,
+            "chain_depth": best_chain.depth,
+            "domains_used": best_chain.domains_used,
+            "analogies_used": best_chain.analogies_used,
+            "is_complete": best_chain.is_complete,
+            "mnemo": mnemo,
+            "stats": self._reasoner.get_stats(),
+        }
+
+    def reason_bidirectional(
+        self,
+        question: str,
+        start: Any,
+        goal: Any,
+        *,
+        domains: list[str] | None = None,
+    ) -> dict[str, Any]:
+        """Reason forward from start AND backward from goal.
+
+        Meet-in-the-middle search: O(2*b^(d/2)) instead of O(b^d).
+        For grammar-constrained search, this can be 50,000x fewer
+        states than unidirectional.
+        """
+        self._ensure_awake()
+        domains = domains or list(self._grammars.keys())
+
+        chain = self._reasoner.reason_bidirectional(
+            question=question,
+            start_form=start,
+            goal_form=goal,
+            domains=domains,
+        )
+
+        return {
+            "question": question,
+            "reasoning_chain": [
+                {
+                    "step": i + 1,
+                    "from": step.input,
+                    "to": step.output,
+                    "rule": step.rule_name,
+                    "domain": step.domain,
+                    "confidence": step.confidence,
+                    "justification": step.justification,
+                }
+                for i, step in enumerate(chain.steps)
+            ],
+            "trace": chain.trace,
+            "answer": chain.answer,
+            "confidence": chain.confidence,
+            "chain_depth": chain.depth,
+            "is_complete": chain.is_complete,
+        }
+
+    def reason_by_analogy(
+        self,
+        question: str,
+        source_domain: str,
+        target_domain: str,
+    ) -> dict[str, Any]:
+        """Solve a problem by analogical transfer between domains.
+
+        The GLM's unique capability: if a chemistry problem has the
+        same grammatical structure as a linguistics problem, solve
+        it in linguistics and transfer the solution.
+        """
+        self._ensure_awake()
+
+        tokens = question.lower().split()
+        start_forms = self._build_start_forms(question, tokens,
+                                               self.categorize_tokens(tokens))
+
+        best_chain = ReasoningChain(question=question)
+        for start_form in start_forms:
+            # First try in source domain
+            chain = self._reasoner.reason(
+                question=question,
+                start_form=start_form,
+                domains=[source_domain, target_domain],
+            )
+            if chain.confidence > best_chain.confidence:
+                best_chain = chain
+
+        return {
+            "question": question,
+            "source_domain": source_domain,
+            "target_domain": target_domain,
+            "reasoning_chain": [
+                {
+                    "step": i + 1,
+                    "from": step.input,
+                    "to": step.output,
+                    "rule": step.rule_name,
+                    "domain": step.domain,
+                    "justification": step.justification,
+                }
+                for i, step in enumerate(best_chain.steps)
+            ],
+            "trace": best_chain.trace,
+            "answer": best_chain.answer,
+            "confidence": best_chain.confidence,
+            "analogies_used": best_chain.analogies_used,
+        }
+
+    def _build_start_forms(
+        self,
+        question: str,
+        tokens: list[str],
+        categories: list[str],
+    ) -> list[Any]:
+        """Build multiple symbolic representations for the reasoning engine.
+
+        The more representations we try, the more rules can fire.
+        Grammar-constrained search keeps this tractable.
+        """
+        forms: list[Any] = []
+
+        # Raw text
+        forms.append(question)
+
+        # Token list
+        if tokens:
+            forms.append(tokens)
+
+        # Category sequence
+        if categories:
+            forms.append(categories)
+
+        # Individual categories (as strings for production matching)
+        for cat in set(categories):
+            forms.append(cat)
+
+        # Pairs of tokens for relational rules
+        for i in range(len(tokens) - 1):
+            forms.append((tokens[i], tokens[i + 1]))
+
+        # Detect structural patterns in the question
+        q_lower = question.lower()
+        if " implies " in q_lower:
+            forms.append(q_lower)
+        if " causes " in q_lower:
+            forms.append(q_lower)
+        if " is a " in q_lower:
+            forms.append(q_lower)
+        if " if " in q_lower and " then " in q_lower:
+            # Convert if-then to implies
+            parts = q_lower.split(" if ", 1)
+            if " then " in parts[-1]:
+                cond_parts = parts[-1].split(" then ", 1)
+                forms.append(f"{cond_parts[0].strip()} implies {cond_parts[1].strip()}")
+        if " and " in q_lower:
+            # Split conjunctions for individual reasoning
+            conjuncts = q_lower.split(" and ")
+            for c in conjuncts:
+                c = c.strip()
+                if c:
+                    forms.append(c)
+
+        return forms
+
     def translate(
         self,
         sequence: list[str],
@@ -789,6 +1075,7 @@ class Angel:
             "substrates_loaded": list(self._substrates.keys()),
             "lexicon_size": len(self._lexicon),
             "model_params": self._model.num_parameters if self._model else 0,
+            "reasoning_stats": self._reasoner.get_stats() if self._reasoner else {},
             "self_referential": True,  # Always true — this is a strange loop
         }
 
