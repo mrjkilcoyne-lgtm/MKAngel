@@ -51,8 +51,7 @@ chaquopy {
     }
     sourceSets {
         getByName("main") {
-            srcDir("../../glm")
-            srcDir("../../app")
+            srcDir("../../")
         }
     }
 }
