@@ -68,6 +68,7 @@ class GLMBridgeServer:
             "encode": self._handle_encode,
             "decode": self._handle_decode,
             "derive": self._handle_derive,
+            "generate": self._handle_generate,
             "route": self._handle_route,
             "realise": self._handle_realise,
             "mnemo": self._handle_mnemo,
@@ -151,6 +152,106 @@ class GLMBridgeServer:
                 "temporal": temp.code if temp else None,
             },
         }
+
+    def _handle_generate(self, params: Dict[str, Any]) -> Dict[str, Any]:
+        """Ghost-aware generation: system prompt + query -> persona-voiced response.
+
+        This is the method Ghosts use. It runs the full derive pipeline for
+        factual data, then wraps the output with the ghost's personality via
+        the system prompt as a prefix instruction.
+
+        Params:
+            text:   The user's query / document content
+            system: Ghost system prompt (personality, tone, cadence)
+            language: Target language code (default: 'en')
+        """
+        text = params.get("text", "")
+        system = params.get("system", "")
+        language = params.get("language", "en")
+
+        # Stage 1: Run the full derive pipeline for factual data
+        derive_result = self._handle_derive({
+            "text": text, "language": language,
+        })
+        factual_output = derive_result.get("output", text)
+        domain = derive_result.get("domain", "general")
+        api_slots = derive_result.get("api_slots", {})
+
+        # Stage 2: Apply ghost persona to the factual output
+        # The system prompt shapes HOW the data is presented, not WHAT data.
+        # We build a persona-voiced response by combining the ghost's voice
+        # instructions with the factual content from the GLM pipeline.
+        if system:
+            # The ghost personality wraps around the factual output
+            response = self._apply_persona(system, text, factual_output, domain, api_slots)
+        else:
+            response = factual_output
+
+        return {
+            "response": response,
+            "domain": domain,
+            "model": "glm",
+            "api_slots": api_slots,
+            "factual_base": factual_output,
+        }
+
+    def _apply_persona(
+        self,
+        system: str,
+        query: str,
+        factual: str,
+        domain: str,
+        slots: Dict[str, str],
+    ) -> str:
+        """Apply ghost persona voice to factual GLM output.
+
+        Uses the ghost's system prompt to frame the factual data.
+        This is a rule-based persona layer — no LLM needed.
+        """
+        # Extract ghost voice markers from system prompt
+        voice_lower = system.lower()
+
+        # Build persona prefix based on ghost style cues
+        prefix = ""
+        suffix = ""
+
+        if "punchy" in voice_lower or "thunderous" in voice_lower:
+            # Churchill-style: declarative, emphatic
+            prefix = "I tell you plainly: "
+        elif "simplest model" in voice_lower or "feynman" in voice_lower:
+            # Feynman-style: explanatory, playful
+            prefix = "Here's the thing — "
+            suffix = " Pretty neat, right?"
+        elif "brilliant" in voice_lower and "curious" in voice_lower:
+            # Doctor-style: excited, fast
+            prefix = "Oh, brilliant! "
+            suffix = " Isn't that just fantastic?"
+        elif "wit" in voice_lower and "pratchett" in voice_lower:
+            # Pratchett-style: footnote-laden
+            prefix = "As it happens, "
+            suffix = " (Which is, of course, the sort of thing that sounds obvious only after someone tells you.)"
+        elif "riddle" in voice_lower or "granny" in voice_lower:
+            # Granny Weatherwax: terse, knowing
+            prefix = "I shouldn't have to tell you this, but "
+            suffix = " And that's all there is to it."
+        elif "ada" in voice_lower or "lovelace" in voice_lower:
+            # Ada-style: precise, visionary
+            prefix = "By rigorous analysis: "
+        elif "tolkien" in voice_lower or "mythology" in voice_lower:
+            # Tolkien-style: narrative
+            prefix = "In the annals of knowledge, it is recorded that "
+        elif "sun tzu" in voice_lower or "strategic" in voice_lower:
+            # Sun Tzu: aphoristic
+            prefix = "The wise commander knows: "
+        elif "brunel" in voice_lower or "engineer" in voice_lower:
+            # Brunel: practical
+            prefix = "The engineering facts are clear: "
+        elif "scheherazade" in voice_lower or "story" in voice_lower:
+            # Scheherazade: narrative framing
+            prefix = "And so it is told: "
+            suffix = " ...but that is a story for another night."
+
+        return f"{prefix}{factual}{suffix}"
 
     def _handle_route(self, params: Dict[str, Any]) -> Dict[str, Any]:
         """Domain detection only."""
