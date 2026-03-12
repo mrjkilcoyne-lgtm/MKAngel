@@ -23,6 +23,11 @@ from glm.core.mnemo_substrate import (
 from glm.nlg.realiser import Realiser
 from glm.nlg.templates import TemplateRegistry
 from glm.nlg.templates.en import register_english
+from glm.nlg.templates.fr import register_french
+from glm.nlg.templates.es import register_spanish
+from glm.nlg.templates.de import register_german
+from glm.nlg.templates.tr import register_turkish
+from glm.nlg.templates.cy import register_welsh
 
 
 # Scale index -> domain name
@@ -56,9 +61,17 @@ class MnemoDecoder:
     _registries: Dict[str, TemplateRegistry] = field(default_factory=dict)
 
     def __post_init__(self):
-        en_reg = TemplateRegistry()
-        register_english(en_reg)
-        self._registries["en"] = en_reg
+        # Build a single registry with all languages
+        registry = TemplateRegistry()
+        register_english(registry)
+        register_french(registry)
+        register_spanish(registry)
+        register_german(registry)
+        register_turkish(registry)
+        register_welsh(registry)
+        # Index by language code for fast lookup
+        for lang in ("en", "fr", "es", "de", "tr", "cy"):
+            self._registries[lang] = registry
 
     def decode(
         self,

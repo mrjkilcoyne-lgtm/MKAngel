@@ -33,7 +33,13 @@ from glm.nlg.decoder import MnemoDecoder
 from glm.nlg.realiser import Realiser
 from glm.nlg.templates import TemplateRegistry
 from glm.nlg.templates.en import register_english
+from glm.nlg.templates.fr import register_french
+from glm.nlg.templates.es import register_spanish
+from glm.nlg.templates.de import register_german
+from glm.nlg.templates.tr import register_turkish
+from glm.nlg.templates.cy import register_welsh
 from glm.nlg.processors import create_default_dispatcher
+from glm.nlg.data_crawler import crawl
 
 
 class GLMBridgeServer:
@@ -45,6 +51,11 @@ class GLMBridgeServer:
         self._decoder = MnemoDecoder(substrate=self._substrate)
         self._registry = TemplateRegistry()
         register_english(self._registry)
+        register_french(self._registry)
+        register_spanish(self._registry)
+        register_german(self._registry)
+        register_turkish(self._registry)
+        register_welsh(self._registry)
         self._dispatcher = create_default_dispatcher()
 
     def handle_request(self, request: Dict[str, Any]) -> Dict[str, Any]:
@@ -108,6 +119,15 @@ class GLMBridgeServer:
 
         # Stage 2: Process — domain-specific API enrichment
         api_slots = self._dispatcher.process(domain, text, seq)
+
+        # Stage 2b: Data crawler fallback — if processor returned nothing,
+        # try crawling free public APIs for real data
+        if not api_slots:
+            try:
+                api_slots = crawl(text, domain=domain, lang=language)
+            except Exception:
+                api_slots = {}
+
         extra_slots = {"content": text}
         extra_slots.update(api_slots)
 

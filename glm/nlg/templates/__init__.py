@@ -49,7 +49,9 @@ class TemplateRegistry:
     def __len__(self) -> int:
         return len(self._templates)
 
-    def add(self, template: SurfaceTemplate) -> None:
+    def add(self, template: SurfaceTemplate, language: Optional[str] = None) -> None:
+        if language is not None:
+            template.language = language
         self._templates.append(template)
 
     def for_domain(self, domain: str, language: str = "en") -> List[SurfaceTemplate]:
