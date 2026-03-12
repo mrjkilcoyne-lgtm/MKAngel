@@ -37,20 +37,34 @@ class ChatViewModel(
 
         // Stream response
         viewModelScope.launch {
-            val buffer = StringBuilder()
-            engine.stream(text).collect { token ->
-                buffer.append(token)
-                _state.update { it.copy(streamingContent = buffer.toString()) }
-            }
+            try {
+                val buffer = StringBuilder()
+                engine.stream(text).collect { token ->
+                    buffer.append(token)
+                    _state.update { it.copy(streamingContent = buffer.toString()) }
+                }
 
-            // Finalise assistant message
-            val assistantMsg = Message(role = MessageRole.ASSISTANT, content = buffer.toString())
-            _state.update {
-                it.copy(
-                    messages = it.messages + assistantMsg,
-                    isGenerating = false,
-                    streamingContent = "",
+                // Finalise assistant message
+                val assistantMsg = Message(role = MessageRole.ASSISTANT, content = buffer.toString())
+                _state.update {
+                    it.copy(
+                        messages = it.messages + assistantMsg,
+                        isGenerating = false,
+                        streamingContent = "",
+                    )
+                }
+            } catch (e: Exception) {
+                val errorMsg = Message(
+                    role = MessageRole.ASSISTANT,
+                    content = "Engine error: ${e.message ?: "unknown failure"}",
                 )
+                _state.update {
+                    it.copy(
+                        messages = it.messages + errorMsg,
+                        isGenerating = false,
+                        streamingContent = "",
+                    )
+                }
             }
         }
     }
@@ -72,25 +86,39 @@ class ChatViewModel(
 
         // Process through engine same as text input
         viewModelScope.launch {
-            val buffer = StringBuilder()
-            engine.stream(text).collect { token ->
-                buffer.append(token)
-                _state.update { it.copy(streamingContent = buffer.toString()) }
-            }
+            try {
+                val buffer = StringBuilder()
+                engine.stream(text).collect { token ->
+                    buffer.append(token)
+                    _state.update { it.copy(streamingContent = buffer.toString()) }
+                }
 
-            // Finalise assistant message
-            val response = buffer.toString()
-            val assistantMsg = Message(role = MessageRole.ASSISTANT, content = response)
-            _state.update {
-                it.copy(
-                    messages = it.messages + assistantMsg,
-                    isGenerating = false,
-                    streamingContent = "",
+                // Finalise assistant message
+                val response = buffer.toString()
+                val assistantMsg = Message(role = MessageRole.ASSISTANT, content = response)
+                _state.update {
+                    it.copy(
+                        messages = it.messages + assistantMsg,
+                        isGenerating = false,
+                        streamingContent = "",
+                    )
+                }
+
+                // Return response for TTS
+                _voiceResponse.tryEmit(response)
+            } catch (e: Exception) {
+                val errorMsg = Message(
+                    role = MessageRole.ASSISTANT,
+                    content = "Engine error: ${e.message ?: "unknown failure"}",
                 )
+                _state.update {
+                    it.copy(
+                        messages = it.messages + errorMsg,
+                        isGenerating = false,
+                        streamingContent = "",
+                    )
+                }
             }
-
-            // Return response for TTS
-            _voiceResponse.tryEmit(response)
         }
     }
 }

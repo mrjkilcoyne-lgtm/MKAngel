@@ -25,15 +25,18 @@ class CanzukBridge:
         """Process input and return complete response as string."""
         return "".join(self.stream(text))
 
-    def stream(self, text: str) -> Iterator[str]:
-        """Stream response tokens from grammar engine.
+    def stream(self, text: str) -> list:
+        """Return response tokens from grammar engine as a list.
+
+        Returns a list (not a generator) for Chaquopy Java interop —
+        PyObject.asList() requires a concrete Python list.
 
         1. Pipeline decomposes input (Skeleton→DAG→Disconfirm→Synthesis)
         2. Realiser walks the validated derivation tree
-        3. Yields natural language tokens as they are generated
+        3. Returns all tokens as a list
         """
         pipeline_result = self._pipeline.run(text)
-        yield from self._realiser.stream(pipeline_result, text)
+        return list(self._realiser.stream(pipeline_result, text))
 
     def introspect(self) -> dict:
         """Return live model stats for the Introspection screen."""

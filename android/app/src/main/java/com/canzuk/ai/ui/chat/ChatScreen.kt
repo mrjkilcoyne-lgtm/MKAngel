@@ -24,7 +24,7 @@ fun ChatScreen(viewModel: ChatViewModel) {
         }
     }
 
-    Column(modifier = Modifier.fillMaxSize()) {
+    Column(modifier = Modifier.fillMaxSize().imePadding()) {
         // Header — CANZUK in red, -AI in blue
         Surface(
             color = MaterialTheme.colorScheme.background,
