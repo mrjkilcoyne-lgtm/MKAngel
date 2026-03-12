@@ -42,11 +42,15 @@ _DOMAIN_KEYWORDS: Dict[str, List[str]] = {
         "equation", "solve", "proof", "theorem", "integral", "derivative",
         "matrix", "vector", "function", "limit", "infinity", "prime",
         "algebra", "calculus", "topology", "geometry", "number",
+        "simplify", "factor", "zeroes", "tangent", "area", "integrate",
+        "derive", "cos", "sin", "log", "sqrt", "sum", "product",
+        "x^", "x+", "x-", "x=", "x*", "^2", "^3",
     ],
     "physical": [
         "force", "energy", "mass", "velocity", "acceleration", "gravity",
         "quantum", "wave", "particle", "field", "electro", "magnetic",
-        "thermo", "entropy", "momentum", "relativity",
+        "thermo", "entropy", "momentum", "relativity", "speed of light",
+        "planck", "boltzmann", "constant", "newton", "joule", "watt",
     ],
     "computational": [
         "algorithm", "variable", "loop", "class", "object",
