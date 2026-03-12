@@ -451,7 +451,8 @@ class _SettingsPanel(BoxLayout):
         ))
         self._content.add_widget(self._placeholder)
 
-    def update_info(self, angel_info, settings_info, memory_info):
+    def update_info(self, angel_info, settings_info, memory_info,
+                    conductor_info=None):
         """Refresh settings display with live data."""
         self._content.clear_widgets()
 
@@ -459,6 +460,7 @@ class _SettingsPanel(BoxLayout):
         teal = _css("teal").lstrip("#")
         dim = _css("text_dim").lstrip("#")
         text_hex = _css("text").lstrip("#")
+        success = _css("success").lstrip("#")
 
         # ── GLM card ─────────────────────────────────────────
         domains = angel_info.get("domains_loaded", [])
@@ -478,17 +480,49 @@ class _SettingsPanel(BoxLayout):
         )
         self._content.add_widget(self._make_card(glm))
 
-        # ── Provider card ────────────────────────────────────
-        provider = settings_info.get("provider", "local")
-        offline = settings_info.get("offline", True)
-        mode = "offline" if offline else "online"
+        # ── Orchestra card (conductor subsystems) ────────────
+        if conductor_info:
+            subs = conductor_info.get("subsystems", {})
+            active = sum(1 for v in subs.values() if v == "active")
+            total = len(subs)
+            active_names = [k for k, v in subs.items() if v == "active"]
+            inactive_names = [k for k, v in subs.items() if v != "active"]
 
-        prov = (
-            f"[color={accent}][b]~ Provider[/b][/color]\n\n"
-            f"[color={teal}]Active[/color]   [color={text_hex}]{provider}[/color]\n"
-            f"[color={teal}]Mode[/color]     [color={text_hex}]{mode}[/color]"
-        )
-        self._content.add_widget(self._make_card(prov))
+            orch = (
+                f"[color={accent}][b]~ Orchestra[/b][/color]\n\n"
+                f"[color={teal}]Voices[/color]   "
+                f"[color={success}]{active}[/color]"
+                f"[color={text_hex}]/{total}[/color]\n\n"
+                f"[color={teal}]Active[/color]\n"
+                f"[color={text_hex}]{', '.join(active_names)}[/color]"
+            )
+            if inactive_names:
+                orch += (
+                    f"\n\n[color={teal}]Inactive[/color]\n"
+                    f"[color={dim}]{', '.join(inactive_names)}[/color]"
+                )
+            self._content.add_widget(self._make_card(orch))
+
+            # Language
+            lang = conductor_info.get("language", "en")
+            provider_name = conductor_info.get("provider_name", "local")
+            prov_card = (
+                f"[color={accent}][b]~ Provider[/b][/color]\n\n"
+                f"[color={teal}]Active[/color]     [color={text_hex}]{provider_name}[/color]\n"
+                f"[color={teal}]Language[/color]   [color={text_hex}]{lang}[/color]"
+            )
+            self._content.add_widget(self._make_card(prov_card))
+        else:
+            # ── Provider card (fallback without conductor) ────
+            provider = settings_info.get("provider", "local")
+            offline = settings_info.get("offline", True)
+            mode = "offline" if offline else "online"
+            prov = (
+                f"[color={accent}][b]~ Provider[/b][/color]\n\n"
+                f"[color={teal}]Active[/color]   [color={text_hex}]{provider}[/color]\n"
+                f"[color={teal}]Mode[/color]     [color={text_hex}]{mode}[/color]"
+            )
+            self._content.add_widget(self._make_card(prov))
 
         # ── Memory card ──────────────────────────────────────
         ms = memory_info.get("sessions", 0)
@@ -503,9 +537,24 @@ class _SettingsPanel(BoxLayout):
         )
         self._content.add_widget(self._make_card(mem))
 
+        # ── Commands card ────────────────────────────────────
+        if conductor_info:
+            cmds = (
+                f"[color={accent}][b]~ Commands[/b][/color]\n\n"
+                f"[color={teal}]/health[/color]    [color={dim}]system health check[/color]\n"
+                f"[color={teal}]/growth[/color]    [color={dim}]learning summary[/color]\n"
+                f"[color={teal}]/diagnose[/color]  [color={dim}]diagnose a symptom[/color]\n"
+                f"[color={teal}]/consent[/color]   [color={dim}]privacy consent[/color]\n"
+                f"[color={teal}]/privacy[/color]   [color={dim}]privacy notice[/color]\n"
+                f"[color={teal}]/export[/color]    [color={dim}]export your data[/color]\n"
+                f"[color={teal}]/forget[/color]    [color={dim}]delete your data[/color]\n"
+                f"[color={teal}]/language[/color]  [color={dim}]set language[/color]"
+            )
+            self._content.add_widget(self._make_card(cmds))
+
         # ── Version ──────────────────────────────────────────
         ver = (
-            f"\n[color={dim}]MKAngel v0.2.0[/color]\n"
+            f"\n[color={dim}]MKAngel v0.3.0[/color]\n"
             f"[color={dim}]Celestial Dark vestment[/color]\n"
         )
         ver_lbl = Label(
@@ -596,6 +645,7 @@ class MKAngelApp(App):
         self.session = None
         self._settings_obj = None
         self._memory_obj = None
+        self._conductor = None
         self._ready = False
         self._showing_settings = False
 
@@ -747,6 +797,24 @@ class MKAngelApp(App):
         """Called when the app returns to foreground on Android."""
         self._check_wake_greeting()
 
+    def on_stop(self):
+        """Called when the app is closing -- graceful shutdown."""
+        if self._conductor:
+            try:
+                self._conductor.shutdown()
+            except Exception:
+                pass
+        elif self.session:
+            try:
+                self.session.save_session()
+            except Exception:
+                pass
+        if not self._conductor and self._memory_obj:
+            try:
+                self._memory_obj.close()
+            except Exception:
+                pass
+
     def _refresh_settings(self):
         angel_info = {}
         if self.angel:
@@ -769,45 +837,78 @@ class MKAngelApp(App):
             except Exception:
                 pass
 
-        self._settings_panel.update_info(angel_info, settings_info, memory_info)
+        conductor_info = None
+        if self._conductor:
+            try:
+                conductor_info = self._conductor.get_status()
+            except Exception:
+                pass
+
+        self._settings_panel.update_info(
+            angel_info, settings_info, memory_info, conductor_info
+        )
 
     # ── Background boot ───────────────────────────────────────
     def _boot(self):
         t0 = time.time()
+        provider = None
 
-        # 1. GLM
+        # ── 1. Try conductor-first boot (owns all subsystems) ──
         try:
-            from glm.angel import Angel
-            self.angel = Angel()
-            self.angel.awaken()
+            from app.conductor import AngelConductor
+            self._conductor = AngelConductor()
+            self._conductor.awaken()
+            # Use conductor's subsystems (avoid double-init)
+            self.angel = self._conductor.angel
+            self._settings_obj = self._conductor.settings
+            self._memory_obj = self._conductor.memory
+            provider = self._conductor.provider
         except Exception as exc:
-            m = str(exc)
-            Clock.schedule_once(
-                lambda _, m=m: self.chat.add(
-                    f"[color={_css('warning').lstrip('#')}]"
-                    f"GLM: {m}[/color]", kind="error",
+            self._conductor = None
+            log.warning("Conductor boot failed (%s), falling back", exc)
+
+        # ── 2. Fallback: manual boot if conductor failed ──
+        if self._conductor is None:
+            try:
+                from glm.angel import Angel
+                self.angel = Angel()
+                self.angel.awaken()
+            except Exception as exc:
+                m = str(exc)
+                Clock.schedule_once(
+                    lambda _, m=m: self.chat.add(
+                        f"[color={_css('warning').lstrip('#')}]"
+                        f"GLM: {m}[/color]", kind="error",
+                    )
                 )
-            )
+
+            try:
+                from app.settings import Settings
+                from app.memory import Memory
+                from app.providers import get_provider as _gp
+                self._settings_obj = Settings.load()
+                self._memory_obj = Memory()
+                provider = _gp(self._settings_obj)
+            except Exception as exc:
+                m = str(exc)
+                Clock.schedule_once(
+                    lambda _, m=m: self.chat.add(
+                        f"[color={_css('warning').lstrip('#')}]"
+                        f"Boot: {m}[/color]", kind="error",
+                    )
+                )
 
         elapsed = time.time() - t0
 
-        # 2. Session
+        # ── 3. ChatSession (history, /exit, /help, /predict) ──
         try:
-            from app.settings import Settings
-            from app.memory import Memory
-            from app.providers import get_provider
             from app.chat import ChatSession
-
-            self._settings_obj = Settings.load()
-            self._memory_obj = Memory()
-            provider = get_provider(self._settings_obj)
             self.session = ChatSession(
                 angel=self.angel,
                 memory=self._memory_obj,
                 settings=self._settings_obj,
                 provider=provider,
             )
-            # Wire up sleep/dream state callback
             self.session.set_on_state_change(self._on_state_change)
         except Exception as exc:
             m = str(exc)
@@ -820,7 +921,7 @@ class MKAngelApp(App):
 
         self._ready = True
 
-        # 3. Status report
+        # ── 4. Status report ──
         try:
             info = self.angel.introspect() if self.angel else {}
         except Exception:
@@ -835,6 +936,26 @@ class MKAngelApp(App):
         success_hex = _css("success").lstrip("#")
         teal_hex    = _css("teal").lstrip("#")
         dim_hex     = _css("text_dim").lstrip("#")
+        accent_hex  = _css("accent").lstrip("#")
+
+        # Conductor subsystem summary
+        conductor_line = ""
+        if self._conductor:
+            try:
+                cst = self._conductor.get_status()
+                subs = cst.get("subsystems", {})
+                active = sum(1 for v in subs.values() if v == "active")
+                total = len(subs)
+                active_names = [k for k, v in subs.items() if v == "active"]
+                conductor_line = (
+                    f"\n[color={accent_hex}][b]Orchestra[/b][/color]  "
+                    f"[color={teal_hex}]{active}/{total}[/color] voices\n"
+                    f"[color={dim_hex}]{', '.join(active_names)}[/color]"
+                )
+            except Exception:
+                conductor_line = (
+                    f"\n[color={accent_hex}][b]Orchestra[/b][/color]  active"
+                )
 
         status = (
             f"[color={success_hex}][b]Angel awakened[/b]  {elapsed:.1f}s[/color]\n\n"
@@ -842,12 +963,12 @@ class MKAngelApp(App):
             f"[color={teal_hex}]Grammars[/color]  {g}    "
             f"[color={teal_hex}]Rules[/color]  {ru}\n"
             f"[color={teal_hex}]Loops[/color]     {lo}    "
-            f"[color={teal_hex}]Params[/color] {pa:,}\n\n"
+            f"[color={teal_hex}]Params[/color] {pa:,}"
+            f"{conductor_line}\n\n"
             f"[color={dim_hex}]What's on your mind?[/color]"
         )
         def _show_status(_):
             self.chat.add(status, kind="success")
-            # Check for unseen dreams on startup
             self._check_wake_greeting()
 
         Clock.schedule_once(_show_status)
@@ -874,7 +995,27 @@ class MKAngelApp(App):
     # ── Process input (background thread) ─────────────────────
     def _process(self, text: str):
         try:
-            if self.session:
+            resp = None
+
+            # 1. Try conductor commands first (/ commands)
+            if text.startswith("/") and self._conductor:
+                cmd_resp = self._conductor.handle_command(text)
+                if cmd_resp is not None:
+                    clean = re.sub(r"\033\[[0-9;]*m", "", str(cmd_resp))
+                    def _show_cmd(_, r=clean):
+                        self.thinking.stop()
+                        self.chat.add(r, kind="angel")
+                    Clock.schedule_once(_show_cmd)
+                    return
+
+            # 2. For non-/ text, use conductor's full pipeline
+            #    (routing, senses, compliance, tongue formatting)
+            if self._conductor and not text.startswith("/"):
+                resp = self._conductor.process(text)
+
+            # 3. Fall through to ChatSession (handles /exit, /help,
+            #    /predict, and plain chat if no conductor)
+            elif self.session:
                 import concurrent.futures as _cf
                 with _cf.ThreadPoolExecutor(max_workers=1) as pool:
                     fut = pool.submit(self.session.process_input, text)
@@ -886,27 +1027,6 @@ class MKAngelApp(App):
                             "a moment. Try a shorter phrase, or "
                             "use /predict with a few key words."
                         )
-
-                if resp == "__EXIT__":
-                    self.session.save_session()
-                    accent_hex = _css("accent_purple").lstrip("#")
-                    def _bye(_):
-                        self.thinking.stop()
-                        self.chat.add(
-                            f"[color={accent_hex}][b]Be not afraid.[/b][/color]",
-                            kind="system",
-                        )
-                    Clock.schedule_once(_bye)
-                    return
-
-                if resp:
-                    clean = re.sub(r"\033\[[0-9;]*m", "", str(resp))
-                    def _show(_, r=clean):
-                        self.thinking.stop()
-                        self.chat.add(r, kind="angel")
-                    Clock.schedule_once(_show)
-                else:
-                    Clock.schedule_once(lambda _: self.thinking.stop())
             else:
                 warn_hex = _css("warning").lstrip("#")
                 def _no_sess(_):
@@ -916,6 +1036,47 @@ class MKAngelApp(App):
                         kind="error",
                     )
                 Clock.schedule_once(_no_sess)
+                return
+
+            # 4. Handle exit signal
+            if resp == "__EXIT__":
+                if self._conductor:
+                    try:
+                        shutdown_msg = self._conductor.shutdown()
+                    except Exception:
+                        shutdown_msg = None
+                if self.session:
+                    self.session.save_session()
+                accent_hex = _css("accent_purple").lstrip("#")
+                dim_hex = _css("text_dim").lstrip("#")
+                def _bye(_):
+                    self.thinking.stop()
+                    if self._conductor:
+                        try:
+                            sm = shutdown_msg
+                            if sm:
+                                self.chat.add(
+                                    f"[color={dim_hex}]{sm}[/color]",
+                                    kind="system",
+                                )
+                        except Exception:
+                            pass
+                    self.chat.add(
+                        f"[color={accent_hex}][b]Be not afraid.[/b][/color]",
+                        kind="system",
+                    )
+                Clock.schedule_once(_bye)
+                return
+
+            # 5. Display response
+            if resp:
+                clean = re.sub(r"\033\[[0-9;]*m", "", str(resp))
+                def _show(_, r=clean):
+                    self.thinking.stop()
+                    self.chat.add(r, kind="angel")
+                Clock.schedule_once(_show)
+            else:
+                Clock.schedule_once(lambda _: self.thinking.stop())
 
         except Exception as exc:
             err = str(exc)
