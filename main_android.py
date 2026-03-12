@@ -147,7 +147,7 @@ class MKAngelApp(App):
 
             settings = Settings.load()
             memory = Memory()
-            provider = get_provider(settings)
+            provider = get_provider(settings, angel=self.angel)
             self.session = ChatSession(
                 angel=self.angel,
                 memory=memory,

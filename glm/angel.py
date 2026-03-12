@@ -77,6 +77,7 @@ from glm.substrates.symbolic import SymbolicSubstrate
 from glm.substrates.mathematical import MathSubstrate
 
 from glm.model.glm import GrammarLanguageModel, GLMConfig
+from glm.mnemo.language import encode as mnemo_encode, decode as mnemo_decode
 
 
 # ---------------------------------------------------------------------------
@@ -126,6 +127,82 @@ class Angel:
     It learns the scales so it can play the masterpieces.
     """
 
+    # Basic word → grammatical category map for bridging raw text
+    # to formal grammar symbols.  Grows as the Angel learns.
+    _DEFAULT_CATEGORIES: dict[str, str] = {
+        # Determiners
+        "the": "Det", "a": "Det", "an": "Det", "this": "Det", "that": "Det",
+        "these": "Det", "those": "Det", "my": "Det", "your": "Det",
+        "his": "Det", "her": "Det", "its": "Det", "our": "Det", "their": "Det",
+        "some": "Det", "any": "Det", "every": "Det", "each": "Det",
+        # Pronouns (mapped to NP since they fill NP slots)
+        "i": "NP", "me": "NP", "you": "NP", "he": "NP", "she": "NP",
+        "it": "NP", "we": "NP", "they": "NP", "them": "NP", "us": "NP",
+        "who": "Wh", "what": "Wh", "which": "Wh", "where": "Wh",
+        "when": "Wh", "why": "Wh", "how": "Wh",
+        # Prepositions
+        "in": "P", "on": "P", "at": "P", "to": "P", "for": "P",
+        "with": "P", "by": "P", "from": "P", "of": "P", "about": "P",
+        "into": "P", "through": "P", "between": "P", "after": "P",
+        "before": "P", "during": "P", "without": "P", "under": "P",
+        "over": "P", "above": "P", "below": "P", "up": "P", "down": "P",
+        # Common verbs
+        "is": "V", "are": "V", "was": "V", "were": "V", "be": "V",
+        "been": "V", "being": "V", "am": "V",
+        "have": "V", "has": "V", "had": "V", "having": "V",
+        "do": "V", "does": "V", "did": "V",
+        "will": "I", "would": "I", "could": "I", "should": "I",
+        "might": "I", "must": "I", "shall": "I", "can": "I", "may": "I",
+        "say": "V", "said": "V", "go": "V", "went": "V", "get": "V",
+        "got": "V", "make": "V", "made": "V", "know": "V", "knew": "V",
+        "think": "V", "thought": "V", "take": "V", "took": "V",
+        "see": "V", "saw": "V", "come": "V", "came": "V",
+        "want": "V", "look": "V", "give": "V", "use": "V",
+        "find": "V", "tell": "V", "put": "V", "run": "V",
+        "feel": "V", "try": "V", "leave": "V", "call": "V",
+        "like": "V", "love": "V", "hate": "V", "need": "V",
+        "keep": "V", "let": "V", "begin": "V", "show": "V",
+        "hear": "V", "play": "V", "move": "V", "live": "V",
+        "believe": "V", "happen": "V", "work": "V", "learn": "V",
+        "understand": "V", "watch": "V", "follow": "V", "stop": "V",
+        "create": "V", "speak": "V", "read": "V", "write": "V",
+        "grow": "V", "open": "V", "walk": "V", "win": "V",
+        "teach": "V", "build": "V", "lose": "V", "sing": "V",
+        "looks": "V", "sits": "V", "stands": "V",
+        # Adjectives
+        "good": "Adj", "bad": "Adj", "big": "Adj", "small": "Adj",
+        "great": "Adj", "old": "Adj", "new": "Adj", "long": "Adj",
+        "high": "Adj", "little": "Adj", "own": "Adj", "other": "Adj",
+        "right": "Adj", "large": "Adj", "young": "Adj", "important": "Adj",
+        "different": "Adj", "early": "Adj", "real": "Adj", "hard": "Adj",
+        "beautiful": "Adj", "strange": "Adj", "alive": "Adj", "much": "Adj",
+        "difficult": "Adj", "backwards": "Adj", "human": "Adj",
+        # Adverbs
+        "not": "Adv", "very": "Adv", "also": "Adv", "often": "Adv",
+        "just": "Adv", "now": "Adv", "then": "Adv", "here": "Adv",
+        "there": "Adv", "always": "Adv", "never": "Adv", "still": "Adv",
+        "already": "Adv", "together": "Adv", "everywhere": "Adv",
+        "upwards": "Adv",
+        # Complementisers / conjunctions
+        "that": "C", "if": "C", "whether": "C",
+        "and": "Conj", "but": "Conj", "or": "Conj", "so": "Conj",
+        "because": "Conj", "although": "Conj", "while": "Conj",
+        # Nouns (common)
+        "system": "N", "time": "N", "people": "N", "way": "N",
+        "day": "N", "man": "N", "woman": "N", "child": "N",
+        "world": "N", "life": "N", "hand": "N", "part": "N",
+        "place": "N", "thing": "N", "year": "N", "name": "N",
+        "home": "N", "book": "N", "word": "N", "music": "N",
+        "language": "N", "grammar": "N", "angel": "N", "loop": "N",
+        "pattern": "N", "structure": "N", "meaning": "N", "rule": "N",
+        "voice": "N", "fugue": "N", "scale": "N", "domain": "N",
+        "prediction": "N", "future": "N", "past": "N", "history": "N",
+        "sofa": "N", "chairs": "N", "pub": "N", "shops": "N",
+        "property": "N", "personality": "N", "ones": "N",
+        "parameters": "N", "grammars": "N", "recursion": "N",
+        "lock": "N", "female": "N",
+    }
+
     def __init__(self, config: AngelConfig | None = None):
         self.config = config or AngelConfig()
         self._grammars: dict[str, list[Grammar]] = {}
@@ -135,6 +212,8 @@ class Angel:
         self._model: GrammarLanguageModel | None = None
         self._strange_loops: list[StrangeLoop] = []
         self._initialised = False
+        self._word_categories: dict[str, str] = dict(self._DEFAULT_CATEGORIES)
+        self._learned_words: dict[str, int] = {}  # word → encounter count
 
     # ------------------------------------------------------------------
     # Initialisation — loading the scales
@@ -243,6 +322,74 @@ class Angel:
                 self._strange_loops.extend(loops)
 
     # ------------------------------------------------------------------
+    # Text → grammar bridge
+    # ------------------------------------------------------------------
+
+    def categorize_tokens(self, tokens: list[str]) -> list[str]:
+        """Map raw word tokens to grammatical categories.
+
+        Unknown words are heuristically categorized based on morphology:
+        - Words ending in -ly → Adv
+        - Words ending in -ness/-ment/-tion/-sion → N
+        - Words ending in -ful/-less/-ous/-ive/-able → Adj
+        - Words ending in -ing/-ed/-es/-s (after consonant) → V
+        - Capitalized words → N (proper noun)
+        - Otherwise → N (default)
+
+        Each encounter with an unknown word is recorded; the Angel
+        learns from repeated exposure.
+        """
+        categories = []
+        for token in tokens:
+            word = token.lower().strip(".,!?;:'\"()-")
+            if not word:
+                continue
+            cat = self._word_categories.get(word)
+            if cat:
+                categories.append(cat)
+                continue
+            # Heuristic categorization
+            cat = self._guess_category(word)
+            # Track encounters — learn on repetition
+            self._learned_words[word] = self._learned_words.get(word, 0) + 1
+            if self._learned_words[word] >= 2:
+                # Seen twice — commit to lexicon
+                self._word_categories[word] = cat
+                self._lexicon.add(LexicalEntry(
+                    form=word, category=cat, substrates=["linguistic"],
+                ))
+            categories.append(cat)
+        return categories
+
+    @staticmethod
+    def _guess_category(word: str) -> str:
+        """Heuristic POS guess for an unknown word."""
+        if not word:
+            return "N"
+        if word.endswith("ly"):
+            return "Adv"
+        if word.endswith(("ness", "ment", "tion", "sion", "ity", "ence", "ance")):
+            return "N"
+        if word.endswith(("ful", "less", "ous", "ive", "able", "ible", "ical", "ent")):
+            return "Adj"
+        if word.endswith("ing"):
+            return "V"
+        if word.endswith("ed"):
+            return "V"
+        if word[0].isupper():
+            return "N"
+        return "N"
+
+    def learn_word(self, word: str, category: str) -> None:
+        """Explicitly teach the Angel a word's category."""
+        word = word.lower().strip()
+        if word:
+            self._word_categories[word] = category
+            self._lexicon.add(LexicalEntry(
+                form=word, category=category, substrates=["linguistic"],
+            ))
+
+    # ------------------------------------------------------------------
     # Core capabilities — the masterpieces
     # ------------------------------------------------------------------
 
@@ -271,11 +418,40 @@ class Angel:
         grammars = self._grammars.get(domain, [])
         predictions = []
 
+        # Try raw sequence first
+        predictions = self._derive_predictions(sequence, grammars, horizon)
+
+        # If raw tokens yielded nothing, try grammatical categories
+        if not predictions and domain == "linguistic":
+            categories = self.categorize_tokens(sequence)
+            if categories:
+                predictions = self._derive_predictions(
+                    categories, grammars, horizon
+                )
+                # Try individual category symbols as single strings
+                # (productions match on strings like "NP", "VP", etc.)
+                if not predictions:
+                    for cat in set(categories):
+                        predictions.extend(
+                            self._derive_single(cat, grammars, horizon)
+                        )
+
+        # Sort by confidence — the most grammatically certain first
+        predictions.sort(key=lambda p: p["confidence"], reverse=True)
+        return predictions
+
+    def _derive_predictions(
+        self,
+        sequence: list[str],
+        grammars: list,
+        horizon: int,
+    ) -> list[dict[str, Any]]:
+        """Run derivation on a sequence across grammars."""
+        predictions = []
         for grammar in grammars:
             tree = self._engine.derive(
                 sequence, grammar, direction="forward"
             )
-            # Extract derivation paths from the tree
             for path in tree.paths()[:horizon]:
                 if path:
                     last = path[-1]
@@ -286,10 +462,160 @@ class Angel:
                         "grammar": grammar.name,
                         "direction": "forward",
                     })
-
-        # Sort by confidence — the most grammatically certain first
-        predictions.sort(key=lambda p: p["confidence"], reverse=True)
         return predictions
+
+    def _derive_single(
+        self,
+        symbol: str,
+        grammars: list,
+        horizon: int,
+    ) -> list[dict[str, Any]]:
+        """Derive from a single grammar symbol (e.g. 'NP', 'V')."""
+        predictions = []
+        for grammar in grammars:
+            tree = self._engine.derive(
+                symbol, grammar, direction="forward"
+            )
+            for path in tree.paths()[:horizon]:
+                if path:
+                    last = path[-1]
+                    predictions.append({
+                        "predicted": last.output,
+                        "rule": last.rule_id,
+                        "confidence": last.metadata.get("weight", 0.5),
+                        "grammar": grammar.name,
+                        "direction": "forward",
+                    })
+        return predictions
+
+    def respond(self, text: str) -> dict[str, Any]:
+        """Generate a structured response to natural language input.
+
+        This is the Angel's main conversational entry point. It combines:
+        1. MNEMO encoding (grounding — understanding intent through Mnemo)
+        2. Token categorization (understanding the input's structure)
+        3. Grammar-based prediction (what comes next)
+        4. Morphological analysis (word-level patterns)
+        5. Cross-domain insight (connections to other grammars)
+
+        Returns a dict with keys:
+            tokens, categories, predictions, analysis, loops_active,
+            learned_words, mnemo, mnemo_decoded, response_text
+        """
+        self._ensure_awake()
+        tokens = text.lower().split()
+        categories = self.categorize_tokens(tokens)
+
+        # MNEMO grounding — encode the input to understand its intent
+        try:
+            mnemo = mnemo_encode(text)
+            mnemo_decoded = mnemo_decode(mnemo)
+        except Exception:
+            mnemo = "*a"
+            mnemo_decoded = {"description": "universal analyze", "is_valid": True}
+
+        # Grammar predictions
+        predictions = self.predict(tokens, domain="linguistic", horizon=5)
+
+        # If MNEMO detected a non-linguistic domain, try that domain too
+        mnemo_domain = mnemo_decoded.get("operations", [{}])[0].get(
+            "domain", "linguistic"
+        ) if mnemo_decoded.get("operations") else "linguistic"
+        if mnemo_domain != "linguistic" and mnemo_domain in self._grammars:
+            domain_preds = self.predict(tokens, domain=mnemo_domain, horizon=3)
+            predictions.extend(domain_preds)
+
+        # Structural analysis
+        cat_counts: dict[str, int] = {}
+        for cat in categories:
+            cat_counts[cat] = cat_counts.get(cat, 0) + 1
+
+        # Find which words are new (unknown)
+        new_words = []
+        known_words = []
+        for t in tokens:
+            word = t.lower().strip(".,!?;:'\"()-")
+            if not word:
+                continue
+            if word in self._word_categories:
+                known_words.append(word)
+            else:
+                new_words.append(word)
+
+        # Morphological insights
+        morpho_insights = self._analyze_morphology(tokens)
+
+        # Build a response
+        info = self.introspect()
+
+        return {
+            "tokens": tokens,
+            "categories": categories,
+            "category_structure": cat_counts,
+            "predictions": predictions[:5],
+            "new_words": new_words,
+            "known_words": known_words,
+            "morphological": morpho_insights,
+            "mnemo": mnemo,
+            "mnemo_decoded": mnemo_decoded.get("description", ""),
+            "mnemo_domain": mnemo_domain,
+            "loops_active": len(self._strange_loops),
+            "grammars_active": info["total_grammars"],
+            "rules_active": info["total_rules"],
+            "lexicon_size": len(self._word_categories),
+        }
+
+    def _analyze_morphology(self, tokens: list[str]) -> list[dict[str, str]]:
+        """Analyze morphological structure of tokens."""
+        insights = []
+        morpho_grammars = self._grammars.get("linguistic", [])
+
+        for token in tokens:
+            word = token.lower().strip(".,!?;:'\"()-")
+            if not word or len(word) < 3:
+                continue
+
+            # Try morphological derivation
+            for grammar in morpho_grammars:
+                if "morpholog" in grammar.name.lower():
+                    tree = self._engine.derive(
+                        word, grammar, direction="backward", max_steps=20
+                    )
+                    for path in tree.paths()[:3]:
+                        if path and path[-1] is not None:
+                            last = path[-1]
+                            insights.append({
+                                "word": word,
+                                "analysis": str(last.output),
+                                "rule": last.rule_id,
+                            })
+                            break
+
+            # Simple suffix analysis
+            for suffix, info in [
+                ("ing", "progressive/gerund"),
+                ("ed", "past tense/participle"),
+                ("ly", "adverb derivation"),
+                ("ness", "noun from adjective"),
+                ("tion", "nominalisation"),
+                ("ful", "adjective: having quality"),
+                ("less", "adjective: without"),
+                ("able", "adjective: capable of"),
+                ("er", "comparative/agent"),
+                ("est", "superlative"),
+                ("ment", "nominalisation"),
+                ("ous", "adjective: possessing"),
+            ]:
+                if word.endswith(suffix) and len(word) > len(suffix) + 1:
+                    root = word[:-len(suffix)]
+                    insights.append({
+                        "word": word,
+                        "analysis": f"{root} + -{suffix} ({info})",
+                        "rule": f"morpho_{suffix}",
+                    })
+                    break
+
+        return insights
 
     def reconstruct(
         self,

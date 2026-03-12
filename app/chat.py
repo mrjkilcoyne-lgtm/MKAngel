@@ -289,7 +289,8 @@ class ChatSession:
         skills = self._get_skills()
         matching = skills.find_matching_skills(text)
 
-        if self._provider is not None:
+        # For API providers (non-local), use the provider with context
+        if self._provider is not None and self._provider.name != "local":
             # Build conversation context
             system = (
                 "You are MKAngel, an AI assistant powered by a Grammar Language "
@@ -310,63 +311,168 @@ class ChatSession:
             response = self._provider.generate(prompt, system=system)
             return _angel_response(response)
 
-        # Local GLM path
+        # The Angel IS the local provider — she speaks directly.
         if self._angel is not None:
-            tokens = text.lower().split()
             try:
-                predictions = self._angel.predict(
-                    tokens, domain="linguistic", horizon=5
-                )
-                if predictions:
-                    parts = [_header("Angel")]
-                    parts.append("")
-                    predicted = [
-                        str(p.get("predicted", "?")) for p in predictions[:5]
-                    ]
-                    parts.append(
-                        _wrap(f"Grammatical derivation: {' '.join(predicted)}")
-                    )
-                    parts.append("")
-
-                    if matching:
-                        skill_names = [s.name for s in matching]
-                        parts.append(
-                            _info(f"  Matching skills: {', '.join(skill_names)}")
-                        )
-                        parts.append(
-                            _info(f"  Use /skills run <name> to execute.")
-                        )
-                        parts.append("")
-
-                    parts.append(
-                        _info(
-                            "  Tip: Use /predict, /forecast, or /fugue for "
-                            "deeper analysis."
-                        )
-                    )
-                    return "\n".join(parts)
+                result = self._angel.respond(text)
+                return self._format_local_response(result, text, matching)
             except Exception:
                 pass
 
+        # Fallback through provider (only if angel is not available)
+        if self._provider is not None:
+            response = self._provider.generate(text)
+            return _angel_response(response)
+
         # Absolute fallback
+        return _angel_response(
+            "I hear you. My grammars are still learning the structure "
+            "of what you said."
+        )
+
+    def _format_local_response(
+        self,
+        result: dict,
+        text: str,
+        matching: list,
+    ) -> str:
+        """Format an Angel.respond() result as natural conversation.
+
+        The Angel responds in the user's language (English by default),
+        discerning intent via MNEMO grounding and structure analysis.
+        She anticipates what the user might need next.
+        """
         parts = [_header("Angel")]
         parts.append("")
-        parts.append(
-            _wrap(
-                "I received your message. The local Grammar Language Model "
-                "processes input through grammatical derivation rules. "
-                "For richer conversations, configure an API provider with "
-                "/settings."
-            )
-        )
+
+        predictions = result.get("predictions", [])
+        new_words = result.get("new_words", [])
+        morpho = result.get("morphological", [])
+        cat_struct = result.get("category_structure", {})
+        known_words = result.get("known_words", [])
+        mnemo = result.get("mnemo", "")
+        mnemo_desc = result.get("mnemo_decoded", "")
+        mnemo_domain = result.get("mnemo_domain", "linguistic")
+
+        # Discern intent from MNEMO + structure and respond naturally
+        has_question = any(
+            cat_struct.get(c, 0) > 0 for c in ("Wh",)
+        ) or text.strip().endswith("?")
+        has_verbs = cat_struct.get("V", 0) > 0
+        has_nouns = cat_struct.get("N", 0) > 0
+        word_count = len(result.get("tokens", []))
+
+        # Build a natural response based on what we understand
+        if has_question:
+            # User is asking something
+            if predictions:
+                parts.append(_wrap(
+                    "Here's what my grammars derive from your question:"
+                ))
+                for p in predictions[:3]:
+                    predicted = p.get("predicted", "")
+                    grammar = p.get("grammar", "")
+                    conf = p.get("confidence", 0)
+                    if predicted:
+                        parts.append(_wrap(
+                            f"  {grammar}: {predicted} ({conf:.0%})"
+                        ))
+                parts.append("")
+            else:
+                parts.append(_wrap(
+                    "I understand you're asking something. My grammar engine "
+                    "can analyse structure — try /predict or /forecast for "
+                    "deeper answers."
+                ))
+                parts.append("")
+        elif word_count <= 3:
+            # Short input — greeting or single concept
+            if new_words and not known_words:
+                parts.append(_wrap(
+                    f"I don't know '{new_words[0]}' yet. "
+                    f"Use it again and I'll learn."
+                ))
+            elif known_words:
+                parts.append(_wrap(
+                    f"I hear you. "
+                    f"I know {'these words' if len(known_words) > 1 else 'that word'} "
+                    f"— {''.join(known_words[:3])} "
+                    f"{'are' if len(known_words) > 1 else 'is'} in my lexicon."
+                ))
+            parts.append("")
+        else:
+            # Longer input — show structural understanding
+            if cat_struct:
+                cat_names = {
+                    "N": "noun", "V": "verb", "Adj": "adjective",
+                    "Adv": "adverb", "Det": "determiner", "P": "preposition",
+                    "NP": "pronoun", "Wh": "interrogative", "I": "modal",
+                    "C": "complementiser", "Conj": "conjunction",
+                }
+                structure_parts = []
+                for cat, count in sorted(cat_struct.items(), key=lambda x: -x[1]):
+                    name = cat_names.get(cat, cat)
+                    if count > 1:
+                        structure_parts.append(f"{count} {name}s")
+                    else:
+                        structure_parts.append(name)
+                parts.append(_wrap(
+                    f"I parsed your message: {', '.join(structure_parts)}."
+                ))
+                parts.append("")
+
+            if predictions:
+                parts.append(_wrap("Grammar derivations:"))
+                for p in predictions[:3]:
+                    predicted = p.get("predicted", "")
+                    grammar = p.get("grammar", "")
+                    conf = p.get("confidence", 0)
+                    if predicted:
+                        parts.append(_wrap(
+                            f"  {grammar}: {predicted} ({conf:.0%})"
+                        ))
+                parts.append("")
+
+        # Morphological insights (show only interesting ones)
+        if morpho:
+            for m in morpho[:2]:
+                analysis = m.get("analysis", "")
+                if analysis:
+                    parts.append(_info(f"  {m.get('word', '')}: {analysis}"))
+            parts.append("")
+
+        # MNEMO grounding — show the encoded intent
+        if mnemo and mnemo != "*a":
+            parts.append(_info(f"  Mnemo: {mnemo} ({mnemo_desc})"))
+            parts.append("")
+
+        # New words — learning
+        if new_words and word_count > 3:
+            if len(new_words) <= 3:
+                words_str = ", ".join(repr(w) for w in new_words)
+                parts.append(_wrap(
+                    f"New words: {words_str}. I'll learn them with repetition."
+                ))
+            else:
+                parts.append(_wrap(
+                    f"{len(new_words)} new words — I'm learning as we talk."
+                ))
+
+        # Skills match
         if matching:
             skill_names = [s.name for s in matching]
             parts.append("")
-            parts.append(
-                _info(f"  Matching skills: {', '.join(skill_names)}")
-            )
-        parts.append("")
-        parts.append(_info("  Type /help for available commands."))
+            parts.append(_info(
+                f"  Matching skills: {', '.join(skill_names)}"
+            ))
+
+        # If we have nothing meaningful at all
+        if len(parts) <= 2:
+            parts.append(_wrap(
+                "I hear you. My grammars are still learning the structure "
+                "of what you said."
+            ))
+
         return "\n".join(parts)
 
     # ------------------------------------------------------------------

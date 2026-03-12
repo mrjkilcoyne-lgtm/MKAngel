@@ -82,8 +82,8 @@ class LocalProvider(Provider):
 
     name = "local"
 
-    def __init__(self) -> None:
-        self._angel = None
+    def __init__(self, angel=None) -> None:
+        self._angel = angel
 
     def _get_angel(self):
         """Lazy-load the Angel to avoid import-time overhead."""
@@ -102,9 +102,23 @@ class LocalProvider(Provider):
         max_tokens: int = 1024,
     ) -> str:
         angel = self._get_angel()
-        tokens = prompt.lower().split()
 
-        # Use the grammar engine to produce a structured response
+        # Extract the actual user text (strip conversation context framing)
+        user_text = prompt
+        if "\nUser: " in prompt:
+            user_text = prompt.rsplit("\nUser: ", 1)[-1].strip()
+        elif "User: " in prompt:
+            user_text = prompt.split("User: ", 1)[-1].strip()
+
+        # Use the Angel's full respond() method
+        try:
+            result = angel.respond(user_text)
+            return self._format_response(result, user_text)
+        except Exception:
+            pass
+
+        # Fallback: simple prediction
+        tokens = user_text.lower().split()
         try:
             predictions = angel.predict(tokens, domain="linguistic", horizon=8)
         except Exception:
@@ -123,32 +137,107 @@ class LocalProvider(Provider):
                 f"Grammatical derivation (confidence {confidence:.2f}):"
             )
             lines.append(f"  {predicted_str}")
-            lines.append("")
-            lines.append(
-                "Note: Local GLM produces structural derivations, not "
-                "free-form text. For richer generation, configure an "
-                "API provider with /settings."
-            )
             return "\n".join(lines)
 
-        # Fallback: introspection-based response
+        # Introspection-based fallback
         try:
             info = angel.introspect()
             return (
-                f"[GLM local | {info['total_grammars']} grammars, "
-                f"{info['strange_loops_detected']} strange loops]\n\n"
                 f"I processed your input through {info['total_rules']} "
                 f"grammatical rules across {len(info['domains_loaded'])} "
-                f"domains but could not derive a strong prediction.\n\n"
-                f"Try a more specific query, or use /predict, /reconstruct, "
-                f"or /forecast for targeted grammar operations."
+                f"domains. My grammars are still learning the structure "
+                f"of what you said."
             )
         except Exception:
-            return (
-                "[GLM local]\n\n"
-                "Grammar engine active. No derivation found for this input.\n"
-                "Try /predict <tokens> or /help for available commands."
-            )
+            return "I hear you. Let me process that through my grammars."
+
+    def _format_response(self, result: dict, user_text: str) -> str:
+        """Format an Angel.respond() result into natural text."""
+        lines = []
+        predictions = result.get("predictions", [])
+        new_words = result.get("new_words", [])
+        morpho = result.get("morphological", [])
+        cats = result.get("categories", [])
+        cat_struct = result.get("category_structure", {})
+
+        # Build a natural conversational response
+        if predictions:
+            pred_strs = []
+            for p in predictions[:3]:
+                predicted = p.get("predicted", "")
+                grammar = p.get("grammar", "")
+                conf = p.get("confidence", 0)
+                if predicted:
+                    pred_strs.append(f"{predicted} ({grammar}, {conf:.0%})")
+            if pred_strs:
+                lines.append(
+                    f"Grammatical derivation: {'; '.join(pred_strs)}"
+                )
+                lines.append("")
+
+        # Report structural understanding
+        if cat_struct:
+            structure_parts = []
+            cat_names = {
+                "N": "noun", "V": "verb", "Adj": "adjective",
+                "Adv": "adverb", "Det": "determiner", "P": "preposition",
+                "NP": "pronoun", "Wh": "interrogative", "I": "modal",
+                "C": "complementiser", "Conj": "conjunction",
+            }
+            for cat, count in sorted(
+                cat_struct.items(), key=lambda x: -x[1]
+            ):
+                name = cat_names.get(cat, cat)
+                if count > 1:
+                    structure_parts.append(f"{count} {name}s")
+                else:
+                    structure_parts.append(f"{count} {name}")
+            lines.append(f"I see: {', '.join(structure_parts)}.")
+
+        # Morphological insight
+        if morpho:
+            for m in morpho[:2]:
+                analysis = m.get("analysis", "")
+                if analysis:
+                    lines.append(f"  {m.get('word', '')}: {analysis}")
+
+        # New words — show learning
+        if new_words:
+            if len(new_words) == 1:
+                lines.append(
+                    f"New word: '{new_words[0]}'. "
+                    f"Use it again and I'll learn it."
+                )
+            elif len(new_words) <= 3:
+                lines.append(
+                    f"New words: {', '.join(repr(w) for w in new_words)}. "
+                    f"I'll learn them with repetition."
+                )
+            else:
+                lines.append(
+                    f"{len(new_words)} new words detected. "
+                    f"I'm learning as we talk."
+                )
+
+        # If we produced nothing meaningful, give a contextual response
+        if not lines:
+            word_count = len(user_text.split())
+            known = len(result.get("known_words", []))
+            total = known + len(new_words)
+            if total > 0:
+                pct = known / total * 100
+                lines.append(
+                    f"I recognised {known}/{total} words ({pct:.0f}%). "
+                    f"My grammars are still learning the structure of "
+                    f"what you said."
+                )
+            else:
+                lines.append(
+                    "I hear you. My grammars are still learning "
+                    "the structure of what you said."
+                )
+
+        return "\n".join(lines)
 
     def is_available(self) -> bool:
         return True
@@ -411,23 +500,26 @@ class HybridProvider(Provider):
 # Factory
 # ---------------------------------------------------------------------------
 
-def get_provider(settings: Settings) -> Provider:
+def get_provider(settings: Settings, angel=None) -> Provider:
     """Return the appropriate provider based on current settings.
 
     - If offline_mode is True or provider is 'local', use LocalProvider.
     - If an API key is configured for the active provider, use APIProvider.
     - If provider is 'hybrid', combine local + API.
     - Falls back to LocalProvider if anything is missing.
+
+    If *angel* is provided, the LocalProvider will reuse it instead of
+    creating a second Angel instance.
     """
     provider_name = settings.model_provider
 
     if settings.offline_mode or provider_name == "local":
-        return LocalProvider()
+        return LocalProvider(angel=angel)
 
     api_key = settings.get_api_key(provider_name)
 
     if provider_name == "hybrid":
-        local = LocalProvider()
+        local = LocalProvider(angel=angel)
         # Try to find any configured API key
         for p in ("anthropic", "openai", "groq", "mistral", "google"):
             key = settings.get_api_key(p)
@@ -441,4 +533,4 @@ def get_provider(settings: Settings) -> Provider:
         return APIProvider(provider_name, api_key)
 
     # No key configured -- fall back to local
-    return LocalProvider()
+    return LocalProvider(angel=angel)

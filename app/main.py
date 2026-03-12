@@ -217,9 +217,9 @@ def main() -> None:
     from app.memory import Memory
     memory = Memory()
 
-    # Initialise provider
+    # Initialise provider (share the angel instance)
     from app.providers import get_provider
-    provider = get_provider(settings)
+    provider = get_provider(settings, angel=angel)
 
     # Create chat session
     from app.chat import ChatSession
