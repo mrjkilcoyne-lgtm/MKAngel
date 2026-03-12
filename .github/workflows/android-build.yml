@@ -28,6 +28,9 @@ jobs:
         with:
           gradle-version: '8.5'
 
+      - name: Copy GLM into Chaquopy source
+        run: mkdir -p android/app/src/main/python && cp -r glm android/app/src/main/python/glm
+
       - name: Build APK
         working-directory: android
         run: gradle assembleDebug

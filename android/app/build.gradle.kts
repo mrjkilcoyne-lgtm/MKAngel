@@ -49,9 +49,4 @@ chaquopy {
         version = "3.12"
         buildPython("python3")
     }
-    sourceSets {
-        getByName("main") {
-            srcDir("../../")
-        }
-    }
 }
