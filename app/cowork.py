@@ -5,6 +5,9 @@ Multi-agent collaboration where multiple Angel instances focus on
 different domains simultaneously -- like voices in a fugue, each
 tackling the problem from their own grammatical perspective, then
 harmonising their results.
+
+Now uses SkillableAgent from the swarm module for richer agent
+capabilities including domain-specific skills.
 """
 
 from __future__ import annotations
@@ -13,6 +16,12 @@ import time
 import threading
 from dataclasses import dataclass, field
 from typing import Any
+
+try:
+    from app.swarm import SkillableAgent, AgentRole
+except Exception:
+    SkillableAgent = None  # type: ignore[misc, assignment]
+    AgentRole = None  # type: ignore[misc, assignment]
 
 
 @dataclass
@@ -25,6 +34,7 @@ class AgentResult:
     strange_loops: int
     duration: float
     error: str | None = None
+    skills_used: list[str] = field(default_factory=list)
 
 
 @dataclass
@@ -41,18 +51,13 @@ class CoworkResult:
 class CoworkSession:
     """Multi-agent collaboration session.
 
-    Spawns multiple Angel instances, each focusing on a different domain.
+    Spawns multiple SkillableAgents, each focusing on a different domain.
     Like a fugue: each voice carries the same theme through its own
     grammar, and the combined result reveals patterns no single
     voice could find alone.
     """
 
     def __init__(self, provider=None):
-        """Initialise a cowork session.
-
-        Args:
-            provider: An LLM provider for enriched generation.
-        """
         self._provider = provider
         self._agents: list[dict[str, Any]] = []
         self._results: list[AgentResult] = []
@@ -64,19 +69,10 @@ class CoworkSession:
     # ------------------------------------------------------------------
 
     def start_session(self, task: str) -> str:
-        """Start a new collaboration session around a task.
-
-        Args:
-            task: The problem or question for the agents to work on.
-
-        Returns:
-            Status message.
-        """
         self._task = task
         self._results = []
         self._active = True
 
-        # Add default agents covering the core domains
         if not self._agents:
             for domain in ("linguistic", "computational", "biological", "chemical"):
                 self.add_agent(domain)
@@ -90,29 +86,29 @@ class CoworkSession:
         )
 
     def add_agent(self, domain: str, config: dict[str, Any] | None = None) -> str:
-        """Add an agent focused on a specific domain.
-
-        Args:
-            domain: Grammar domain (linguistic, computational, etc.).
-            config: Optional agent configuration.
-
-        Returns:
-            Confirmation message.
-        """
-        # Check for duplicates
         for a in self._agents:
             if a["domain"] == domain:
                 return f"Agent for domain '{domain}' already exists."
 
-        self._agents.append({
+        agent_info: dict[str, Any] = {
             "domain": domain,
             "config": config or {},
             "added_at": time.time(),
-        })
+        }
+
+        # Create a SkillableAgent if available
+        if SkillableAgent is not None and AgentRole is not None:
+            agent_info["skillable"] = SkillableAgent(
+                name=f"cowork_{domain}",
+                role=AgentRole.SPECIALIST,
+                domain=domain,
+                capabilities=[f"{domain}_analysis"],
+            )
+
+        self._agents.append(agent_info)
         return f"Agent added: {domain}"
 
     def remove_agent(self, domain: str) -> str:
-        """Remove an agent by domain."""
         for i, a in enumerate(self._agents):
             if a["domain"] == domain:
                 self._agents.pop(i)
@@ -120,12 +116,12 @@ class CoworkSession:
         return f"No agent found for domain '{domain}'."
 
     def list_agents(self) -> list[dict[str, Any]]:
-        """List all agents in the session."""
         return [
             {
                 "domain": a["domain"],
                 "config": a["config"],
                 "added_at": a["added_at"],
+                "skilled": "skillable" in a,
             }
             for a in self._agents
         ]
@@ -135,25 +131,12 @@ class CoworkSession:
     # ------------------------------------------------------------------
 
     def run(self, task: str | None = None) -> CoworkResult:
-        """Run all agents on the task and collect results.
-
-        Each agent processes the task through its domain grammar
-        concurrently (using threads for parallelism).
-
-        Args:
-            task: Override the session task, or use the current one.
-
-        Returns:
-            Combined CoworkResult with all agent outputs.
-        """
         if task:
             self._task = task
 
         if not self._task:
             return CoworkResult(
-                task="",
-                agents=[],
-                harmonics=[],
+                task="", agents=[], harmonics=[],
                 synthesis="No task specified. Use start_session(task) first.",
                 total_duration=0.0,
             )
@@ -161,13 +144,15 @@ class CoworkSession:
         start = time.time()
         self._results = []
 
-        # Create a single shared Angel -- avoids resource contention
-        # from multiple threads each instantiating their own.
-        from glm.angel import Angel
-        angel = Angel()
-        angel.awaken()
+        # Create a single shared Angel for grammar derivations
+        angel = None
+        try:
+            from glm.angel import Angel
+            angel = Angel()
+            angel.awaken()
+        except Exception:
+            pass
 
-        # Run agents concurrently using threads
         threads: list[threading.Thread] = []
         results_lock = threading.Lock()
 
@@ -180,16 +165,11 @@ class CoworkSession:
             threads.append(t)
             t.start()
 
-        # Wait for all agents to complete (with timeout)
         for t in threads:
             t.join(timeout=30.0)
 
         total_duration = time.time() - start
-
-        # Find harmonics -- where agents agree
         harmonics = self._find_harmonics()
-
-        # Synthesise results
         synthesis = self._synthesise()
 
         return CoworkResult(
@@ -201,10 +181,7 @@ class CoworkSession:
         )
 
     def collect_results(self) -> CoworkResult:
-        """Collect and synthesise results from all agents.
-
-        Alias for run() that uses the existing task.
-        """
+        """Alias for run() that uses the existing task."""
         return self.run()
 
     def _run_agent(
@@ -213,65 +190,85 @@ class CoworkSession:
         lock: threading.Lock,
         angel: Any = None,
     ) -> None:
-        """Run a single agent (executed in a thread)."""
         domain = agent_info["domain"]
+        skillable = agent_info.get("skillable")
         start = time.time()
         output = ""
         predictions: list[dict[str, Any]] = []
         loops = 0
         error = None
+        skills_used: list[str] = []
 
         try:
             if angel is None:
-                from glm.angel import Angel
-                angel = Angel()
-                angel.awaken()
+                try:
+                    from glm.angel import Angel
+                    angel = Angel()
+                    angel.awaken()
+                except Exception:
+                    pass
 
             tokens = self._task.lower().split()
 
-            # Get predictions from this domain's grammar
-            try:
-                preds = angel.predict(tokens, domain=domain, horizon=8)
-                predictions = preds
-            except Exception:
-                predictions = []
+            # Get predictions from grammar
+            if angel is not None:
+                try:
+                    preds = angel.predict(tokens, domain=domain, horizon=8)
+                    predictions = preds
+                except Exception:
+                    predictions = []
 
-            # Get strange loop count
-            loops = len(angel._strange_loops)
+                loops = len(getattr(angel, "_strange_loops", []))
 
-            # Build output from predictions
-            if predictions:
-                pred_lines = []
-                for p in predictions[:5]:
-                    pred_lines.append(
-                        f"  {p.get('grammar','?')}: {p.get('predicted','?')} "
-                        f"(conf={p.get('confidence',0):.2f})"
+            # Use SkillableAgent skills if available
+            if skillable is not None:
+                try:
+                    skill = skillable.best_skill_for(self._task)
+                    if skill:
+                        skill_output = skill.execute(self._task, self._provider)
+                        skills_used.append(skill.name)
+                        if skill_output:
+                            output = skill_output
+                except Exception:
+                    pass
+
+            # Build output from predictions if skills didn't produce output
+            if not output:
+                if predictions:
+                    pred_lines = []
+                    for p in predictions[:5]:
+                        pred_lines.append(
+                            f"  {p.get('grammar','?')}: {p.get('predicted','?')} "
+                            f"(conf={p.get('confidence',0):.2f})"
+                        )
+                    output = (
+                        f"Domain: {domain}\n"
+                        f"Predictions:\n" + "\n".join(pred_lines)
                     )
-                output = (
-                    f"Domain: {domain}\n"
-                    f"Predictions:\n" + "\n".join(pred_lines)
-                )
-            else:
-                output = (
-                    f"Domain: {domain}\n"
-                    f"No strong predictions from this domain's grammar."
-                )
+                else:
+                    output = (
+                        f"Domain: {domain}\n"
+                        f"No strong predictions from this domain's grammar."
+                    )
 
-            # If we have an API provider, enrich the response
+            # Enrich with provider if available
             if self._provider is not None:
-                enriched = self._provider.generate(
-                    f"As an expert in {domain}, analyse this task: "
-                    f"{self._task}\n\nProvide insights from a {domain} "
-                    f"perspective.",
-                    system=(
-                        f"You are an expert in {domain}. Provide analysis "
-                        f"from the perspective of {domain} grammar and "
-                        f"structure. Be concise and insightful."
-                    ),
-                    temperature=0.5,
-                    max_tokens=512,
-                )
-                output = enriched
+                try:
+                    enriched = self._provider.generate(
+                        f"As an expert in {domain}, analyse this task: "
+                        f"{self._task}\n\nProvide insights from a {domain} "
+                        f"perspective.",
+                        system=(
+                            f"You are an expert in {domain}. Provide analysis "
+                            f"from the perspective of {domain} grammar and "
+                            f"structure. Be concise and insightful."
+                        ),
+                        temperature=0.5,
+                        max_tokens=512,
+                    )
+                    output = enriched
+                except Exception:
+                    pass
 
         except Exception as exc:
             error = str(exc)
@@ -285,6 +282,7 @@ class CoworkSession:
             strange_loops=loops,
             duration=duration,
             error=error,
+            skills_used=skills_used,
         )
 
         with lock:
@@ -295,8 +293,6 @@ class CoworkSession:
     # ------------------------------------------------------------------
 
     def _find_harmonics(self) -> list[dict[str, Any]]:
-        """Find where multiple agents' predictions agree."""
-        # Collect all predicted outputs keyed by their string form
         prediction_map: dict[str, list[str]] = {}
         for result in self._results:
             for pred in result.predictions:
@@ -307,7 +303,6 @@ class CoworkSession:
                     if result.domain not in prediction_map[key]:
                         prediction_map[key].append(result.domain)
 
-        # Harmonics are predictions shared across 2+ domains
         harmonics = []
         for prediction, domains in prediction_map.items():
             if len(domains) > 1:
@@ -321,11 +316,9 @@ class CoworkSession:
         return harmonics
 
     def _synthesise(self) -> str:
-        """Synthesise all agent results into a unified response."""
         if not self._results:
             return "No agent results to synthesise."
 
-        # If we have an API provider, do an intelligent synthesis
         if self._provider is not None:
             agent_summaries = []
             for r in self._results:
@@ -345,20 +338,23 @@ class CoworkSession:
                     "\n\nCross-domain harmonics found:\n" + "\n".join(h_lines)
                 )
 
-            return self._provider.generate(
-                f"Synthesise these multi-domain analyses of the task "
-                f"'{self._task}':\n\n{combined}{harmonics_str}\n\n"
-                f"Provide a unified insight that combines all perspectives.",
-                system=(
-                    "You are synthesising insights from multiple domain "
-                    "experts. Find common themes, highlight unique insights, "
-                    "and provide a unified understanding. Be concise."
-                ),
-                temperature=0.4,
-                max_tokens=1024,
-            )
+            try:
+                return self._provider.generate(
+                    f"Synthesise these multi-domain analyses of the task "
+                    f"'{self._task}':\n\n{combined}{harmonics_str}\n\n"
+                    f"Provide a unified insight that combines all perspectives.",
+                    system=(
+                        "You are synthesising insights from multiple domain "
+                        "experts. Find common themes, highlight unique insights, "
+                        "and provide a unified understanding. Be concise."
+                    ),
+                    temperature=0.4,
+                    max_tokens=1024,
+                )
+            except Exception:
+                pass
 
-        # Local synthesis: combine structurally
+        # Local synthesis
         parts = []
         parts.append(f"Task: {self._task}")
         parts.append(f"Agents: {len(self._results)}")
@@ -366,7 +362,8 @@ class CoworkSession:
 
         for r in self._results:
             status = "OK" if r.error is None else f"ERROR: {r.error}"
-            parts.append(f"--- {r.domain.upper()} [{status}] ({r.duration:.2f}s) ---")
+            skills_info = f" skills={r.skills_used}" if r.skills_used else ""
+            parts.append(f"--- {r.domain.upper()} [{status}] ({r.duration:.2f}s){skills_info} ---")
             parts.append(r.output)
             parts.append("")
 
@@ -389,10 +386,6 @@ class CoworkSession:
         )
 
         return "\n".join(parts)
-
-    # ------------------------------------------------------------------
-    # Display
-    # ------------------------------------------------------------------
 
     def __repr__(self) -> str:
         status = "active" if self._active else "idle"

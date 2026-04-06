@@ -330,7 +330,72 @@ class WebDAVStorage(CloudStorage):
             return False
 
     def list(self, prefix: str = "") -> list[CloudObject]:
-        return []  # WebDAV PROPFIND is complex; stub for now
+        """List objects via WebDAV PROPFIND."""
+        try:
+            import requests
+        except ImportError:
+            return []
+
+        auth = None
+        creds = self._config.credentials
+        if creds.get("username") and creds.get("password"):
+            auth = (creds["username"], creds["password"])
+
+        base = self._config.endpoint.rstrip("/")
+        pfx = self._config.prefix.strip("/")
+        url = f"{base}/{pfx}/{prefix}".rstrip("/") + "/"
+
+        # PROPFIND with Depth: 1 lists immediate children
+        headers = {"Depth": "1", "Content-Type": "application/xml"}
+        body = (
+            '<?xml version="1.0" encoding="utf-8"?>'
+            '<d:propfind xmlns:d="DAV:">'
+            "<d:prop>"
+            "<d:getcontentlength/>"
+            "<d:getlastmodified/>"
+            "</d:prop>"
+            "</d:propfind>"
+        )
+
+        try:
+            resp = requests.request(
+                "PROPFIND", url, data=body, headers=headers,
+                auth=auth, timeout=15,
+            )
+            if resp.status_code not in (200, 207):
+                return []
+        except Exception:
+            return []
+
+        # Parse the multistatus XML response
+        objects: list[CloudObject] = []
+        try:
+            import xml.etree.ElementTree as ET
+            ns = {"d": "DAV:"}
+            root = ET.fromstring(resp.text)
+            for response in root.findall("d:response", ns):
+                href = response.findtext("d:href", "", ns).rstrip("/")
+                # Skip the collection itself
+                if href.endswith(prefix.rstrip("/")) or not href:
+                    continue
+                key = href.split("/")[-1]
+                if not key:
+                    continue
+                size = 0
+                length_el = response.find(".//d:getcontentlength", ns)
+                if length_el is not None and length_el.text:
+                    try:
+                        size = int(length_el.text)
+                    except ValueError:
+                        pass
+                objects.append(CloudObject(
+                    key=key, size=size, last_modified=0.0,
+                    metadata={}, backend="webdav",
+                ))
+        except Exception:
+            pass
+
+        return objects
 
     def exists(self, key: str) -> bool:
         import requests

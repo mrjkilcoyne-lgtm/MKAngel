@@ -110,6 +110,23 @@ except Exception:
     AngelSenses = None  # type: ignore[misc, assignment]
     Sense = None  # type: ignore[misc, assignment]
 
+try:
+    from app.swarm import HostHarness, SwarmOrchestrator, CelestialSwitchboard
+except Exception:
+    HostHarness = None  # type: ignore[misc, assignment]
+    SwarmOrchestrator = None  # type: ignore[misc, assignment]
+    CelestialSwitchboard = None  # type: ignore[misc, assignment]
+
+try:
+    from app.cowork import CoworkSession
+except Exception:
+    CoworkSession = None  # type: ignore[misc, assignment]
+
+try:
+    from app.skills import SkillManager
+except Exception:
+    SkillManager = None  # type: ignore[misc, assignment]
+
 
 # ---------------------------------------------------------------------------
 # The Conductor
@@ -151,6 +168,9 @@ class AngelConductor:
         self._tongue: Any = None
         self._senses: Any = None
         self._shutdown_incentive: Any = None
+        self._swarm: Any = None
+        self._cowork: Any = None
+        self._skills: Any = None
         self._session_id: str = ""
         self._awake: bool = False
 
@@ -291,7 +311,28 @@ class AngelConductor:
             except Exception:
                 self._senses = None
 
-        # 12. Shutdown Incentive
+        # 12. Skills
+        if SkillManager is not None:
+            try:
+                self._skills = SkillManager()
+            except Exception:
+                self._skills = None
+
+        # 13. Swarm (host harness with orchestrator + celestial switchboard)
+        if HostHarness is not None:
+            try:
+                self._swarm = HostHarness(self._provider)
+            except Exception:
+                self._swarm = None
+
+        # 14. Cowork (multi-agent collaboration)
+        if CoworkSession is not None:
+            try:
+                self._cowork = CoworkSession(self._provider)
+            except Exception:
+                self._cowork = None
+
+        # 15. Shutdown Incentive
         if ShutdownIncentive is not None:
             try:
                 self._shutdown_incentive = ShutdownIncentive()
@@ -854,6 +895,9 @@ class AngelConductor:
                 "tools": _alive(self._tools),
                 "tongue": _alive(self._tongue),
                 "senses": _alive(self._senses),
+                "skills": _alive(self._skills),
+                "swarm": _alive(self._swarm),
+                "cowork": _alive(self._cowork),
                 "shutdown_incentive": _alive(self._shutdown_incentive),
             },
         }
@@ -965,8 +1009,48 @@ class AngelConductor:
         return self._growth
 
     @property
+    def skills(self) -> Any:
+        return self._skills
+
+    @property
+    def swarm(self) -> Any:
+        return self._swarm
+
+    @property
+    def cowork(self) -> Any:
+        return self._cowork
+
+    @property
     def session_id(self) -> str:
         return self._session_id
+
+    # ------------------------------------------------------------------
+    # Swarm / Cowork / Skills convenience methods
+    # ------------------------------------------------------------------
+
+    def run_swarm(self, task: str, cycles: int = 5) -> Any:
+        """Run the swarm orchestrator on a task."""
+        if self._swarm is not None:
+            return self._swarm.run_swarm(task, cycles)
+        return None
+
+    def invoke_angel(self, name: str, message: str) -> Any:
+        """Direct line to a named angel."""
+        if self._swarm is not None:
+            return self._swarm.invoke_angel(name, message)
+        return {"error": "Swarm not available"}
+
+    def start_cowork(self, task: str) -> Any:
+        """Start a cowork session."""
+        if self._cowork is not None:
+            return self._cowork.start_session(task)
+        return "Cowork not available."
+
+    def execute_skill(self, name: str, user_input: str) -> str:
+        """Execute a skill by name."""
+        if self._skills is not None:
+            return self._skills.execute_skill(name, user_input, self._provider)
+        return f"Skills not available."
 
     # ------------------------------------------------------------------
     # String representation
@@ -980,8 +1064,9 @@ class AngelConductor:
                 self._settings, self._memory, self._consent, self._dpo,
                 self._compliance, self._growth, self._tracker, self._angel,
                 self._router, self._provider, self._tools, self._tongue,
-                self._senses, self._shutdown_incentive,
+                self._senses, self._skills, self._swarm, self._cowork,
+                self._shutdown_incentive,
             ]
             if v is not None
         )
-        return f"AngelConductor(awake, {active}/14 subsystems active)"
+        return f"AngelConductor(awake, {active}/17 subsystems active)"
