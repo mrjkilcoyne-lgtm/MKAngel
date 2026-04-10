@@ -4,8 +4,29 @@ Triage of Instagram / Facebook ads offering freebies, credits, or deals
 that could legitimately benefit CANZUK Ltd (UK limited company).
 
 Last reviewed: 2026-04-10
-Applicant: Matthew Kilcoyne, matt@claimour.com
-Company: CANZUK Ltd, company number 17074739
+
+## Company fact sheet
+
+Verified against Companies House register 2026-04-10.
+
+| Field | Value |
+|---|---|
+| Legal name (as registered) | `CANZUK LTD` |
+| Trading name | CANZUK Ltd |
+| Company number | 17074739 |
+| Date of incorporation | 6 March 2026 |
+| Status | Active, private limited company |
+| Registered office | 163 Wapping High Street, London, E1W 3NQ |
+| Registered-office note | Tide Platform Ltd ACSP service address, not a physical workplace |
+| SIC codes | 62020 IT consultancy, 63990 other info services, 70100 head offices, 93290 other amusement/recreation |
+| Sole director | Matthew Richard James Kilcoyne (appointed 6 March 2026, identity verified via Tide) |
+| Headcount | 1 |
+| Business bank | Tide (already onboarded) |
+| Public website | None yet. Use https://github.com/mrjkilcoyne-lgtm/MKAngel as the public link when asked. |
+| Primary contact | Matthew Kilcoyne, matt@claimour.com |
+| First accounts due | 6 December 2027 |
+| First confirmation statement due | 19 March 2027 |
+| One-line description | `CANZUK Ltd is a UK IT consultancy developing MKAngel, an open-source AI grammar language model, and providing related information services.` |
 
 ---
 
@@ -59,21 +80,28 @@ into each URL, paste the copy, submit.
 
 **Pre-fill:**
 ```
-Legal name:         CANZUK Ltd
+Legal name:         CANZUK LTD
 Companies House:    17074739
-Contact:            Matthew Kilcoyne
-Email:              matt@claimour.com  {TODO: confirm — not a canzuk.* domain, AWS may prefer a matching company email}
-Role:               Founder / Director
+Registered office:  163 Wapping High Street, London E1W 3NQ, United Kingdom
+Incorporated:       6 March 2026
+Contact:            Matthew Kilcoyne (Director)
+Email:              matt@claimour.com
 Country:            United Kingdom
 Funding stage:      Bootstrapped / Pre-seed
-Company age:        < 2 years
+Company age:        < 1 year
+Employees:          1
+Website / repo:     https://github.com/mrjkilcoyne-lgtm/MKAngel
+Pitch:              CANZUK Ltd is a UK IT consultancy developing MKAngel,
+                    an open-source AI grammar language model, and providing
+                    related information services. We plan to host model
+                    training, inference, and supporting web APIs on AWS.
+Expected AWS spend: ~$50-$200/month in year one, scaling with MKAngel usage.
 ```
 
-**Needed from Matt before applying:**
-1. AWS account ID (12-digit). Create one at https://aws.amazon.com if none yet, and switch the plan off Free Tier.
-2. One-sentence pitch: what CANZUK Ltd does.
-3. Company website URL (or LinkedIn if no site yet).
-4. Expected monthly AWS spend over next 6 months (rough is fine).
+**Still on Matt before hitting submit:**
+1. **Create the AWS account** at https://aws.amazon.com (12-digit account ID lands in your billing console). Switch off Free Tier to a paid plan — AWS Activate requires this.
+2. **Confirm the pitch sentence** above accurately reflects CANZUK Ltd's scope. Edit if needed.
+3. **Monthly spend estimate** — my placeholder is a guess; override if you have a better number.
 
 ---
 
@@ -89,13 +117,29 @@ Company age:        < 2 years
 - Privately held, pre-Series A -- yes.
 - Has or will create a GCP billing account -- **must be created first**.
 
-**Pre-fill:** (same boilerplate as AWS above)
+**Pre-fill:**
+```
+Legal name:         CANZUK LTD
+Companies House:    17074739
+Registered office:  163 Wapping High Street, London E1W 3NQ, United Kingdom
+Incorporated:       6 March 2026
+Contact:            Matthew Kilcoyne (Director)
+Email:              matt@claimour.com
+Country:            United Kingdom
+Funding stage:      Bootstrapped / Pre-seed
+Website / repo:     https://github.com/mrjkilcoyne-lgtm/MKAngel
+Intended products:  Vertex AI (Gemini / model hosting), Cloud Run
+                    (MKAngel backend services), Cloud Storage, BigQuery
+                    for telemetry. Potentially GKE if traffic warrants.
+Pitch:              CANZUK Ltd is a UK IT consultancy developing MKAngel,
+                    an open-source AI grammar language model. Google Cloud
+                    credits would fund Vertex AI experimentation and
+                    containerised inference deployment.
+```
 
-**Needed from Matt before applying:**
-1. GCP billing account ID (create at https://console.cloud.google.com → Billing).
-2. Short pitch (reusable from #1).
-3. Company website URL.
-4. Which Google Cloud products you intend to use (Vertex AI? Cloud Run? GKE? Just say what MKAngel/other projects will touch).
+**Still on Matt before hitting submit:**
+1. **Create the GCP billing account** at https://console.cloud.google.com → Billing → "Create billing account". Link it to CANZUK Ltd's details and a payment card.
+2. **Tweak the intended-products list** if you know you won't touch GKE/BigQuery — trimming to things you'll actually use makes the application read more credibly.
 
 ---
 
@@ -107,14 +151,17 @@ Company age:        < 2 years
 
 **Pre-fill:**
 ```
-Company:            CANZUK Ltd
-Contact:            Matthew Kilcoyne
+Company:            CANZUK LTD
+Contact:            Matthew Kilcoyne (Director)
 Email:              matt@claimour.com
 Country:            United Kingdom
-Use case:           {TODO: one sentence — "Video generation for MKAngel voice/visual features" or similar}
+Use case:           Evaluating Seedance 1.5 Pro for generating visual and
+                    audio assets for MKAngel, an open-source AI assistant
+                    project (voice-note visualisation, avatar animation,
+                    and demo video production).
 ```
 
-**Needed from Matt:** just a use-case sentence. Everything else I have.
+Everything else is inferable. Submit as-is unless Matt wants a different use-case angle.
 
 **Note:** Tokens are for the BytePlus dashboard; they won't land in an OpenAI/Anthropic-style SDK. Only worth grabbing if you'll actually touch the BytePlus console.
 
@@ -127,41 +174,37 @@ Use case:           {TODO: one sentence — "Video generation for MKAngel voice/
 **Eligibility:** Any UK company. No commitment, no monthly fee.
 
 **Process:**
-1. Create account with matt@claimour.com.
-2. Add CANZUK Ltd as the billing entity (company number 17074739).
-3. Add a payment card.
-4. When prompted for a promo code, enter: **`BUSINESS`** (50% off 25 rides, per the ad).
-5. Also watch for a £150 new-customer credit auto-applied to first-ride billing -- flag if it doesn't show up.
+1. Sign up at https://business.bolt.eu with `matt@claimour.com`.
+2. Add CANZUK LTD as the billing entity: company number 17074739, registered address 163 Wapping High Street, London E1W 3NQ.
+3. Add a payment card (the Tide business card is fine).
+4. When prompted for a promo code, enter **`BUSINESS`** (50% off 25 rides, per the ad).
+5. Watch for a £150 new-customer credit auto-applied to first-ride billing — flag if it doesn't show up.
 
-**Needed from Matt:** nothing extra. 2-minute job.
+2-minute job. No blockers.
 
 ---
 
 ### 5. Allica Bank Business Rewards Account
 
 > **Blocker (verified 2026-04-10):** Allica requires the company to have
-> been **incorporated for 12+ months minimum**. Company 17074739 suggests
-> CANZUK Ltd was incorporated in 2024 or later, so we are likely
-> ineligible right now.
+> been **incorporated for 12+ months minimum**. CANZUK Ltd was
+> incorporated **6 March 2026**, so the earliest eligible application
+> date is **6 March 2027**.
 >
-> **Action:** diary Allica for the 12-month anniversary of incorporation
-> (check Companies House for the exact date) and apply then. In the
-> meantime, open a short-term business account elsewhere.
+> **No action now.** You're already banking with **Tide**, which is fine
+> for the day-to-day. Stay on Tide until the 12-month anniversary, then
+> consider switching primary banking to Allica to capture the cashback
+> and savings rates.
 
-**Also note** (for when we do apply):
+**Crib sheet for 6 March 2027 (when the diary entry fires):**
+- Apply at: https://secure.allica.bank/open/business/
 - 1.5% cashback only kicks in above £10,000/month card spend (1% base rate below that).
 - £25/month fee if average balance drops below £10,000 (waived with an active Allica loan).
-- 4.08% AER savings rate needs 15+ bank transfers/month + other boosters; headline rate is 2.83% AER base.
-- Welcome bonus: extra 0.25% AER on savings for 3 months if you deposit £50,000+ within 14 days.
-- Apply at: https://secure.allica.bank/open/business/
+- 4.08% AER headline savings rate requires 15+ bank transfers/month + CASS switch bonus + welcome boost; base rate is 2.83% AER.
+- Welcome bonus: extra 0.25% AER on savings for 3 months if you deposit £50,000+ within 14 days of opening.
+- CASS (Current Account Switch Service) from Tide → Allica gets you an extra 0.5% AER boost for 6 months.
 
-**Near-term alternatives** while we wait out the 12 months:
-- **Tide** -- instant sign-up, free tier, no trading-history requirement. Basic but works.
-- **Starling Business** -- free, proper bank (FSCS-protected), good app, accepts new Ltds.
-- **Mettle** (NatWest) -- free, brand-new Ltd friendly.
-- **Revolut Business** -- multi-currency, useful if you'll bill in USD/EUR.
-
-Recommendation: **Starling Business** for the day-to-day, switch to Allica at the 12-month mark to capture the cashback + savings rate.
+**If you want to get ahead now:** nothing to do. The 12-month clock is running.
 
 ---
 
@@ -177,11 +220,13 @@ Recommendation: **Starling Business** for the day-to-day, switch to Allica at th
 ```
 Name:           Matthew Kilcoyne
 Email:          matt@claimour.com
-Company:        CANZUK Ltd
+Company:        CANZUK LTD
 Title:          Director
 Country:        United Kingdom
-Employees:      {TODO: 1? 2-10?}
-Current stack:  {TODO: "we don't currently run VMware" is a fine answer}
+Employees:      1
+Current stack:  We do not currently run VMware. Exploring options for
+                lightweight on-prem / edge compute for the MKAngel
+                project — happy to hear about Scale's offering.
 ```
 
 ---
@@ -202,32 +247,31 @@ Current stack:  {TODO: "we don't currently run VMware" is a fine answer}
 
 ---
 
-## Information Matt still needs to provide
+## Open questions (small, non-blocking)
 
-The minimum I need before I can draft actual application copy end-to-end:
+Everything material is pre-filled from Companies House. Two minor sanity
+checks — none of them block applying:
 
-1. **Company registered address** (or I'll grab it from Companies House).
-2. **Date of incorporation** (exact date, for the Allica diary entry).
-3. **Company website URL** (or LinkedIn, or "none yet").
-4. **One-sentence description** of what CANZUK Ltd does / will do.
-5. **Funding stage** -- bootstrapped? any friends-and-family investment?
-6. **Number of employees** (just you? plus others?).
-7. **Expected first-year revenue band** (for bank applications).
-8. **AWS account ID** -- create at https://aws.amazon.com if none yet.
-9. **GCP billing account ID** -- create at https://console.cloud.google.com if none yet.
-10. **Is matt@claimour.com the right contact email?** Or do you have a @canzuk.* address you'd rather use? (AWS/GCP prefer matching company domains but don't require them.)
+1. **Pitch sentence** — the one-liner in the fact sheet describes
+   CANZUK Ltd as an IT consultancy developing MKAngel plus related info
+   services. That's an inference from the SIC codes + this repo. If
+   the company has a different or broader remit (policy consulting,
+   something non-tech), tell me and I'll rewrite.
+2. **Monthly cloud spend** — my AWS placeholder is $50-$200/month year 1.
+   Feel free to override with a real number.
 
-With items 1-7 I can draft every application except AWS/GCP. With 8 and 9 I can draft those too. Item 10 is a 30-second check.
+Nothing else is missing. AWS/GCP account IDs have to be created by
+hand on signup; no human on earth can pre-fill those.
 
 ---
 
 ## Suggested order of attack
 
-1. **Bolt Business** -- 2 min, no info needed.
-2. **BytePlus** -- 5 min once you give me a use-case sentence.
-3. **Starling Business** account -- near-term bank so you have a working IBAN.
-4. Create an **AWS account + GCP billing account** (parallel, 10 min each). Then apply to **AWS Activate Founders** and **Google for Startups Start** tiers back-to-back.
-5. **JGP** PDF download -- 1 min.
-6. **Scale Computing** gift card -- only if you fancy a sales call.
-7. **Diary Allica** for the 12-month anniversary of CANZUK Ltd's incorporation.
-8. Revisit **AWS/GCP larger tiers** when/if CANZUK joins an accelerator or gets investor backing.
+1. **Bolt Business** — 2 min. Nothing to do but paste and go.
+2. **BytePlus** — 5 min. Submit the pre-filled copy.
+3. **JGP** PDF download — 1 min.
+4. **AWS Activate Founders** — create AWS account (~10 min), switch to paid plan, apply with the pre-filled copy.
+5. **Google for Startups Start** — create GCP billing account (~10 min), apply with the pre-filled copy.
+6. **Scale Computing** gift card — only if you fancy the sales call.
+7. **Diary entry: 6 March 2027** — apply to Allica on the 12-month anniversary.
+8. **Revisit bigger AWS/GCP tiers** (up to $100K each) when/if CANZUK Ltd joins an accelerator or picks up investor backing.
