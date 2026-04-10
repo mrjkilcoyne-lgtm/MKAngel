@@ -145,3 +145,10 @@ try:
     from app.documents import DocumentManager, Document
 except Exception:
     pass
+
+# ── WhatsApp bridge (optional: needs claude-agent-sdk + Node/Baileys) ──
+
+try:
+    from app.whatsapp.config import BridgeConfig
+except Exception:
+    pass
