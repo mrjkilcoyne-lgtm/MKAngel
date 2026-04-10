@@ -41,13 +41,15 @@ def test_trim_exact_limit():
 def _make_fake_cfg(tmp_path: Path, allowed: set[str]) -> SimpleNamespace:
     """Smallest possible stand-in for BridgeConfig.
 
-    ``handle_event`` only reads ``is_allowed`` and ``log_file`` (via
-    ``_log_traffic``), so we don't need the full dataclass here.
+    ``Bridge.__init__`` now also instantiates a ``SessionStore`` (uses
+    ``log_file.parent``) and a ``SlashDispatcher`` (uses ``repo_root``),
+    so the fake config needs both plus ``is_allowed``.
     """
     log_file = tmp_path / "whatsapp.log"
     return SimpleNamespace(
         is_allowed=lambda jid: jid.split("@", 1)[0].lstrip("+") in allowed,
         log_file=log_file,
+        repo_root=tmp_path,
     )
 
 

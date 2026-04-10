@@ -11,6 +11,8 @@ Protocol on the Node <-> Python boundary (newline-delimited JSON):
         {"type": "ready"}
         {"type": "qr",    "qr": "<data url or ascii>"}
         {"type": "msg",   "from": "447700900123@s.whatsapp.net", "text": "..."}
+        {"type": "audio", "from": "447700900123@s.whatsapp.net",
+                          "path": "/abs/path.ogg", "mimetype": "audio/ogg"}
         {"type": "error", "error": "..."}
 
     Python -> Node (stdin):
@@ -33,6 +35,8 @@ from pathlib import Path
 
 from app.whatsapp.agent_runner import repo_snapshot, run_agent
 from app.whatsapp.config import BridgeConfig
+from app.whatsapp.memory_store import SessionStore
+from app.whatsapp.slash import SlashDispatcher
 
 logger = logging.getLogger("mkangel.whatsapp.bridge")
 
@@ -46,6 +50,11 @@ class Bridge:
         self.cfg = cfg
         self.proc: asyncio.subprocess.Process | None = None
         self.agent_lock = asyncio.Lock()
+        # Session store lives next to the log file so the .env can move
+        # both with a single path change.
+        db_path = cfg.log_file.parent / "sessions.sqlite3"
+        self.store = SessionStore(db_path)
+        self.slash = SlashDispatcher(cfg.repo_root, store=self.store)
 
     # ── process management ──────────────────────────────────────────────
 
@@ -73,6 +82,10 @@ class Bridge:
                 await asyncio.wait_for(self.proc.wait(), timeout=5)
             except asyncio.TimeoutError:
                 self.proc.kill()
+        try:
+            self.store.close()
+        except Exception:  # noqa: BLE001
+            pass
 
     # ── send/receive ────────────────────────────────────────────────────
 
@@ -122,18 +135,66 @@ class Bridge:
                 return
             self._log_traffic("rx", sender, text)
             await self.dispatch(sender, text)
+        elif etype == "audio":
+            sender = event.get("from", "")
+            audio_path = event.get("path", "")
+            if not audio_path:
+                return
+            if not self.cfg.is_allowed(sender):
+                logger.warning("ignoring audio from non-allowlisted %s", sender)
+                _safe_unlink(audio_path)
+                return
+            self._log_traffic("rx", sender, f"<audio {audio_path}>")
+            await self.handle_audio(sender, audio_path)
         elif etype == "error":
             logger.error("baileys error: %s", event.get("error"))
         else:
             logger.debug("unknown event: %s", event)
 
+    async def handle_audio(self, sender: str, audio_path: str) -> None:
+        """Transcribe a voice note, then run it through the normal dispatch."""
+        # Deferred import so a missing whisper/ffmpeg doesn't kill the bridge
+        # on startup — it only matters when an audio message actually arrives.
+        from app.whatsapp.voice import transcribe
+
+        await self.send(sender, "transcribing voice note...")
+        loop = asyncio.get_running_loop()
+        try:
+            text = await loop.run_in_executor(
+                None, transcribe, Path(audio_path)
+            )
+        except Exception as exc:  # noqa: BLE001
+            logger.exception("transcription failed")
+            await self.send(sender, f"transcription failed: {exc}")
+            _safe_unlink(audio_path)
+            return
+        finally:
+            _safe_unlink(audio_path)
+
+        text = (text or "").strip()
+        if not text:
+            await self.send(sender, "transcription came back empty")
+            return
+        await self.send(sender, f'heard: "{text}"')
+        await self.dispatch(sender, text)
+
     async def dispatch(self, sender: str, text: str) -> None:
+        # Slash commands are instant and do not hold the agent lock.
+        if self.slash.is_slash(text):
+            try:
+                reply = self.slash.dispatch(text, sender)
+            except Exception as exc:  # noqa: BLE001
+                logger.exception("slash dispatcher crashed")
+                reply = f"slash error: {exc}"
+            await self.send(sender, _trim_for_whatsapp(reply))
+            return
+
         if self.agent_lock.locked():
             await self.send(sender, "working on your previous one, queued this")
         async with self.agent_lock:
             await self.send(sender, "on it...")
             try:
-                reply = await run_agent(text, self.cfg)
+                reply = await run_agent(text, self.cfg, sender, self.store)
             except Exception as exc:  # noqa: BLE001
                 logger.exception("agent crashed")
                 reply = f"agent error: {exc}"
@@ -168,6 +229,14 @@ def _trim_for_whatsapp(text: str, limit: int = 3500) -> str:
     if len(text) <= limit:
         return text
     return text[: limit - 30] + "\n\n...[truncated]"
+
+
+def _safe_unlink(path: str | Path) -> None:
+    """Remove ``path`` if it exists, swallowing errors."""
+    try:
+        Path(path).unlink(missing_ok=True)
+    except OSError as exc:
+        logger.debug("could not unlink %s: %s", path, exc)
 
 
 def _install_signal_handlers(loop: asyncio.AbstractEventLoop, bridge: Bridge) -> None:

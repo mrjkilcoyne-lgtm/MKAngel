@@ -12,6 +12,10 @@ from __future__ import annotations
 import shlex
 import subprocess
 from pathlib import Path
+from typing import TYPE_CHECKING
+
+if TYPE_CHECKING:
+    from app.whatsapp.memory_store import SessionStore
 
 MAX_REPLY_CHARS = 3500
 FREEBIES_LIMIT = 3000
@@ -29,8 +33,13 @@ _COMMANDS = (
 
 
 class SlashDispatcher:
-    def __init__(self, repo_root: Path) -> None:
+    def __init__(
+        self,
+        repo_root: Path,
+        store: "SessionStore | None" = None,
+    ) -> None:
         self.repo_root = Path(repo_root)
+        self.store = store
 
     # ── public API ──────────────────────────────────────────────────────
 
@@ -134,7 +143,13 @@ class SlashDispatcher:
         return text
 
     def _cmd_clear(self, args: list[str], jid: str) -> str:
-        return "history cleared (TODO: wire to SessionStore)"
+        if self.store is None:
+            return "history cleared (no store attached)"
+        try:
+            self.store.clear(jid)
+        except Exception as exc:  # noqa: BLE001
+            return f"history clear failed: {exc}"[:200]
+        return "history cleared"
 
     # ── helpers ─────────────────────────────────────────────────────────
 
