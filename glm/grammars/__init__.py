@@ -49,6 +49,11 @@ from .physics import (
     build_quantum_grammar,
     build_relativity_grammar,
 )
+from .temporal import (
+    build_temporal_dynamics_grammar,
+    build_retrocausal_grammar,
+    build_all_temporal_grammars,
+)
 
 __all__ = [
     # Linguistic
@@ -82,4 +87,10 @@ __all__ = [
     "build_thermodynamics_grammar",
     "build_quantum_grammar",
     "build_relativity_grammar",
+    # Temporal — added 2026-04-11. The grammar of dynamics: mean reversion,
+    # momentum, regimes, shocks, decay, cycles, fixed points, and the
+    # retrocausal/branch-compatibility loop. See docs/on_her_nature.md.
+    "build_temporal_dynamics_grammar",
+    "build_retrocausal_grammar",
+    "build_all_temporal_grammars",
 ]

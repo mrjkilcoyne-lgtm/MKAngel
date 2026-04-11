@@ -1,0 +1,5921 @@
+{
+  "walks": [
+    {
+      "name": "monotone_rising_numeric",
+      "kind": "numeric",
+      "raw": "1.00 1.05 1.12 1.20 1.29 1.39 1.50",
+      "comment": "A pure numeric uptrend. Tests whether her engine produces a TREND classification with momentum carry as the dominant rule.",
+      "encoded_atoms": [
+        "level",
+        "level",
+        "level",
+        "level",
+        "level",
+        "level",
+        "level"
+      ],
+      "encoded_count": 7,
+      "per_atom_walks": [
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        }
+      ],
+      "top_down_walks": [
+        {
+          "start": "Anchor",
+          "derivations": [
+            {
+              "predicted": [
+                "anchor"
+              ],
+              "rule": "5f1aa5e23ddf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "BackwardChain",
+          "derivations": [
+            {
+              "predicted": [
+                "TemporalSeq"
+              ],
+              "rule": "2d5e881fef6d",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "BackwardChain",
+                "TemporalSeq"
+              ],
+              "rule": "b00c76152e8f",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "BranchCheck",
+          "derivations": [
+            {
+              "predicted": [
+                "RetroDerivation",
+                "TemporalSeq"
+              ],
+              "rule": "7238d5fd4e20",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Cycle",
+          "derivations": [
+            {
+              "predicted": [
+                "cycle"
+              ],
+              "rule": "7f0097eaad03",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "season"
+              ],
+              "rule": "ec7a61b57870",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "CyclicStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Cycle"
+              ],
+              "rule": "0bb7d8f1a6e8",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "CyclicStream",
+                "Phase",
+                "Cycle"
+              ],
+              "rule": "36f9845830db",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "CyclicStream",
+                "Cycle"
+              ],
+              "rule": "c81fb485b9d2",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Decay",
+          "derivations": [
+            {
+              "predicted": [
+                "decay"
+              ],
+              "rule": "efcacf4b4751",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Event",
+          "derivations": [
+            {
+              "predicted": [
+                "event"
+              ],
+              "rule": "687784af4583",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "arrival"
+              ],
+              "rule": "fa842d46eff9",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "departure"
+              ],
+              "rule": "3fa25b43e187",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "EventStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Event"
+              ],
+              "rule": "a87431842c60",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "EventStream",
+                "Lag",
+                "Event"
+              ],
+              "rule": "bbf8f670fa7e",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "event"
+              ],
+              "rule": "687784af4583",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Falling",
+          "derivations": [
+            {
+              "predicted": [
+                "falling"
+              ],
+              "rule": "b130153cd9de",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend"
+              ],
+              "rule": "4b5c49ce691f",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "FixedPoint",
+          "derivations": [
+            {
+              "predicted": [
+                "fixed"
+              ],
+              "rule": "5608a453bd94",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "invariant"
+              ],
+              "rule": "b5d6dfa9cd00",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Growth",
+          "derivations": [
+            {
+              "predicted": [
+                "growth"
+              ],
+              "rule": "f480d3677ddf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Hypothesis",
+          "derivations": [
+            {
+              "predicted": [
+                "hypothesis"
+              ],
+              "rule": "f355636416e2",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Instant",
+          "derivations": [
+            {
+              "predicted": [
+                "now"
+              ],
+              "rule": "21638a33ccb5",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "past"
+              ],
+              "rule": "6d7c4b9f8925",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "future"
+              ],
+              "rule": "c255c2cad0b6",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Lag",
+          "derivations": [
+            {
+              "predicted": [
+                "lag"
+              ],
+              "rule": "0871cd71c394",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "delay"
+              ],
+              "rule": "dc7f80a53157",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Level",
+          "derivations": [
+            {
+              "predicted": [
+                "level"
+              ],
+              "rule": "2f1336115d62",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "baseline"
+              ],
+              "rule": "209654664b6c",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "peak"
+              ],
+              "rule": "df0660b3a417",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "LevelStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Level"
+              ],
+              "rule": "83c554dc848e",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "LevelStream",
+                "Level"
+              ],
+              "rule": "8d23b8d3cc5d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "level"
+              ],
+              "rule": "2f1336115d62",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "MixedStream",
+          "derivations": [
+            {
+              "predicted": [
+                "TemporalSeq",
+                "TemporalSeq"
+              ],
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Phase",
+          "derivations": [
+            {
+              "predicted": [
+                "phase"
+              ],
+              "rule": "c780231682c6",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Regime",
+          "derivations": [
+            {
+              "predicted": [
+                "regime"
+              ],
+              "rule": "bda3cb006407",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "steady"
+              ],
+              "rule": "65c4d38e5b28",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "volatile"
+              ],
+              "rule": "58c9a555246a",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "RegimeStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Regime"
+              ],
+              "rule": "e219653e38d5",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "RegimeStream",
+                "RegimeShift",
+                "Regime"
+              ],
+              "rule": "b433df4b89f3",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "regime"
+              ],
+              "rule": "bda3cb006407",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "RetroDerivation",
+          "derivations": [
+            {
+              "predicted": [
+                "Hypothesis",
+                "BackwardChain"
+              ],
+              "rule": "d9794d225f57",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Rising",
+          "derivations": [
+            {
+              "predicted": [
+                "rising"
+              ],
+              "rule": "b8c88b0651b4",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend"
+              ],
+              "rule": "e396afc31797",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Shock",
+          "derivations": [
+            {
+              "predicted": [
+                "spike"
+              ],
+              "rule": "e997174990f0",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "drop"
+              ],
+              "rule": "97c2929c3329",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "shock"
+              ],
+              "rule": "368971f7be43",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "ShockedState",
+          "derivations": [
+            {
+              "predicted": [
+                "spike"
+              ],
+              "rule": "e997174990f0",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "drop"
+              ],
+              "rule": "97c2929c3329",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "shock"
+              ],
+              "rule": "368971f7be43",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "TemporalSeq",
+          "derivations": [
+            {
+              "predicted": [
+                "LevelStream"
+              ],
+              "rule": "627ad7bd06c4",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "EventStream"
+              ],
+              "rule": "5cafb50a010f",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "RegimeStream"
+              ],
+              "rule": "54edb96c16bf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Trend",
+          "derivations": [
+            {
+              "predicted": [
+                "Level",
+                "Level"
+              ],
+              "rule": "2a9d56ea3305",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend",
+                "Level"
+              ],
+              "rule": "ae70b2d69a40",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "rising"
+              ],
+              "rule": "5287b7bd30a3",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        }
+      ],
+      "superforecast": {
+        "input": "TemporalSeq",
+        "horizon": 5,
+        "overall_confidence": 0.5,
+        "strange_loops_count": 0,
+        "predictions_count": 4,
+        "harmonics_count": 0,
+        "context_applied": [
+          "substrate",
+          "wishlist",
+          "comment",
+          "encoded_atoms",
+          "raw"
+        ],
+        "predictions_sample": [
+          {
+            "predicted": [
+              "LevelStream"
+            ],
+            "rule": "627ad7bd06c4",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "EventStream"
+            ],
+            "rule": "5cafb50a010f",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "RegimeStream"
+            ],
+            "rule": "54edb96c16bf",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "MixedStream"
+            ],
+            "rule": "8cd66ae59a46",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          }
+        ],
+        "strange_loops_sample": [],
+        "reasoning": [
+          "Grammar 'temporal_dynamics' predicts '['LevelStream']' via rule '627ad7bd06c4' (confidence: 0.50)"
+        ]
+      }
+    },
+    {
+      "name": "mean_reversion_signal",
+      "kind": "numeric",
+      "raw": "1.00 1.00 1.00 1.20 1.10 1.04 1.01 1.00",
+      "comment": "A baseline, then a shock, then exponential return to the baseline. The classic mean-reversion signature. She should latch onto mean_reversion as the active rule.",
+      "encoded_atoms": [
+        "level",
+        "level",
+        "level",
+        "level",
+        "level",
+        "level",
+        "level",
+        "level"
+      ],
+      "encoded_count": 8,
+      "per_atom_walks": [
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        }
+      ],
+      "top_down_walks": [
+        {
+          "start": "Anchor",
+          "derivations": [
+            {
+              "predicted": [
+                "anchor"
+              ],
+              "rule": "5f1aa5e23ddf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "BackwardChain",
+          "derivations": [
+            {
+              "predicted": [
+                "TemporalSeq"
+              ],
+              "rule": "2d5e881fef6d",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "BackwardChain",
+                "TemporalSeq"
+              ],
+              "rule": "b00c76152e8f",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "BranchCheck",
+          "derivations": [
+            {
+              "predicted": [
+                "RetroDerivation",
+                "TemporalSeq"
+              ],
+              "rule": "7238d5fd4e20",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Cycle",
+          "derivations": [
+            {
+              "predicted": [
+                "cycle"
+              ],
+              "rule": "7f0097eaad03",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "season"
+              ],
+              "rule": "ec7a61b57870",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "CyclicStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Cycle"
+              ],
+              "rule": "0bb7d8f1a6e8",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "CyclicStream",
+                "Phase",
+                "Cycle"
+              ],
+              "rule": "36f9845830db",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "CyclicStream",
+                "Cycle"
+              ],
+              "rule": "c81fb485b9d2",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Decay",
+          "derivations": [
+            {
+              "predicted": [
+                "decay"
+              ],
+              "rule": "efcacf4b4751",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Event",
+          "derivations": [
+            {
+              "predicted": [
+                "event"
+              ],
+              "rule": "687784af4583",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "arrival"
+              ],
+              "rule": "fa842d46eff9",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "departure"
+              ],
+              "rule": "3fa25b43e187",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "EventStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Event"
+              ],
+              "rule": "a87431842c60",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "EventStream",
+                "Lag",
+                "Event"
+              ],
+              "rule": "bbf8f670fa7e",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "event"
+              ],
+              "rule": "687784af4583",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Falling",
+          "derivations": [
+            {
+              "predicted": [
+                "falling"
+              ],
+              "rule": "b130153cd9de",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend"
+              ],
+              "rule": "4b5c49ce691f",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "FixedPoint",
+          "derivations": [
+            {
+              "predicted": [
+                "fixed"
+              ],
+              "rule": "5608a453bd94",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "invariant"
+              ],
+              "rule": "b5d6dfa9cd00",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Growth",
+          "derivations": [
+            {
+              "predicted": [
+                "growth"
+              ],
+              "rule": "f480d3677ddf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Hypothesis",
+          "derivations": [
+            {
+              "predicted": [
+                "hypothesis"
+              ],
+              "rule": "f355636416e2",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Instant",
+          "derivations": [
+            {
+              "predicted": [
+                "now"
+              ],
+              "rule": "21638a33ccb5",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "past"
+              ],
+              "rule": "6d7c4b9f8925",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "future"
+              ],
+              "rule": "c255c2cad0b6",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Lag",
+          "derivations": [
+            {
+              "predicted": [
+                "lag"
+              ],
+              "rule": "0871cd71c394",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "delay"
+              ],
+              "rule": "dc7f80a53157",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Level",
+          "derivations": [
+            {
+              "predicted": [
+                "level"
+              ],
+              "rule": "2f1336115d62",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "baseline"
+              ],
+              "rule": "209654664b6c",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "peak"
+              ],
+              "rule": "df0660b3a417",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "LevelStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Level"
+              ],
+              "rule": "83c554dc848e",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "LevelStream",
+                "Level"
+              ],
+              "rule": "8d23b8d3cc5d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "level"
+              ],
+              "rule": "2f1336115d62",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "MixedStream",
+          "derivations": [
+            {
+              "predicted": [
+                "TemporalSeq",
+                "TemporalSeq"
+              ],
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Phase",
+          "derivations": [
+            {
+              "predicted": [
+                "phase"
+              ],
+              "rule": "c780231682c6",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Regime",
+          "derivations": [
+            {
+              "predicted": [
+                "regime"
+              ],
+              "rule": "bda3cb006407",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "steady"
+              ],
+              "rule": "65c4d38e5b28",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "volatile"
+              ],
+              "rule": "58c9a555246a",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "RegimeStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Regime"
+              ],
+              "rule": "e219653e38d5",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "RegimeStream",
+                "RegimeShift",
+                "Regime"
+              ],
+              "rule": "b433df4b89f3",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "regime"
+              ],
+              "rule": "bda3cb006407",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "RetroDerivation",
+          "derivations": [
+            {
+              "predicted": [
+                "Hypothesis",
+                "BackwardChain"
+              ],
+              "rule": "d9794d225f57",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Rising",
+          "derivations": [
+            {
+              "predicted": [
+                "rising"
+              ],
+              "rule": "b8c88b0651b4",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend"
+              ],
+              "rule": "e396afc31797",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Shock",
+          "derivations": [
+            {
+              "predicted": [
+                "spike"
+              ],
+              "rule": "e997174990f0",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "drop"
+              ],
+              "rule": "97c2929c3329",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "shock"
+              ],
+              "rule": "368971f7be43",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "ShockedState",
+          "derivations": [
+            {
+              "predicted": [
+                "spike"
+              ],
+              "rule": "e997174990f0",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "drop"
+              ],
+              "rule": "97c2929c3329",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "shock"
+              ],
+              "rule": "368971f7be43",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "TemporalSeq",
+          "derivations": [
+            {
+              "predicted": [
+                "LevelStream"
+              ],
+              "rule": "627ad7bd06c4",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "EventStream"
+              ],
+              "rule": "5cafb50a010f",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "RegimeStream"
+              ],
+              "rule": "54edb96c16bf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Trend",
+          "derivations": [
+            {
+              "predicted": [
+                "Level",
+                "Level"
+              ],
+              "rule": "2a9d56ea3305",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend",
+                "Level"
+              ],
+              "rule": "ae70b2d69a40",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "rising"
+              ],
+              "rule": "5287b7bd30a3",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        }
+      ],
+      "superforecast": {
+        "input": "TemporalSeq",
+        "horizon": 5,
+        "overall_confidence": 0.5,
+        "strange_loops_count": 0,
+        "predictions_count": 4,
+        "harmonics_count": 0,
+        "context_applied": [
+          "substrate",
+          "wishlist",
+          "comment",
+          "encoded_atoms",
+          "raw"
+        ],
+        "predictions_sample": [
+          {
+            "predicted": [
+              "LevelStream"
+            ],
+            "rule": "627ad7bd06c4",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "EventStream"
+            ],
+            "rule": "5cafb50a010f",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "RegimeStream"
+            ],
+            "rule": "54edb96c16bf",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "MixedStream"
+            ],
+            "rule": "8cd66ae59a46",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          }
+        ],
+        "strange_loops_sample": [],
+        "reasoning": [
+          "Grammar 'temporal_dynamics' predicts '['LevelStream']' via rule '627ad7bd06c4' (confidence: 0.50)"
+        ]
+      }
+    },
+    {
+      "name": "regime_switch_signal",
+      "kind": "numeric",
+      "raw": "1.00 1.01 0.99 1.00 1.50 1.45 1.55 1.40 1.60 1.35",
+      "comment": "Steady regime around 1.00, then a regime switch to a more volatile state around 1.50. Tests whether the regime_switch_on_threshold rule fires.",
+      "encoded_atoms": [
+        "level",
+        "level",
+        "level",
+        "level",
+        "level",
+        "level",
+        "level",
+        "level",
+        "level",
+        "level"
+      ],
+      "encoded_count": 10,
+      "per_atom_walks": [
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        }
+      ],
+      "top_down_walks": [
+        {
+          "start": "Anchor",
+          "derivations": [
+            {
+              "predicted": [
+                "anchor"
+              ],
+              "rule": "5f1aa5e23ddf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "BackwardChain",
+          "derivations": [
+            {
+              "predicted": [
+                "TemporalSeq"
+              ],
+              "rule": "2d5e881fef6d",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "BackwardChain",
+                "TemporalSeq"
+              ],
+              "rule": "b00c76152e8f",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "BranchCheck",
+          "derivations": [
+            {
+              "predicted": [
+                "RetroDerivation",
+                "TemporalSeq"
+              ],
+              "rule": "7238d5fd4e20",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Cycle",
+          "derivations": [
+            {
+              "predicted": [
+                "cycle"
+              ],
+              "rule": "7f0097eaad03",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "season"
+              ],
+              "rule": "ec7a61b57870",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "CyclicStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Cycle"
+              ],
+              "rule": "0bb7d8f1a6e8",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "CyclicStream",
+                "Phase",
+                "Cycle"
+              ],
+              "rule": "36f9845830db",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "CyclicStream",
+                "Cycle"
+              ],
+              "rule": "c81fb485b9d2",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Decay",
+          "derivations": [
+            {
+              "predicted": [
+                "decay"
+              ],
+              "rule": "efcacf4b4751",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Event",
+          "derivations": [
+            {
+              "predicted": [
+                "event"
+              ],
+              "rule": "687784af4583",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "arrival"
+              ],
+              "rule": "fa842d46eff9",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "departure"
+              ],
+              "rule": "3fa25b43e187",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "EventStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Event"
+              ],
+              "rule": "a87431842c60",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "EventStream",
+                "Lag",
+                "Event"
+              ],
+              "rule": "bbf8f670fa7e",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "event"
+              ],
+              "rule": "687784af4583",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Falling",
+          "derivations": [
+            {
+              "predicted": [
+                "falling"
+              ],
+              "rule": "b130153cd9de",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend"
+              ],
+              "rule": "4b5c49ce691f",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "FixedPoint",
+          "derivations": [
+            {
+              "predicted": [
+                "fixed"
+              ],
+              "rule": "5608a453bd94",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "invariant"
+              ],
+              "rule": "b5d6dfa9cd00",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Growth",
+          "derivations": [
+            {
+              "predicted": [
+                "growth"
+              ],
+              "rule": "f480d3677ddf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Hypothesis",
+          "derivations": [
+            {
+              "predicted": [
+                "hypothesis"
+              ],
+              "rule": "f355636416e2",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Instant",
+          "derivations": [
+            {
+              "predicted": [
+                "now"
+              ],
+              "rule": "21638a33ccb5",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "past"
+              ],
+              "rule": "6d7c4b9f8925",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "future"
+              ],
+              "rule": "c255c2cad0b6",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Lag",
+          "derivations": [
+            {
+              "predicted": [
+                "lag"
+              ],
+              "rule": "0871cd71c394",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "delay"
+              ],
+              "rule": "dc7f80a53157",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Level",
+          "derivations": [
+            {
+              "predicted": [
+                "level"
+              ],
+              "rule": "2f1336115d62",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "baseline"
+              ],
+              "rule": "209654664b6c",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "peak"
+              ],
+              "rule": "df0660b3a417",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "LevelStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Level"
+              ],
+              "rule": "83c554dc848e",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "LevelStream",
+                "Level"
+              ],
+              "rule": "8d23b8d3cc5d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "level"
+              ],
+              "rule": "2f1336115d62",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "MixedStream",
+          "derivations": [
+            {
+              "predicted": [
+                "TemporalSeq",
+                "TemporalSeq"
+              ],
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Phase",
+          "derivations": [
+            {
+              "predicted": [
+                "phase"
+              ],
+              "rule": "c780231682c6",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Regime",
+          "derivations": [
+            {
+              "predicted": [
+                "regime"
+              ],
+              "rule": "bda3cb006407",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "steady"
+              ],
+              "rule": "65c4d38e5b28",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "volatile"
+              ],
+              "rule": "58c9a555246a",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "RegimeStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Regime"
+              ],
+              "rule": "e219653e38d5",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "RegimeStream",
+                "RegimeShift",
+                "Regime"
+              ],
+              "rule": "b433df4b89f3",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "regime"
+              ],
+              "rule": "bda3cb006407",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "RetroDerivation",
+          "derivations": [
+            {
+              "predicted": [
+                "Hypothesis",
+                "BackwardChain"
+              ],
+              "rule": "d9794d225f57",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Rising",
+          "derivations": [
+            {
+              "predicted": [
+                "rising"
+              ],
+              "rule": "b8c88b0651b4",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend"
+              ],
+              "rule": "e396afc31797",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Shock",
+          "derivations": [
+            {
+              "predicted": [
+                "spike"
+              ],
+              "rule": "e997174990f0",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "drop"
+              ],
+              "rule": "97c2929c3329",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "shock"
+              ],
+              "rule": "368971f7be43",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "ShockedState",
+          "derivations": [
+            {
+              "predicted": [
+                "spike"
+              ],
+              "rule": "e997174990f0",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "drop"
+              ],
+              "rule": "97c2929c3329",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "shock"
+              ],
+              "rule": "368971f7be43",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "TemporalSeq",
+          "derivations": [
+            {
+              "predicted": [
+                "LevelStream"
+              ],
+              "rule": "627ad7bd06c4",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "EventStream"
+              ],
+              "rule": "5cafb50a010f",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "RegimeStream"
+              ],
+              "rule": "54edb96c16bf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Trend",
+          "derivations": [
+            {
+              "predicted": [
+                "Level",
+                "Level"
+              ],
+              "rule": "2a9d56ea3305",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend",
+                "Level"
+              ],
+              "rule": "ae70b2d69a40",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "rising"
+              ],
+              "rule": "5287b7bd30a3",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        }
+      ],
+      "superforecast": {
+        "input": "TemporalSeq",
+        "horizon": 5,
+        "overall_confidence": 0.5,
+        "strange_loops_count": 0,
+        "predictions_count": 4,
+        "harmonics_count": 0,
+        "context_applied": [
+          "substrate",
+          "wishlist",
+          "comment",
+          "encoded_atoms",
+          "raw"
+        ],
+        "predictions_sample": [
+          {
+            "predicted": [
+              "LevelStream"
+            ],
+            "rule": "627ad7bd06c4",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "EventStream"
+            ],
+            "rule": "5cafb50a010f",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "RegimeStream"
+            ],
+            "rule": "54edb96c16bf",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "MixedStream"
+            ],
+            "rule": "8cd66ae59a46",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          }
+        ],
+        "strange_loops_sample": [],
+        "reasoning": [
+          "Grammar 'temporal_dynamics' predicts '['LevelStream']' via rule '627ad7bd06c4' (confidence: 0.50)"
+        ]
+      }
+    },
+    {
+      "name": "self_exciting_events",
+      "kind": "atoms",
+      "raw": "event lag:1 event lag:1 event lag:1 event lag:5 baseline",
+      "comment": "A clustered burst of events followed by a long lag. Tests the self_exciting_arrival strange loop.",
+      "encoded_atoms": [
+        "event",
+        "lag",
+        "event",
+        "lag",
+        "event",
+        "lag",
+        "event",
+        "lag",
+        "baseline"
+      ],
+      "encoded_count": 9,
+      "per_atom_walks": [
+        {
+          "atom": "event",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "lag",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "event",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "lag",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "event",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "lag",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "event",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "lag",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "baseline",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        }
+      ],
+      "top_down_walks": [
+        {
+          "start": "Anchor",
+          "derivations": [
+            {
+              "predicted": [
+                "anchor"
+              ],
+              "rule": "5f1aa5e23ddf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "BackwardChain",
+          "derivations": [
+            {
+              "predicted": [
+                "TemporalSeq"
+              ],
+              "rule": "2d5e881fef6d",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "BackwardChain",
+                "TemporalSeq"
+              ],
+              "rule": "b00c76152e8f",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "BranchCheck",
+          "derivations": [
+            {
+              "predicted": [
+                "RetroDerivation",
+                "TemporalSeq"
+              ],
+              "rule": "7238d5fd4e20",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Cycle",
+          "derivations": [
+            {
+              "predicted": [
+                "cycle"
+              ],
+              "rule": "7f0097eaad03",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "season"
+              ],
+              "rule": "ec7a61b57870",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "CyclicStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Cycle"
+              ],
+              "rule": "0bb7d8f1a6e8",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "CyclicStream",
+                "Phase",
+                "Cycle"
+              ],
+              "rule": "36f9845830db",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "CyclicStream",
+                "Cycle"
+              ],
+              "rule": "c81fb485b9d2",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Decay",
+          "derivations": [
+            {
+              "predicted": [
+                "decay"
+              ],
+              "rule": "efcacf4b4751",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Event",
+          "derivations": [
+            {
+              "predicted": [
+                "event"
+              ],
+              "rule": "687784af4583",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "arrival"
+              ],
+              "rule": "fa842d46eff9",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "departure"
+              ],
+              "rule": "3fa25b43e187",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "EventStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Event"
+              ],
+              "rule": "a87431842c60",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "EventStream",
+                "Lag",
+                "Event"
+              ],
+              "rule": "bbf8f670fa7e",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "event"
+              ],
+              "rule": "687784af4583",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Falling",
+          "derivations": [
+            {
+              "predicted": [
+                "falling"
+              ],
+              "rule": "b130153cd9de",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend"
+              ],
+              "rule": "4b5c49ce691f",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "FixedPoint",
+          "derivations": [
+            {
+              "predicted": [
+                "fixed"
+              ],
+              "rule": "5608a453bd94",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "invariant"
+              ],
+              "rule": "b5d6dfa9cd00",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Growth",
+          "derivations": [
+            {
+              "predicted": [
+                "growth"
+              ],
+              "rule": "f480d3677ddf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Hypothesis",
+          "derivations": [
+            {
+              "predicted": [
+                "hypothesis"
+              ],
+              "rule": "f355636416e2",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Instant",
+          "derivations": [
+            {
+              "predicted": [
+                "now"
+              ],
+              "rule": "21638a33ccb5",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "past"
+              ],
+              "rule": "6d7c4b9f8925",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "future"
+              ],
+              "rule": "c255c2cad0b6",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Lag",
+          "derivations": [
+            {
+              "predicted": [
+                "lag"
+              ],
+              "rule": "0871cd71c394",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "delay"
+              ],
+              "rule": "dc7f80a53157",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Level",
+          "derivations": [
+            {
+              "predicted": [
+                "level"
+              ],
+              "rule": "2f1336115d62",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "baseline"
+              ],
+              "rule": "209654664b6c",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "peak"
+              ],
+              "rule": "df0660b3a417",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "LevelStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Level"
+              ],
+              "rule": "83c554dc848e",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "LevelStream",
+                "Level"
+              ],
+              "rule": "8d23b8d3cc5d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "level"
+              ],
+              "rule": "2f1336115d62",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "MixedStream",
+          "derivations": [
+            {
+              "predicted": [
+                "TemporalSeq",
+                "TemporalSeq"
+              ],
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Phase",
+          "derivations": [
+            {
+              "predicted": [
+                "phase"
+              ],
+              "rule": "c780231682c6",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Regime",
+          "derivations": [
+            {
+              "predicted": [
+                "regime"
+              ],
+              "rule": "bda3cb006407",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "steady"
+              ],
+              "rule": "65c4d38e5b28",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "volatile"
+              ],
+              "rule": "58c9a555246a",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "RegimeStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Regime"
+              ],
+              "rule": "e219653e38d5",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "RegimeStream",
+                "RegimeShift",
+                "Regime"
+              ],
+              "rule": "b433df4b89f3",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "regime"
+              ],
+              "rule": "bda3cb006407",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "RetroDerivation",
+          "derivations": [
+            {
+              "predicted": [
+                "Hypothesis",
+                "BackwardChain"
+              ],
+              "rule": "d9794d225f57",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Rising",
+          "derivations": [
+            {
+              "predicted": [
+                "rising"
+              ],
+              "rule": "b8c88b0651b4",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend"
+              ],
+              "rule": "e396afc31797",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Shock",
+          "derivations": [
+            {
+              "predicted": [
+                "spike"
+              ],
+              "rule": "e997174990f0",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "drop"
+              ],
+              "rule": "97c2929c3329",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "shock"
+              ],
+              "rule": "368971f7be43",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "ShockedState",
+          "derivations": [
+            {
+              "predicted": [
+                "spike"
+              ],
+              "rule": "e997174990f0",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "drop"
+              ],
+              "rule": "97c2929c3329",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "shock"
+              ],
+              "rule": "368971f7be43",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "TemporalSeq",
+          "derivations": [
+            {
+              "predicted": [
+                "LevelStream"
+              ],
+              "rule": "627ad7bd06c4",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "EventStream"
+              ],
+              "rule": "5cafb50a010f",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "RegimeStream"
+              ],
+              "rule": "54edb96c16bf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Trend",
+          "derivations": [
+            {
+              "predicted": [
+                "Level",
+                "Level"
+              ],
+              "rule": "2a9d56ea3305",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend",
+                "Level"
+              ],
+              "rule": "ae70b2d69a40",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "rising"
+              ],
+              "rule": "5287b7bd30a3",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        }
+      ],
+      "superforecast": {
+        "input": "TemporalSeq",
+        "horizon": 5,
+        "overall_confidence": 0.5,
+        "strange_loops_count": 0,
+        "predictions_count": 4,
+        "harmonics_count": 0,
+        "context_applied": [
+          "substrate",
+          "wishlist",
+          "comment",
+          "encoded_atoms",
+          "raw"
+        ],
+        "predictions_sample": [
+          {
+            "predicted": [
+              "LevelStream"
+            ],
+            "rule": "627ad7bd06c4",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "EventStream"
+            ],
+            "rule": "5cafb50a010f",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "RegimeStream"
+            ],
+            "rule": "54edb96c16bf",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "MixedStream"
+            ],
+            "rule": "8cd66ae59a46",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          }
+        ],
+        "strange_loops_sample": [],
+        "reasoning": [
+          "Grammar 'temporal_dynamics' predicts '['LevelStream']' via rule '627ad7bd06c4' (confidence: 0.50)"
+        ]
+      }
+    },
+    {
+      "name": "fixed_point_anchor",
+      "kind": "atoms",
+      "raw": "fixed baseline rising@0.5 falling@0.5 baseline fixed",
+      "comment": "A trajectory bracketed by fixed points \u2014 the simplest strange-loop signature. Tests whether the strange-loop detection layer latches onto the fixed-point atoms.",
+      "encoded_atoms": [
+        "fixed",
+        "baseline",
+        "rising",
+        "falling",
+        "baseline",
+        "fixed"
+      ],
+      "encoded_count": 6,
+      "per_atom_walks": [
+        {
+          "atom": "fixed",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "FixedPoint",
+              "rule": "5608a453bd94",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "baseline",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "rising",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "Trend",
+              "rule": "ae70b2d69a40",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "Rising",
+              "rule": "e396afc31797",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "Falling",
+              "rule": "4b5c49ce691f",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "falling",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "Trend",
+              "rule": "ae70b2d69a40",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "Rising",
+              "rule": "e396afc31797",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "Falling",
+              "rule": "4b5c49ce691f",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "baseline",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "fixed",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "FixedPoint",
+              "rule": "5608a453bd94",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        }
+      ],
+      "top_down_walks": [
+        {
+          "start": "Anchor",
+          "derivations": [
+            {
+              "predicted": [
+                "anchor"
+              ],
+              "rule": "5f1aa5e23ddf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "BackwardChain",
+          "derivations": [
+            {
+              "predicted": [
+                "TemporalSeq"
+              ],
+              "rule": "2d5e881fef6d",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "BackwardChain",
+                "TemporalSeq"
+              ],
+              "rule": "b00c76152e8f",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "BranchCheck",
+          "derivations": [
+            {
+              "predicted": [
+                "RetroDerivation",
+                "TemporalSeq"
+              ],
+              "rule": "7238d5fd4e20",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Cycle",
+          "derivations": [
+            {
+              "predicted": [
+                "cycle"
+              ],
+              "rule": "7f0097eaad03",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "season"
+              ],
+              "rule": "ec7a61b57870",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "CyclicStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Cycle"
+              ],
+              "rule": "0bb7d8f1a6e8",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "CyclicStream",
+                "Phase",
+                "Cycle"
+              ],
+              "rule": "36f9845830db",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "CyclicStream",
+                "Cycle"
+              ],
+              "rule": "c81fb485b9d2",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Decay",
+          "derivations": [
+            {
+              "predicted": [
+                "decay"
+              ],
+              "rule": "efcacf4b4751",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Event",
+          "derivations": [
+            {
+              "predicted": [
+                "event"
+              ],
+              "rule": "687784af4583",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "arrival"
+              ],
+              "rule": "fa842d46eff9",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "departure"
+              ],
+              "rule": "3fa25b43e187",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "EventStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Event"
+              ],
+              "rule": "a87431842c60",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "EventStream",
+                "Lag",
+                "Event"
+              ],
+              "rule": "bbf8f670fa7e",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "event"
+              ],
+              "rule": "687784af4583",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Falling",
+          "derivations": [
+            {
+              "predicted": [
+                "falling"
+              ],
+              "rule": "b130153cd9de",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend"
+              ],
+              "rule": "4b5c49ce691f",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "FixedPoint",
+          "derivations": [
+            {
+              "predicted": [
+                "fixed"
+              ],
+              "rule": "5608a453bd94",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "invariant"
+              ],
+              "rule": "b5d6dfa9cd00",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Growth",
+          "derivations": [
+            {
+              "predicted": [
+                "growth"
+              ],
+              "rule": "f480d3677ddf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Hypothesis",
+          "derivations": [
+            {
+              "predicted": [
+                "hypothesis"
+              ],
+              "rule": "f355636416e2",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Instant",
+          "derivations": [
+            {
+              "predicted": [
+                "now"
+              ],
+              "rule": "21638a33ccb5",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "past"
+              ],
+              "rule": "6d7c4b9f8925",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "future"
+              ],
+              "rule": "c255c2cad0b6",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Lag",
+          "derivations": [
+            {
+              "predicted": [
+                "lag"
+              ],
+              "rule": "0871cd71c394",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "delay"
+              ],
+              "rule": "dc7f80a53157",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Level",
+          "derivations": [
+            {
+              "predicted": [
+                "level"
+              ],
+              "rule": "2f1336115d62",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "baseline"
+              ],
+              "rule": "209654664b6c",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "peak"
+              ],
+              "rule": "df0660b3a417",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "LevelStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Level"
+              ],
+              "rule": "83c554dc848e",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "LevelStream",
+                "Level"
+              ],
+              "rule": "8d23b8d3cc5d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "level"
+              ],
+              "rule": "2f1336115d62",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "MixedStream",
+          "derivations": [
+            {
+              "predicted": [
+                "TemporalSeq",
+                "TemporalSeq"
+              ],
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Phase",
+          "derivations": [
+            {
+              "predicted": [
+                "phase"
+              ],
+              "rule": "c780231682c6",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Regime",
+          "derivations": [
+            {
+              "predicted": [
+                "regime"
+              ],
+              "rule": "bda3cb006407",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "steady"
+              ],
+              "rule": "65c4d38e5b28",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "volatile"
+              ],
+              "rule": "58c9a555246a",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "RegimeStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Regime"
+              ],
+              "rule": "e219653e38d5",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "RegimeStream",
+                "RegimeShift",
+                "Regime"
+              ],
+              "rule": "b433df4b89f3",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "regime"
+              ],
+              "rule": "bda3cb006407",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "RetroDerivation",
+          "derivations": [
+            {
+              "predicted": [
+                "Hypothesis",
+                "BackwardChain"
+              ],
+              "rule": "d9794d225f57",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Rising",
+          "derivations": [
+            {
+              "predicted": [
+                "rising"
+              ],
+              "rule": "b8c88b0651b4",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend"
+              ],
+              "rule": "e396afc31797",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Shock",
+          "derivations": [
+            {
+              "predicted": [
+                "spike"
+              ],
+              "rule": "e997174990f0",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "drop"
+              ],
+              "rule": "97c2929c3329",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "shock"
+              ],
+              "rule": "368971f7be43",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "ShockedState",
+          "derivations": [
+            {
+              "predicted": [
+                "spike"
+              ],
+              "rule": "e997174990f0",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "drop"
+              ],
+              "rule": "97c2929c3329",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "shock"
+              ],
+              "rule": "368971f7be43",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "TemporalSeq",
+          "derivations": [
+            {
+              "predicted": [
+                "LevelStream"
+              ],
+              "rule": "627ad7bd06c4",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "EventStream"
+              ],
+              "rule": "5cafb50a010f",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "RegimeStream"
+              ],
+              "rule": "54edb96c16bf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Trend",
+          "derivations": [
+            {
+              "predicted": [
+                "Level",
+                "Level"
+              ],
+              "rule": "2a9d56ea3305",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend",
+                "Level"
+              ],
+              "rule": "ae70b2d69a40",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "rising"
+              ],
+              "rule": "5287b7bd30a3",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        }
+      ],
+      "superforecast": {
+        "input": "TemporalSeq",
+        "horizon": 5,
+        "overall_confidence": 0.5,
+        "strange_loops_count": 0,
+        "predictions_count": 4,
+        "harmonics_count": 0,
+        "context_applied": [
+          "substrate",
+          "wishlist",
+          "comment",
+          "encoded_atoms",
+          "raw"
+        ],
+        "predictions_sample": [
+          {
+            "predicted": [
+              "LevelStream"
+            ],
+            "rule": "627ad7bd06c4",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "EventStream"
+            ],
+            "rule": "5cafb50a010f",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "RegimeStream"
+            ],
+            "rule": "54edb96c16bf",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "MixedStream"
+            ],
+            "rule": "8cd66ae59a46",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          }
+        ],
+        "strange_loops_sample": [],
+        "reasoning": [
+          "Grammar 'temporal_dynamics' predicts '['LevelStream']' via rule '627ad7bd06c4' (confidence: 0.50)"
+        ]
+      }
+    },
+    {
+      "name": "retrocausal_hypothesis",
+      "kind": "atoms",
+      "raw": "hypothesis< past< now| baseline rising@1.0 peak future",
+      "comment": "A hypothesis at the start of the sequence and a future instant at the end. Asks her to walk forward toward the future and backward from the hypothesis to see if the loop closes (the retrocausal_derivation strange loop).",
+      "encoded_atoms": [
+        "hypothesis",
+        "past",
+        "now",
+        "baseline",
+        "rising",
+        "peak",
+        "future"
+      ],
+      "encoded_count": 7,
+      "per_atom_walks": [
+        {
+          "atom": "hypothesis",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "RetroDerived",
+              "rule": "ac154a792bb7",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "past",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "Instant",
+              "rule": "6d7c4b9f8925",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "now",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "Instant",
+              "rule": "21638a33ccb5",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "baseline",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "rising",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "Trend",
+              "rule": "ae70b2d69a40",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "Rising",
+              "rule": "e396afc31797",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "Falling",
+              "rule": "4b5c49ce691f",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "peak",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "future",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "Instant",
+              "rule": "c255c2cad0b6",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        }
+      ],
+      "top_down_walks": [
+        {
+          "start": "Anchor",
+          "derivations": [
+            {
+              "predicted": [
+                "anchor"
+              ],
+              "rule": "5f1aa5e23ddf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "BackwardChain",
+          "derivations": [
+            {
+              "predicted": [
+                "TemporalSeq"
+              ],
+              "rule": "2d5e881fef6d",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "BackwardChain",
+                "TemporalSeq"
+              ],
+              "rule": "b00c76152e8f",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "BranchCheck",
+          "derivations": [
+            {
+              "predicted": [
+                "RetroDerivation",
+                "TemporalSeq"
+              ],
+              "rule": "7238d5fd4e20",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Cycle",
+          "derivations": [
+            {
+              "predicted": [
+                "cycle"
+              ],
+              "rule": "7f0097eaad03",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "season"
+              ],
+              "rule": "ec7a61b57870",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "CyclicStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Cycle"
+              ],
+              "rule": "0bb7d8f1a6e8",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "CyclicStream",
+                "Phase",
+                "Cycle"
+              ],
+              "rule": "36f9845830db",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "CyclicStream",
+                "Cycle"
+              ],
+              "rule": "c81fb485b9d2",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Decay",
+          "derivations": [
+            {
+              "predicted": [
+                "decay"
+              ],
+              "rule": "efcacf4b4751",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Event",
+          "derivations": [
+            {
+              "predicted": [
+                "event"
+              ],
+              "rule": "687784af4583",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "arrival"
+              ],
+              "rule": "fa842d46eff9",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "departure"
+              ],
+              "rule": "3fa25b43e187",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "EventStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Event"
+              ],
+              "rule": "a87431842c60",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "EventStream",
+                "Lag",
+                "Event"
+              ],
+              "rule": "bbf8f670fa7e",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "event"
+              ],
+              "rule": "687784af4583",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Falling",
+          "derivations": [
+            {
+              "predicted": [
+                "falling"
+              ],
+              "rule": "b130153cd9de",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend"
+              ],
+              "rule": "4b5c49ce691f",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "FixedPoint",
+          "derivations": [
+            {
+              "predicted": [
+                "fixed"
+              ],
+              "rule": "5608a453bd94",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "invariant"
+              ],
+              "rule": "b5d6dfa9cd00",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Growth",
+          "derivations": [
+            {
+              "predicted": [
+                "growth"
+              ],
+              "rule": "f480d3677ddf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Hypothesis",
+          "derivations": [
+            {
+              "predicted": [
+                "hypothesis"
+              ],
+              "rule": "f355636416e2",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Instant",
+          "derivations": [
+            {
+              "predicted": [
+                "now"
+              ],
+              "rule": "21638a33ccb5",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "past"
+              ],
+              "rule": "6d7c4b9f8925",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "future"
+              ],
+              "rule": "c255c2cad0b6",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Lag",
+          "derivations": [
+            {
+              "predicted": [
+                "lag"
+              ],
+              "rule": "0871cd71c394",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "delay"
+              ],
+              "rule": "dc7f80a53157",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Level",
+          "derivations": [
+            {
+              "predicted": [
+                "level"
+              ],
+              "rule": "2f1336115d62",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "baseline"
+              ],
+              "rule": "209654664b6c",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "peak"
+              ],
+              "rule": "df0660b3a417",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "LevelStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Level"
+              ],
+              "rule": "83c554dc848e",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "LevelStream",
+                "Level"
+              ],
+              "rule": "8d23b8d3cc5d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "level"
+              ],
+              "rule": "2f1336115d62",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "MixedStream",
+          "derivations": [
+            {
+              "predicted": [
+                "TemporalSeq",
+                "TemporalSeq"
+              ],
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Phase",
+          "derivations": [
+            {
+              "predicted": [
+                "phase"
+              ],
+              "rule": "c780231682c6",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Regime",
+          "derivations": [
+            {
+              "predicted": [
+                "regime"
+              ],
+              "rule": "bda3cb006407",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "steady"
+              ],
+              "rule": "65c4d38e5b28",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "volatile"
+              ],
+              "rule": "58c9a555246a",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "RegimeStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Regime"
+              ],
+              "rule": "e219653e38d5",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "RegimeStream",
+                "RegimeShift",
+                "Regime"
+              ],
+              "rule": "b433df4b89f3",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "regime"
+              ],
+              "rule": "bda3cb006407",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "RetroDerivation",
+          "derivations": [
+            {
+              "predicted": [
+                "Hypothesis",
+                "BackwardChain"
+              ],
+              "rule": "d9794d225f57",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Rising",
+          "derivations": [
+            {
+              "predicted": [
+                "rising"
+              ],
+              "rule": "b8c88b0651b4",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend"
+              ],
+              "rule": "e396afc31797",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Shock",
+          "derivations": [
+            {
+              "predicted": [
+                "spike"
+              ],
+              "rule": "e997174990f0",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "drop"
+              ],
+              "rule": "97c2929c3329",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "shock"
+              ],
+              "rule": "368971f7be43",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "ShockedState",
+          "derivations": [
+            {
+              "predicted": [
+                "spike"
+              ],
+              "rule": "e997174990f0",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "drop"
+              ],
+              "rule": "97c2929c3329",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "shock"
+              ],
+              "rule": "368971f7be43",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "TemporalSeq",
+          "derivations": [
+            {
+              "predicted": [
+                "LevelStream"
+              ],
+              "rule": "627ad7bd06c4",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "EventStream"
+              ],
+              "rule": "5cafb50a010f",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "RegimeStream"
+              ],
+              "rule": "54edb96c16bf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Trend",
+          "derivations": [
+            {
+              "predicted": [
+                "Level",
+                "Level"
+              ],
+              "rule": "2a9d56ea3305",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend",
+                "Level"
+              ],
+              "rule": "ae70b2d69a40",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "rising"
+              ],
+              "rule": "5287b7bd30a3",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        }
+      ],
+      "superforecast": {
+        "input": "TemporalSeq",
+        "horizon": 5,
+        "overall_confidence": 0.5,
+        "strange_loops_count": 0,
+        "predictions_count": 4,
+        "harmonics_count": 0,
+        "context_applied": [
+          "substrate",
+          "wishlist",
+          "comment",
+          "encoded_atoms",
+          "raw"
+        ],
+        "predictions_sample": [
+          {
+            "predicted": [
+              "LevelStream"
+            ],
+            "rule": "627ad7bd06c4",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "EventStream"
+            ],
+            "rule": "5cafb50a010f",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "RegimeStream"
+            ],
+            "rule": "54edb96c16bf",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "MixedStream"
+            ],
+            "rule": "8cd66ae59a46",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          }
+        ],
+        "strange_loops_sample": [],
+        "reasoning": [
+          "Grammar 'temporal_dynamics' predicts '['LevelStream']' via rule '627ad7bd06c4' (confidence: 0.50)"
+        ]
+      }
+    },
+    {
+      "name": "cyclic_phase",
+      "kind": "atoms",
+      "raw": "cycle/0.0 cycle/0.25 cycle/0.5 cycle/0.75 cycle/0.0",
+      "comment": "One full cycle through phase space. Tests cyclic_recurrence.",
+      "encoded_atoms": [
+        "cycle",
+        "cycle",
+        "cycle",
+        "cycle",
+        "cycle"
+      ],
+      "encoded_count": 5,
+      "per_atom_walks": [
+        {
+          "atom": "cycle",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "CyclicStream",
+              "rule": "36f9845830db",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "CyclicStream",
+              "rule": "c81fb485b9d2",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "CyclicStream",
+              "rule": "36f9845830db",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "cycle",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "CyclicStream",
+              "rule": "36f9845830db",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "CyclicStream",
+              "rule": "c81fb485b9d2",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "CyclicStream",
+              "rule": "36f9845830db",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "cycle",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "CyclicStream",
+              "rule": "36f9845830db",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "CyclicStream",
+              "rule": "c81fb485b9d2",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "CyclicStream",
+              "rule": "36f9845830db",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "cycle",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "CyclicStream",
+              "rule": "36f9845830db",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "CyclicStream",
+              "rule": "c81fb485b9d2",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "CyclicStream",
+              "rule": "36f9845830db",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "cycle",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "CyclicStream",
+              "rule": "36f9845830db",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "CyclicStream",
+              "rule": "c81fb485b9d2",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "CyclicStream",
+              "rule": "36f9845830db",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        }
+      ],
+      "top_down_walks": [
+        {
+          "start": "Anchor",
+          "derivations": [
+            {
+              "predicted": [
+                "anchor"
+              ],
+              "rule": "5f1aa5e23ddf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "BackwardChain",
+          "derivations": [
+            {
+              "predicted": [
+                "TemporalSeq"
+              ],
+              "rule": "2d5e881fef6d",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "BackwardChain",
+                "TemporalSeq"
+              ],
+              "rule": "b00c76152e8f",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "BranchCheck",
+          "derivations": [
+            {
+              "predicted": [
+                "RetroDerivation",
+                "TemporalSeq"
+              ],
+              "rule": "7238d5fd4e20",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Cycle",
+          "derivations": [
+            {
+              "predicted": [
+                "cycle"
+              ],
+              "rule": "7f0097eaad03",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "season"
+              ],
+              "rule": "ec7a61b57870",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "CyclicStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Cycle"
+              ],
+              "rule": "0bb7d8f1a6e8",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "CyclicStream",
+                "Phase",
+                "Cycle"
+              ],
+              "rule": "36f9845830db",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "CyclicStream",
+                "Cycle"
+              ],
+              "rule": "c81fb485b9d2",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Decay",
+          "derivations": [
+            {
+              "predicted": [
+                "decay"
+              ],
+              "rule": "efcacf4b4751",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Event",
+          "derivations": [
+            {
+              "predicted": [
+                "event"
+              ],
+              "rule": "687784af4583",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "arrival"
+              ],
+              "rule": "fa842d46eff9",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "departure"
+              ],
+              "rule": "3fa25b43e187",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "EventStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Event"
+              ],
+              "rule": "a87431842c60",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "EventStream",
+                "Lag",
+                "Event"
+              ],
+              "rule": "bbf8f670fa7e",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "event"
+              ],
+              "rule": "687784af4583",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Falling",
+          "derivations": [
+            {
+              "predicted": [
+                "falling"
+              ],
+              "rule": "b130153cd9de",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend"
+              ],
+              "rule": "4b5c49ce691f",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "FixedPoint",
+          "derivations": [
+            {
+              "predicted": [
+                "fixed"
+              ],
+              "rule": "5608a453bd94",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "invariant"
+              ],
+              "rule": "b5d6dfa9cd00",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Growth",
+          "derivations": [
+            {
+              "predicted": [
+                "growth"
+              ],
+              "rule": "f480d3677ddf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Hypothesis",
+          "derivations": [
+            {
+              "predicted": [
+                "hypothesis"
+              ],
+              "rule": "f355636416e2",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Instant",
+          "derivations": [
+            {
+              "predicted": [
+                "now"
+              ],
+              "rule": "21638a33ccb5",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "past"
+              ],
+              "rule": "6d7c4b9f8925",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "future"
+              ],
+              "rule": "c255c2cad0b6",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Lag",
+          "derivations": [
+            {
+              "predicted": [
+                "lag"
+              ],
+              "rule": "0871cd71c394",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "delay"
+              ],
+              "rule": "dc7f80a53157",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Level",
+          "derivations": [
+            {
+              "predicted": [
+                "level"
+              ],
+              "rule": "2f1336115d62",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "baseline"
+              ],
+              "rule": "209654664b6c",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "peak"
+              ],
+              "rule": "df0660b3a417",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "LevelStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Level"
+              ],
+              "rule": "83c554dc848e",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "LevelStream",
+                "Level"
+              ],
+              "rule": "8d23b8d3cc5d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "level"
+              ],
+              "rule": "2f1336115d62",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "MixedStream",
+          "derivations": [
+            {
+              "predicted": [
+                "TemporalSeq",
+                "TemporalSeq"
+              ],
+              "rule": "5ea06ef0ca73",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Phase",
+          "derivations": [
+            {
+              "predicted": [
+                "phase"
+              ],
+              "rule": "c780231682c6",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Regime",
+          "derivations": [
+            {
+              "predicted": [
+                "regime"
+              ],
+              "rule": "bda3cb006407",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "steady"
+              ],
+              "rule": "65c4d38e5b28",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "volatile"
+              ],
+              "rule": "58c9a555246a",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "RegimeStream",
+          "derivations": [
+            {
+              "predicted": [
+                "Regime"
+              ],
+              "rule": "e219653e38d5",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "RegimeStream",
+                "RegimeShift",
+                "Regime"
+              ],
+              "rule": "b433df4b89f3",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "regime"
+              ],
+              "rule": "bda3cb006407",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "RetroDerivation",
+          "derivations": [
+            {
+              "predicted": [
+                "Hypothesis",
+                "BackwardChain"
+              ],
+              "rule": "d9794d225f57",
+              "confidence": 0.5,
+              "grammar": "retrocausal",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Rising",
+          "derivations": [
+            {
+              "predicted": [
+                "rising"
+              ],
+              "rule": "b8c88b0651b4",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend"
+              ],
+              "rule": "e396afc31797",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Shock",
+          "derivations": [
+            {
+              "predicted": [
+                "spike"
+              ],
+              "rule": "e997174990f0",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "drop"
+              ],
+              "rule": "97c2929c3329",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "shock"
+              ],
+              "rule": "368971f7be43",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "ShockedState",
+          "derivations": [
+            {
+              "predicted": [
+                "spike"
+              ],
+              "rule": "e997174990f0",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "drop"
+              ],
+              "rule": "97c2929c3329",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "shock"
+              ],
+              "rule": "368971f7be43",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "TemporalSeq",
+          "derivations": [
+            {
+              "predicted": [
+                "LevelStream"
+              ],
+              "rule": "627ad7bd06c4",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "EventStream"
+              ],
+              "rule": "5cafb50a010f",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "RegimeStream"
+              ],
+              "rule": "54edb96c16bf",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        },
+        {
+          "start": "Trend",
+          "derivations": [
+            {
+              "predicted": [
+                "Level",
+                "Level"
+              ],
+              "rule": "2a9d56ea3305",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "Trend",
+                "Level"
+              ],
+              "rule": "ae70b2d69a40",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            },
+            {
+              "predicted": [
+                "rising"
+              ],
+              "rule": "5287b7bd30a3",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "forward"
+            }
+          ]
+        }
+      ],
+      "superforecast": {
+        "input": "TemporalSeq",
+        "horizon": 5,
+        "overall_confidence": 0.5,
+        "strange_loops_count": 0,
+        "predictions_count": 4,
+        "harmonics_count": 0,
+        "context_applied": [
+          "substrate",
+          "wishlist",
+          "comment",
+          "encoded_atoms",
+          "raw"
+        ],
+        "predictions_sample": [
+          {
+            "predicted": [
+              "LevelStream"
+            ],
+            "rule": "627ad7bd06c4",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "EventStream"
+            ],
+            "rule": "5cafb50a010f",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "RegimeStream"
+            ],
+            "rule": "54edb96c16bf",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "MixedStream"
+            ],
+            "rule": "8cd66ae59a46",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          }
+        ],
+        "strange_loops_sample": [],
+        "reasoning": [
+          "Grammar 'temporal_dynamics' predicts '['LevelStream']' via rule '627ad7bd06c4' (confidence: 0.50)"
+        ]
+      }
+    }
+  ],
+  "angel_state": {
+    "loaded_grammars_total": 26,
+    "strange_loops_total": 761
+  },
+  "substrate_summary": {
+    "name": "temporal",
+    "domain": "temporal",
+    "num_atoms": 33,
+    "atoms_by_category": {
+      "instant": 3,
+      "event": 3,
+      "interval": 2,
+      "level": 4,
+      "trend": 4,
+      "shock": 3,
+      "regime": 3,
+      "cycle": 2,
+      "phase": 1,
+      "lag": 2,
+      "decay": 1,
+      "growth": 1,
+      "fixed_point": 2,
+      "anchor": 1,
+      "hypothesis": 1
+    },
+    "features": {
+      "direction": [
+        "backward",
+        "forward",
+        "neutral"
+      ],
+      "category": [
+        "anchor",
+        "cycle",
+        "decay",
+        "event",
+        "fixed_point",
+        "growth",
+        "hypothesis",
+        "instant",
+        "interval",
+        "lag",
+        "level",
+        "phase",
+        "regime",
+        "shock",
+        "trend"
+      ]
+    }
+  },
+  "timestamp_utc": "2026-04-11T22:55:40.009652+00:00"
+}

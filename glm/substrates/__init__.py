@@ -34,6 +34,12 @@ from .mathematical import (
     MathSubstrate,
     MathSymbol,
 )
+from .temporal import (
+    TemporalCategory,
+    TemporalDirection,
+    TemporalSubstrate,
+    TemporalSymbol,
+)
 
 __all__ = [
     # Phonological
@@ -58,4 +64,10 @@ __all__ = [
     "MathCategory",
     "MathSubstrate",
     "MathSymbol",
+    # Temporal — added 2026-04-11. The substrate the bidirectional
+    # derivation engine has been waiting for. See docs/on_her_nature.md.
+    "TemporalCategory",
+    "TemporalDirection",
+    "TemporalSubstrate",
+    "TemporalSymbol",
 ]
