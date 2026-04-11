@@ -1183,6 +1183,180 @@ def shin_devig(
     return p_given_z(0.5 * (lo + hi))
 
 
+# =======================================================================
+# Buchdahl "Wisdom of the Crowd" — sharp-anchor value betting
+# =======================================================================
+#
+# Joseph Buchdahl (football-data.co.uk) published the benchmark
+# method that professional football punters use to identify value
+# bets. The approach assumes that Pinnacle's odds -- produced by a
+# near-efficient sharp market -- are the best available estimate of
+# a match's true probabilities once the bookmaker margin is stripped.
+# Any OTHER bookmaker's price that exceeds Pinnacle's de-vigged fair
+# price by at least a minimum threshold represents genuine positive
+# expected value. Buchdahl's own backtest across ~67,000 European
+# football bets (2012/13 to 2014/15) reported these empirical yields:
+#
+#     >0% edge : 22,281 bets,  3.40% yield
+#     >1% edge : 14,837 bets,  4.60% yield
+#     >2% edge :  9,196 bets,  6.63% yield   <- Football-Data default
+#     >3% edge :  5,474 bets,  8.83% yield
+#     >4% edge :  3,243 bets, 12.70% yield
+#     >5% edge :  1,927 bets, 13.22% yield
+#
+# These are the numbers that separate the handful of professional
+# football punters from the millions who lose to the margin.
+#
+# Implementation notes
+# --------------------
+# - Two de-vigging methods are supported:
+#     ``proportional`` : fair = raw / sum(raws)
+#     ``buchdahl``     : fair odds O_f = 3O / (3 - M*O) per Buchdahl's
+#                        simple model (margin distributed proportional
+#                        to published odds). For whole-number margins
+#                        under ~5% it is indistinguishable from
+#                        proportional at the third decimal place; the
+#                        method is included primarily so the citation
+#                        is clean when describing the picker.
+# - ``sharp_edge()`` returns (gap_pct, fair_odds, fair_prob) for a
+#   given offered price against a Pinnacle price set.
+# - ``pick_sharp_value()`` takes a fixture's Pinnacle quote plus a
+#   panel of other-book quotes for one outcome column and returns
+#   the book and price with the largest positive gap, or None if no
+#   book clears the threshold.
+
+
+def buchdahl_fair_odds(
+    pinnacle_odds: Sequence[float],
+) -> Tuple[List[float], float]:
+    """Buchdahl (2013) fair-odds estimator for a multi-way market.
+
+    Given a vector of Pinnacle decimal odds for all outcomes in a
+    market, return the Buchdahl-adjusted fair odds and the computed
+    overall overround.
+
+    The formula, from *The Wisdom of the Crowd in a Football Betting
+    Market*::
+
+        M     = sum(1/O_i) - 1
+        O_f_i = 3 * O_i / (3 - M * O_i)
+
+    which distributes the margin across outcomes in proportion to
+    their published prices. It is equivalent to the ``proportional``
+    method for 3-way markets with typical 3-5% overrounds, and is
+    offered here for citation fidelity.
+    """
+    odds = [float(o) for o in pinnacle_odds]
+    if any(o <= 1.0 for o in odds):
+        raise ValueError("All Pinnacle odds must be > 1.0")
+    margin = sum(1.0 / o for o in odds) - 1.0
+    fair = [3.0 * o / (3.0 - margin * o) for o in odds]
+    return fair, margin
+
+
+def sharp_edge(
+    offered_odds: float,
+    pinnacle_odds_vector: Sequence[float],
+    outcome_index: int,
+    method: str = "proportional",
+) -> Dict[str, float]:
+    """Compute Buchdahl-style sharp edge of an offered price.
+
+    Parameters
+    ----------
+    offered_odds : float
+        The decimal price a non-sharp bookmaker is offering on the
+        outcome you want to bet.
+    pinnacle_odds_vector : sequence of float
+        Pinnacle's decimal odds for every outcome in the market, in
+        the conventional order (home, draw, away for 1X2).
+    outcome_index : int
+        Which outcome we are betting (0-based).
+    method : {"proportional", "shin", "buchdahl"}
+        Which de-vig procedure to apply to Pinnacle's prices.
+
+    Returns
+    -------
+    dict with keys
+        ``fair_odds``    : Pinnacle's de-vigged fair decimal odds for
+                            the outcome
+        ``fair_prob``    : the equivalent fair probability
+        ``gap_pct``      : (offered - fair) / fair, in %. Positive =
+                            value, negative = overpriced.
+        ``edge``         : offered * fair_prob - 1. Same direction as
+                            gap_pct but scaled as classical edge.
+    """
+    odds_list = [float(o) for o in pinnacle_odds_vector]
+    if method == "shin":
+        probs = shin_devig(odds_list)
+        fair_prob = probs[outcome_index]
+        fair_odds = 1.0 / fair_prob if fair_prob > 0 else float("inf")
+    elif method == "buchdahl":
+        fair, _ = buchdahl_fair_odds(odds_list)
+        fair_odds = fair[outcome_index]
+        fair_prob = 1.0 / fair_odds
+    else:  # proportional
+        raws = [1.0 / o for o in odds_list]
+        total = sum(raws)
+        fair_prob = raws[outcome_index] / total
+        fair_odds = 1.0 / fair_prob
+
+    gap_pct = (offered_odds - fair_odds) / fair_odds * 100
+    edge = offered_odds * fair_prob - 1.0
+    return {
+        "fair_odds": fair_odds,
+        "fair_prob": fair_prob,
+        "gap_pct": gap_pct,
+        "edge": edge,
+    }
+
+
+def pick_sharp_value(
+    panel: Mapping[str, float],
+    pinnacle_odds_vector: Sequence[float],
+    outcome_index: int,
+    min_edge_pct: float = 2.0,
+    method: str = "proportional",
+) -> Optional[Dict[str, Any]]:
+    """Find the best value bet on a panel of book quotes.
+
+    Parameters
+    ----------
+    panel : mapping book_name -> decimal offered odds
+        The panel of non-Pinnacle books offering the outcome.
+    pinnacle_odds_vector : sequence of float
+        Pinnacle's full odds vector for the market.
+    outcome_index : int
+        Which outcome (0-based).
+    min_edge_pct : float
+        Minimum positive Buchdahl gap % required. 2.0 is the
+        Football-Data published cutoff and Buchdahl's headline
+        backtest threshold.
+
+    Returns
+    -------
+    dict or None
+        If any book clears the threshold, returns the one with the
+        largest gap, with keys: ``book``, ``offered_odds``,
+        ``fair_odds``, ``fair_prob``, ``gap_pct``, ``edge``.
+        ``None`` if nothing clears the threshold.
+    """
+    best: Optional[Dict[str, Any]] = None
+    for book, odds in panel.items():
+        if odds is None or odds <= 1.0:
+            continue
+        info = sharp_edge(odds, pinnacle_odds_vector, outcome_index, method)
+        if info["gap_pct"] < min_edge_pct:
+            continue
+        if best is None or info["gap_pct"] > best["gap_pct"]:
+            best = {
+                "book": book,
+                "offered_odds": odds,
+                **info,
+            }
+    return best
+
+
 def aggregate_best_odds(
     quotes: Iterable[FixtureQuote],
 ) -> List[FixtureQuote]:
