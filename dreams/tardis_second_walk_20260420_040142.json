@@ -1,0 +1,812 @@
+{
+  "walks": [
+    {
+      "home": "Chelsea",
+      "away": "Man United",
+      "actual": "0-1",
+      "xg_home_rate": 1.5,
+      "xg_away_rate": 1.3,
+      "lambda_home": 1.75,
+      "lambda_away": 1.3,
+      "narrative": "Chelsea 21 shots 0 goals. 4th straight PL loss without scoring. Cunha scored from Utd's only shot on target. BlueCoOut protests.",
+      "mc_top_10": [
+        {
+          "score": "1-1",
+          "rank": 1,
+          "mean": 0.12017,
+          "p5": 0.09813,
+          "p50": 0.12091,
+          "p95": 0.14119,
+          "standout": true,
+          "separation": 1.298
+        },
+        {
+          "score": "2-1",
+          "rank": 2,
+          "mean": 0.09165,
+          "p5": 0.07923,
+          "p50": 0.09316,
+          "p95": 0.09891
+        },
+        {
+          "score": "2-0",
+          "rank": 3,
+          "mean": 0.07401,
+          "p5": 0.05095,
+          "p50": 0.07208,
+          "p95": 0.10442
+        },
+        {
+          "score": "1-0",
+          "rank": 4,
+          "mean": 0.07192,
+          "p5": 0.0453,
+          "p50": 0.06933,
+          "p95": 0.10444
+        },
+        {
+          "score": "1-2",
+          "rank": 5,
+          "mean": 0.06771,
+          "p5": 0.04853,
+          "p50": 0.06781,
+          "p95": 0.08572
+        },
+        {
+          "score": "0-0",
+          "rank": 6,
+          "mean": 0.06462,
+          "p5": 0.04045,
+          "p50": 0.06297,
+          "p95": 0.0957
+        },
+        {
+          "score": "2-2",
+          "rank": 7,
+          "mean": 0.05828,
+          "p5": 0.04457,
+          "p50": 0.05931,
+          "p95": 0.06861
+        },
+        {
+          "score": "3-1",
+          "rank": 8,
+          "mean": 0.05378,
+          "p5": 0.03546,
+          "p50": 0.05455,
+          "p95": 0.06901
+        },
+        {
+          "score": "0-1",
+          "rank": 9,
+          "mean": 0.04928,
+          "p5": 0.02879,
+          "p50": 0.04721,
+          "p95": 0.07726
+        },
+        {
+          "score": "3-0",
+          "rank": 10,
+          "mean": 0.04348,
+          "p5": 0.02519,
+          "p50": 0.04268,
+          "p95": 0.06635
+        }
+      ],
+      "mc_actual": {
+        "score": "0-1",
+        "rank": 9,
+        "total_scorelines": 121,
+        "mean_prob": 0.04928,
+        "p50_prob": 0.04721
+      },
+      "mc_brier": 0.90387,
+      "temporal_atoms": [
+        "level",
+        "level",
+        "level",
+        "level",
+        "shock"
+      ],
+      "per_atom_walks": [
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "601ed0392d8d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "601ed0392d8d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "601ed0392d8d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "level",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "601ed0392d8d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "shock",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "ShockedState",
+              "rule": "d01d7fb2531d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "ShockedState",
+              "rule": "a8ed0cff7771",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "MixedStream",
+              "rule": "601ed0392d8d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        }
+      ],
+      "superforecast": {
+        "overall_confidence": 0.5,
+        "predictions_count": 4,
+        "strange_loops_count": 0,
+        "harmonics_count": 0,
+        "context_applied": [
+          "substrate",
+          "clv",
+          "wishlist",
+          "match",
+          "mc_modal",
+          "mc_actual_rank",
+          "mc_actual_prob",
+          "encoded_atoms"
+        ],
+        "predictions_sample": [
+          {
+            "predicted": [
+              "LevelStream"
+            ],
+            "rule": "49288940b42c",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "EventStream"
+            ],
+            "rule": "58d97cbadaf8",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "RegimeStream"
+            ],
+            "rule": "90e8c6c9fa3a",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "MixedStream"
+            ],
+            "rule": "9ba22313fe55",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          }
+        ],
+        "strange_loops_sample": [],
+        "reasoning": "[\"Grammar 'temporal_dynamics' predicts '['LevelStream']' via rule '49288940b42c' (confidence: 0.50)\"]"
+      }
+    },
+    {
+      "home": "Everton",
+      "away": "Liverpool",
+      "actual": "1-2",
+      "xg_home_rate": 1.1,
+      "xg_away_rate": 1.8,
+      "lambda_home": 1.35,
+      "lambda_away": 1.8,
+      "narrative": "First derby at Hill Dickinson Stadium. Ndiaye goal disallowed VAR. Salah 29', Beto equaliser 54', Van Dijk header 90+10'.",
+      "mc_top_10": [
+        {
+          "score": "1-1",
+          "rank": 1,
+          "mean": 0.11663,
+          "p5": 0.09187,
+          "p50": 0.11709,
+          "p95": 0.13977,
+          "standout": true,
+          "separation": 1.276
+        },
+        {
+          "score": "1-2",
+          "rank": 2,
+          "mean": 0.09058,
+          "p5": 0.07828,
+          "p50": 0.09173,
+          "p95": 0.09867
+        },
+        {
+          "score": "2-1",
+          "rank": 3,
+          "mean": 0.06876,
+          "p5": 0.04998,
+          "p50": 0.06911,
+          "p95": 0.0865
+        },
+        {
+          "score": "0-2",
+          "rank": 4,
+          "mean": 0.06969,
+          "p5": 0.04748,
+          "p50": 0.0681,
+          "p95": 0.09638
+        },
+        {
+          "score": "0-1",
+          "rank": 5,
+          "mean": 0.06595,
+          "p5": 0.04195,
+          "p50": 0.06436,
+          "p95": 0.09795
+        },
+        {
+          "score": "2-2",
+          "rank": 6,
+          "mean": 0.06031,
+          "p5": 0.04777,
+          "p50": 0.06108,
+          "p95": 0.06989
+        },
+        {
+          "score": "0-0",
+          "rank": 7,
+          "mean": 0.05981,
+          "p5": 0.03585,
+          "p50": 0.05741,
+          "p95": 0.09199
+        },
+        {
+          "score": "1-3",
+          "rank": 8,
+          "mean": 0.05432,
+          "p5": 0.03588,
+          "p50": 0.05473,
+          "p95": 0.07063
+        },
+        {
+          "score": "1-0",
+          "rank": 9,
+          "mean": 0.04697,
+          "p5": 0.02576,
+          "p50": 0.04474,
+          "p95": 0.07673
+        },
+        {
+          "score": "0-3",
+          "rank": 10,
+          "mean": 0.04181,
+          "p5": 0.02381,
+          "p50": 0.04063,
+          "p95": 0.06308
+        }
+      ],
+      "mc_actual": {
+        "score": "1-2",
+        "rank": 2,
+        "total_scorelines": 121,
+        "mean_prob": 0.09058,
+        "p50_prob": 0.09173
+      },
+      "mc_brier": 0.82704,
+      "temporal_atoms": [
+        "event",
+        "lag",
+        "event",
+        "lag",
+        "event"
+      ],
+      "per_atom_walks": [
+        {
+          "atom": "event",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "601ed0392d8d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "lag",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "601ed0392d8d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "event",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "601ed0392d8d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "lag",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "601ed0392d8d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "event",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "601ed0392d8d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        }
+      ],
+      "superforecast": {
+        "overall_confidence": 0.5,
+        "predictions_count": 4,
+        "strange_loops_count": 0,
+        "harmonics_count": 0,
+        "context_applied": [
+          "substrate",
+          "clv",
+          "wishlist",
+          "match",
+          "mc_modal",
+          "mc_actual_rank",
+          "mc_actual_prob",
+          "encoded_atoms"
+        ],
+        "predictions_sample": [
+          {
+            "predicted": [
+              "LevelStream"
+            ],
+            "rule": "49288940b42c",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "EventStream"
+            ],
+            "rule": "58d97cbadaf8",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "RegimeStream"
+            ],
+            "rule": "90e8c6c9fa3a",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "MixedStream"
+            ],
+            "rule": "9ba22313fe55",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          }
+        ],
+        "strange_loops_sample": [],
+        "reasoning": "[\"Grammar 'temporal_dynamics' predicts '['LevelStream']' via rule '49288940b42c' (confidence: 0.50)\"]"
+      }
+    },
+    {
+      "home": "Man City",
+      "away": "Arsenal",
+      "actual": "2-1",
+      "xg_home_rate": 2.0,
+      "xg_away_rate": 1.3,
+      "lambda_home": 2.25,
+      "lambda_away": 1.3,
+      "narrative": "Cherki solo golazo 15', Donnarumma howler -> Havertz 17', Haaland winner 65'. Saka absent (Achilles). Arsenal lead cut to 3pts, City game in hand. Title race regime switch.",
+      "mc_top_10": [
+        {
+          "score": "1-1",
+          "rank": 1,
+          "mean": 0.09421,
+          "p5": 0.06691,
+          "p50": 0.09362,
+          "p95": 0.12614,
+          "standout": false,
+          "separation": 1.017
+        },
+        {
+          "score": "2-1",
+          "rank": 2,
+          "mean": 0.09125,
+          "p5": 0.08086,
+          "p50": 0.09208,
+          "p95": 0.09869
+        },
+        {
+          "score": "2-0",
+          "rank": 3,
+          "mean": 0.07253,
+          "p5": 0.05153,
+          "p50": 0.07173,
+          "p95": 0.09674
+        },
+        {
+          "score": "3-1",
+          "rank": 4,
+          "mean": 0.06831,
+          "p5": 0.05089,
+          "p50": 0.06996,
+          "p95": 0.08035
+        },
+        {
+          "score": "2-2",
+          "rank": 5,
+          "mean": 0.05878,
+          "p5": 0.04674,
+          "p50": 0.05941,
+          "p95": 0.06878
+        },
+        {
+          "score": "1-0",
+          "rank": 6,
+          "mean": 0.05541,
+          "p5": 0.03288,
+          "p50": 0.05376,
+          "p95": 0.08612
+        },
+        {
+          "score": "3-0",
+          "rank": 7,
+          "mean": 0.05432,
+          "p5": 0.0348,
+          "p50": 0.05358,
+          "p95": 0.07606
+        },
+        {
+          "score": "1-2",
+          "rank": 8,
+          "mean": 0.05373,
+          "p5": 0.03499,
+          "p50": 0.05314,
+          "p95": 0.07335
+        },
+        {
+          "score": "3-2",
+          "rank": 9,
+          "mean": 0.04398,
+          "p5": 0.0299,
+          "p50": 0.04472,
+          "p95": 0.05453
+        },
+        {
+          "score": "4-1",
+          "rank": 10,
+          "mean": 0.03926,
+          "p5": 0.02147,
+          "p50": 0.03976,
+          "p95": 0.05602
+        }
+      ],
+      "mc_actual": {
+        "score": "2-1",
+        "rank": 2,
+        "total_scorelines": 121,
+        "mean_prob": 0.09125,
+        "p50_prob": 0.09208
+      },
+      "mc_brier": 0.82583,
+      "temporal_atoms": [
+        "shock",
+        "event",
+        "shock",
+        "event",
+        "lag",
+        "event"
+      ],
+      "per_atom_walks": [
+        {
+          "atom": "shock",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "ShockedState",
+              "rule": "d01d7fb2531d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "ShockedState",
+              "rule": "a8ed0cff7771",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "MixedStream",
+              "rule": "601ed0392d8d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "event",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "601ed0392d8d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "shock",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "ShockedState",
+              "rule": "d01d7fb2531d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "ShockedState",
+              "rule": "a8ed0cff7771",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            },
+            {
+              "reconstructed": "MixedStream",
+              "rule": "601ed0392d8d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "event",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "601ed0392d8d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "lag",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "601ed0392d8d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        },
+        {
+          "atom": "event",
+          "forward": [],
+          "backward": [
+            {
+              "reconstructed": "MixedStream",
+              "rule": "601ed0392d8d",
+              "confidence": 0.5,
+              "grammar": "temporal_dynamics",
+              "direction": "backward"
+            }
+          ]
+        }
+      ],
+      "superforecast": {
+        "overall_confidence": 0.5,
+        "predictions_count": 4,
+        "strange_loops_count": 0,
+        "harmonics_count": 0,
+        "context_applied": [
+          "substrate",
+          "clv",
+          "wishlist",
+          "match",
+          "mc_modal",
+          "mc_actual_rank",
+          "mc_actual_prob",
+          "encoded_atoms"
+        ],
+        "predictions_sample": [
+          {
+            "predicted": [
+              "LevelStream"
+            ],
+            "rule": "49288940b42c",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "EventStream"
+            ],
+            "rule": "58d97cbadaf8",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "RegimeStream"
+            ],
+            "rule": "90e8c6c9fa3a",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          },
+          {
+            "predicted": [
+              "MixedStream"
+            ],
+            "rule": "9ba22313fe55",
+            "confidence": 0.5,
+            "grammar": "temporal_dynamics",
+            "direction": "forward"
+          }
+        ],
+        "strange_loops_sample": [],
+        "reasoning": "[\"Grammar 'temporal_dynamics' predicts '['LevelStream']' via rule '49288940b42c' (confidence: 0.50)\"]"
+      }
+    }
+  ],
+  "calibration": {
+    "n_matches": 3,
+    "total_brier": 2.55674,
+    "mean_brier": 0.85225
+  },
+  "angel_state": {
+    "loaded_grammars_total": 26,
+    "strange_loops_total": 761
+  },
+  "substrate_summary": {
+    "name": "temporal",
+    "domain": "temporal",
+    "num_atoms": 33,
+    "atoms_by_category": {
+      "instant": 3,
+      "event": 3,
+      "interval": 2,
+      "level": 4,
+      "trend": 4,
+      "shock": 3,
+      "regime": 3,
+      "cycle": 2,
+      "phase": 1,
+      "lag": 2,
+      "decay": 1,
+      "growth": 1,
+      "fixed_point": 2,
+      "anchor": 1,
+      "hypothesis": 1
+    },
+    "features": {
+      "direction": [
+        "backward",
+        "forward",
+        "neutral"
+      ],
+      "category": [
+        "anchor",
+        "cycle",
+        "decay",
+        "event",
+        "fixed_point",
+        "growth",
+        "hypothesis",
+        "instant",
+        "interval",
+        "lag",
+        "level",
+        "phase",
+        "regime",
+        "shock",
+        "trend"
+      ]
+    }
+  },
+  "timestamp_utc": "2026-04-20T04:01:42.601831+00:00"
+}
