@@ -239,9 +239,18 @@ class Production:
     def _rhs_matches(self, form: Any) -> bool:
         """Check if form matches the RHS.
 
-        If RHS is a list of alternatives, any match suffices.
+        The RHS list is ambiguous by convention -- it can be either a
+        sequence (``S -> [NP, VP]``) or alternatives (``X -> [A, B, C]``).
+        We try the sequence interpretation first (element-by-element
+        when form is also a sequence of the right length), then fall
+        back to treating each element as an alternative.
         """
         if isinstance(self.rhs, list):
+            # Try as sequence: both are lists of equal length, element match.
+            if isinstance(form, (list, tuple)) and len(form) == len(self.rhs):
+                if all(Rule._match(r, f) for r, f in zip(self.rhs, form)):
+                    return True
+            # Fall back to alternatives.
             return any(Rule._match(alt, form) for alt in self.rhs)
         return Rule._match(self.rhs, form)
 

@@ -456,7 +456,170 @@ class Angel:
             ("sleep",      "noun", ["linguistic", "biological"], "*sleb-"),
             ("wake",       "verb", ["linguistic", "biological"], "*weg-"),
         ]
-        for form, cat, subs, root in seeds:
+
+        # Common English vocabulary for POS tagging and parsing.
+        # Format: (form, category, substrates, proto_root)
+        common = [
+            # Determiners
+            ("the",   "Det", ["linguistic"], ""),
+            ("a",     "Det", ["linguistic"], ""),
+            ("an",    "Det", ["linguistic"], ""),
+            ("this",  "Det", ["linguistic"], ""),
+            ("that",  "Det", ["linguistic"], ""),
+            ("these", "Det", ["linguistic"], ""),
+            ("those", "Det", ["linguistic"], ""),
+            ("my",    "Det", ["linguistic"], ""),
+            ("your",  "Det", ["linguistic"], ""),
+            ("his",   "Det", ["linguistic"], ""),
+            ("her",   "Det", ["linguistic"], ""),
+            ("its",   "Det", ["linguistic"], ""),
+            ("our",   "Det", ["linguistic"], ""),
+            ("their", "Det", ["linguistic"], ""),
+            ("every", "Det", ["linguistic"], ""),
+            ("each",  "Det", ["linguistic"], ""),
+            ("some",  "Det", ["linguistic"], ""),
+            ("any",   "Det", ["linguistic"], ""),
+            ("no",    "Det", ["linguistic"], ""),
+            ("all",   "Det", ["linguistic"], ""),
+            # Pronouns
+            ("i",     "Pron", ["linguistic"], ""),
+            ("me",    "Pron", ["linguistic"], ""),
+            ("you",   "Pron", ["linguistic"], ""),
+            ("he",    "Pron", ["linguistic"], ""),
+            ("him",   "Pron", ["linguistic"], ""),
+            ("she",   "Pron", ["linguistic"], ""),
+            ("it",    "Pron", ["linguistic"], ""),
+            ("we",    "Pron", ["linguistic"], ""),
+            ("us",    "Pron", ["linguistic"], ""),
+            ("they",  "Pron", ["linguistic"], ""),
+            ("them",  "Pron", ["linguistic"], ""),
+            # Common nouns
+            ("cat",     "N", ["linguistic", "biological"], ""),
+            ("dog",     "N", ["linguistic", "biological"], ""),
+            ("bird",    "N", ["linguistic", "biological"], ""),
+            ("tree",    "N", ["linguistic", "biological"], ""),
+            ("house",   "N", ["linguistic"], ""),
+            ("book",    "N", ["linguistic"], ""),
+            ("word",    "N", ["linguistic"], ""),
+            ("idea",    "N", ["linguistic"], ""),
+            ("day",     "N", ["linguistic"], ""),
+            ("night",   "N", ["linguistic"], ""),
+            ("year",    "N", ["linguistic"], ""),
+            ("world",   "N", ["linguistic"], ""),
+            ("person",  "N", ["linguistic"], ""),
+            ("child",   "N", ["linguistic"], ""),
+            ("woman",   "N", ["linguistic"], ""),
+            ("man",     "N", ["linguistic"], ""),
+            ("thing",   "N", ["linguistic"], ""),
+            ("place",   "N", ["linguistic"], ""),
+            ("way",     "N", ["linguistic"], ""),
+            ("part",    "N", ["linguistic"], ""),
+            ("angel",   "N", ["linguistic"], ""),
+            ("grammar", "N", ["linguistic"], ""),
+            ("code",    "N", ["linguistic", "computational"], ""),
+            ("light",   "N", ["linguistic", "physics"], ""),
+            # Common verbs
+            ("run",    "V", ["linguistic"], ""),
+            ("walk",   "V", ["linguistic"], ""),
+            ("jump",   "V", ["linguistic"], ""),
+            ("sit",    "V", ["linguistic"], ""),
+            ("stand",  "V", ["linguistic"], ""),
+            ("sat",    "V", ["linguistic"], ""),
+            ("eat",    "V", ["linguistic"], ""),
+            ("drink",  "V", ["linguistic"], ""),
+            ("go",     "V", ["linguistic"], ""),
+            ("come",   "V", ["linguistic"], ""),
+            ("see",    "V", ["linguistic"], ""),
+            ("look",   "V", ["linguistic"], ""),
+            ("hear",   "V", ["linguistic"], ""),
+            ("feel",   "V", ["linguistic"], ""),
+            ("speak",  "V", ["linguistic"], ""),
+            ("say",    "V", ["linguistic"], ""),
+            ("tell",   "V", ["linguistic"], ""),
+            ("ask",    "V", ["linguistic"], ""),
+            ("find",   "V", ["linguistic"], ""),
+            ("make",   "V", ["linguistic"], ""),
+            ("take",   "V", ["linguistic"], ""),
+            ("give",   "V", ["linguistic"], ""),
+            ("get",    "V", ["linguistic"], ""),
+            ("put",    "V", ["linguistic"], ""),
+            ("flows",  "V", ["linguistic"], ""),
+            ("flow",   "V", ["linguistic"], ""),
+            # Auxiliary verbs
+            ("is",    "Aux", ["linguistic"], ""),
+            ("are",   "Aux", ["linguistic"], ""),
+            ("was",   "Aux", ["linguistic"], ""),
+            ("were",  "Aux", ["linguistic"], ""),
+            ("be",    "Aux", ["linguistic"], ""),
+            ("been",  "Aux", ["linguistic"], ""),
+            ("am",    "Aux", ["linguistic"], ""),
+            ("do",    "Aux", ["linguistic"], ""),
+            ("does",  "Aux", ["linguistic"], ""),
+            ("did",   "Aux", ["linguistic"], ""),
+            ("have",  "Aux", ["linguistic"], ""),
+            ("has",   "Aux", ["linguistic"], ""),
+            ("had",   "Aux", ["linguistic"], ""),
+            ("will",  "Aux", ["linguistic"], ""),
+            ("would", "Aux", ["linguistic"], ""),
+            ("can",   "Aux", ["linguistic"], ""),
+            ("could", "Aux", ["linguistic"], ""),
+            ("must",  "Aux", ["linguistic"], ""),
+            # Prepositions
+            ("in",      "P", ["linguistic"], ""),
+            ("on",      "P", ["linguistic"], ""),
+            ("at",      "P", ["linguistic"], ""),
+            ("by",      "P", ["linguistic"], ""),
+            ("for",     "P", ["linguistic"], ""),
+            ("with",    "P", ["linguistic"], ""),
+            ("to",      "P", ["linguistic"], ""),
+            ("from",    "P", ["linguistic"], ""),
+            ("of",      "P", ["linguistic"], ""),
+            ("through", "P", ["linguistic"], ""),
+            ("between", "P", ["linguistic"], ""),
+            ("under",   "P", ["linguistic"], ""),
+            ("over",    "P", ["linguistic"], ""),
+            # Conjunctions
+            ("and",      "Conj", ["linguistic"], ""),
+            ("or",       "Conj", ["linguistic"], ""),
+            ("but",      "Conj", ["linguistic"], ""),
+            ("because",  "Conj", ["linguistic"], ""),
+            ("although", "Conj", ["linguistic"], ""),
+            ("while",    "Conj", ["linguistic"], ""),
+            # Adjectives
+            ("big",      "Adj", ["linguistic"], ""),
+            ("small",    "Adj", ["linguistic"], ""),
+            ("new",      "Adj", ["linguistic"], ""),
+            ("old",      "Adj", ["linguistic"], ""),
+            ("good",     "Adj", ["linguistic"], ""),
+            ("bad",      "Adj", ["linguistic"], ""),
+            ("happy",    "Adj", ["linguistic"], ""),
+            ("sad",      "Adj", ["linguistic"], ""),
+            ("bright",   "Adj", ["linguistic"], ""),
+            ("dark",     "Adj", ["linguistic"], ""),
+            ("warm",     "Adj", ["linguistic"], ""),
+            ("cold",     "Adj", ["linguistic"], ""),
+            ("real",     "Adj", ["linguistic"], ""),
+            ("true",     "Adj", ["linguistic"], ""),
+            ("false",    "Adj", ["linguistic"], ""),
+            # Adverbs
+            ("quickly",  "Adv", ["linguistic"], ""),
+            ("slowly",   "Adv", ["linguistic"], ""),
+            ("very",     "Adv", ["linguistic"], ""),
+            ("really",   "Adv", ["linguistic"], ""),
+            ("always",   "Adv", ["linguistic"], ""),
+            ("never",    "Adv", ["linguistic"], ""),
+            ("often",    "Adv", ["linguistic"], ""),
+            ("softly",   "Adv", ["linguistic"], ""),
+            # Wh-words / complementizers
+            ("who",     "Wh", ["linguistic"], ""),
+            ("what",    "Wh", ["linguistic"], ""),
+            ("where",   "Wh", ["linguistic"], ""),
+            ("when",    "Wh", ["linguistic"], ""),
+            ("why",     "Wh", ["linguistic"], ""),
+            ("how",     "Wh", ["linguistic"], ""),
+        ]
+
+        for form, cat, subs, root in seeds + common:
             entry = LexicalEntry(
                 form=form, category=cat, substrates=subs,
             )
@@ -599,6 +762,54 @@ class Angel:
     # Core capabilities — the masterpieces
     # ------------------------------------------------------------------
 
+    def parse(
+        self, tokens: list[str], domain: str = "linguistic",
+    ) -> dict[str, Any]:
+        """Parse natural language tokens into a syntactic tree.
+
+        Uses the lexicon for POS tagging and the domain's grammars
+        for chart parsing.  Bridges natural input to the abstract
+        categories that grammar rules expect.
+        """
+        self._ensure_awake()
+        try:
+            from glm.core.parser import Parser
+        except Exception:
+            return {"tokens": tokens, "tags": [], "tree": None}
+
+        grammars = self._grammars.get(domain, [])
+        # Pick the first grammar (syntactic usually) for parsing
+        grammar = grammars[0] if grammars else None
+        parser = Parser(self._lexicon, grammar)
+        tags = parser.tag(tokens)
+        tree = parser.parse(tokens)
+        return {
+            "tokens": tokens,
+            "tags": tags,
+            "tree": tree.to_dict() if tree else None,
+        }
+
+    def _tokens_to_categories(
+        self, sequence: list[str], domain: str,
+    ) -> list[str]:
+        """Convert natural-language tokens to grammar categories
+        via the lexicon.  Returns the sequence unchanged if it
+        already looks like abstract categories."""
+        if not sequence:
+            return sequence
+        # If any token is already an abstract symbol (capitalised), treat
+        # the whole sequence as abstract.
+        abstract = sum(1 for t in sequence if isinstance(t, str) and t and t[0].isupper())
+        if abstract >= len(sequence) // 2:
+            return sequence
+
+        try:
+            from glm.core.parser import Parser
+            parser = Parser(self._lexicon, None)
+            return parser.tag(sequence)
+        except Exception:
+            return sequence
+
     def predict(
         self,
         sequence: list[str],
@@ -610,6 +821,10 @@ class Angel:
         Like a musician who knows the scales and can hear where the
         melody must go next — not by statistics alone, but by deep
         structural understanding.
+
+        For natural language input: POS-tags the sequence, parses it
+        into a syntactic tree, then uses grammar productions to
+        predict what categories could follow.
 
         Args:
             sequence: Input sequence of symbols/tokens.
@@ -624,25 +839,86 @@ class Angel:
         grammars = self._grammars.get(domain, [])
         predictions = []
 
+        # Bridge: convert natural language tokens to grammar categories
+        working = self._tokens_to_categories(sequence, domain)
+
+        # 1. Direct engine derivation (for abstract symbols)
         for grammar in grammars:
-            tree = self._engine.derive(
-                sequence, grammar, direction="forward"
-            )
-            # Extract derivation paths from the tree
-            for path in tree.paths()[:horizon]:
-                if path:
-                    last = path[-1]
-                    predictions.append({
-                        "predicted": last.output,
-                        "rule": last.rule_id,
-                        "confidence": last.metadata.get("weight", 0.5),
-                        "grammar": grammar.name,
-                        "direction": "forward",
-                    })
+            for seq_variant in ({tuple(working), tuple(sequence)}):
+                tree = self._engine.derive(
+                    list(seq_variant), grammar, direction="forward"
+                )
+                for path in tree.paths()[:horizon]:
+                    if path:
+                        last = path[-1]
+                        predictions.append({
+                            "predicted": last.output,
+                            "rule": last.rule_id,
+                            "confidence": last.metadata.get("weight", 0.5),
+                            "grammar": grammar.name,
+                            "direction": "forward",
+                            "tagged": working if working != sequence else None,
+                        })
+
+        # 2. Parse-based prediction: use the parser to build a tree, then
+        #    find productions whose RHS starts with the tree's root category
+        #    — their remaining RHS tells us what categories come next.
+        try:
+            from glm.core.parser import Parser
+            for grammar in grammars:
+                parser = Parser(self._lexicon, grammar)
+                tree = parser.parse(sequence)
+                if tree is None:
+                    continue
+                root_cat = tree.category
+                # Find productions that could extend this category
+                for prod in grammar.all_productions():
+                    rhs = prod.rhs
+                    if not isinstance(rhs, list) or len(rhs) < 2:
+                        continue
+                    # If our parse root matches the first RHS element, the rest
+                    # of the RHS predicts what comes next.
+                    if rhs[0] == root_cat:
+                        next_cats = rhs[1:]
+                        predictions.append({
+                            "predicted": next_cats if len(next_cats) > 1 else next_cats[0],
+                            "rule": prod.id,
+                            "confidence": min(0.9, prod.weight + 0.3),
+                            "grammar": grammar.name,
+                            "direction": "forward",
+                            "tagged": working if working != sequence else None,
+                            "via": "parse_extend",
+                            "after": root_cat,
+                        })
+                    # Also consider productions where our last parsed leaf
+                    # matches the start of RHS (useful for partial input).
+                    leaves = tree.flatten() if tree.children else []
+                    if leaves:
+                        tail_cat = parser.tag([leaves[-1]])[0] if leaves else None
+                        if tail_cat and rhs[0] == tail_cat and len(rhs) > 1:
+                            predictions.append({
+                                "predicted": rhs[1] if len(rhs) == 2 else rhs[1:],
+                                "rule": prod.id,
+                                "confidence": 0.5,
+                                "grammar": grammar.name,
+                                "direction": "forward",
+                                "via": "tail_extend",
+                                "after": tail_cat,
+                            })
+        except Exception:
+            pass
 
         # Sort by confidence — the most grammatically certain first
         predictions.sort(key=lambda p: p["confidence"], reverse=True)
-        return predictions
+        # Deduplicate by (predicted, rule)
+        seen: set[tuple[Any, str]] = set()
+        unique = []
+        for p in predictions:
+            key = (str(p.get("predicted")), p.get("rule", ""))
+            if key not in seen:
+                seen.add(key)
+                unique.append(p)
+        return unique[:horizon * 3] if horizon else unique
 
     def reconstruct(
         self,
@@ -670,20 +946,25 @@ class Angel:
         grammars = self._grammars.get(domain, [])
         reconstructions = []
 
+        # Bridge: convert natural language tokens to grammar categories
+        working = self._tokens_to_categories(sequence, domain)
+
         for grammar in grammars:
-            tree = self._engine.derive(
-                sequence, grammar, direction="backward"
-            )
-            for path in tree.paths()[:depth]:
-                if path:
-                    last = path[-1]
-                    reconstructions.append({
-                        "reconstructed": last.output,
-                        "rule": last.rule_id,
-                        "confidence": last.metadata.get("weight", 0.5),
-                        "grammar": grammar.name,
-                        "direction": "backward",
-                    })
+            for seq_variant in (working, sequence) if working != sequence else (working,):
+                tree = self._engine.derive(
+                    seq_variant, grammar, direction="backward"
+                )
+                for path in tree.paths()[:depth]:
+                    if path:
+                        last = path[-1]
+                        reconstructions.append({
+                            "reconstructed": last.output,
+                            "rule": last.rule_id,
+                            "confidence": last.metadata.get("weight", 0.5),
+                            "grammar": grammar.name,
+                            "direction": "backward",
+                            "tagged": working if working != sequence else None,
+                        })
 
         reconstructions.sort(key=lambda p: p["confidence"], reverse=True)
         return reconstructions
