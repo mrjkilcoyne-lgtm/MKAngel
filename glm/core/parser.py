@@ -70,7 +70,8 @@ def heuristic_tag(word: str) -> str:
         return "V"
     if w.endswith(("tion", "sion", "ment", "ness", "ity", "ence", "ance")):
         return "N"
-    if w.endswith(("ful", "ous", "ive", "able", "ible", "al", "ic", "ish")):
+    if w.endswith(("ful", "ous", "ive", "able", "ible", "al", "ic", "ish",
+                    "ant", "ent", "lar", "ern")):
         return "Adj"
     if w.endswith("s") and len(w) > 2 and not w.endswith(("ss", "us", "is")):
         return "N"
