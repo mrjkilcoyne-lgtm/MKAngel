@@ -1,0 +1,198 @@
+"""
+French (Français) grammar for the Grammar Language Model.
+
+French is an SVO Romance language with grammatical gender,
+liaison, elision, and a rich tense/mood system.
+"""
+
+from __future__ import annotations
+from glm.core.grammar import Grammar, Rule, Production, Direction
+
+
+def build_french_syntactic_grammar() -> Grammar:
+    g = Grammar(name="french_syntax", domain="french")
+    prods = [
+        Production("S", ["NP_subj", "VP"], "french_syntax"),
+        Production("S", ["NP_subj", "VP", "NP_obj"], "french_syntax"),
+        Production("S", ["NP_subj", "VP", "PP"], "french_syntax"),
+        # Clitic placement: subject + clitic + verb
+        Production("S", ["NP_subj", "Clitic", "VP"], "french_syntax"),
+        # Interrogative inversion: V + Subj
+        Production("S_interr", ["VP", "NP_subj"], "french_syntax"),
+        Production("S_interr", ["Est_ce_que", "NP_subj", "VP"], "french_syntax"),
+        Production("NP", ["Art", "N"], "french_syntax"),
+        Production("NP", ["Art", "N", "Adj"], "french_syntax"),
+        Production("NP", ["Art", "Adj", "N"], "french_syntax"),
+        Production("NP", ["Pron"], "french_syntax"),
+        Production("NP", ["NP", "PP"], "french_syntax"),
+        # Genitive: NP de NP
+        Production("NP", ["NP", "de", "NP"], "french_syntax"),
+        Production("VP", ["V"], "french_syntax"),
+        Production("VP", ["V", "NP"], "french_syntax"),
+        Production("VP", ["Aux", "PP_past"], "french_syntax"),
+        Production("VP", ["V", "Adv"], "french_syntax"),
+        Production("PP", ["Prep", "NP"], "french_syntax"),
+    ]
+    rules = [
+        Rule(name="french_adj_position",
+             pattern={"trigger": "Adj[type=BAGS]"},
+             result={"position": "pre-nominal"},
+             conditions={"adj_type": "beauty_age_goodness_size"},
+             weight=0.85, direction="forward"),
+        Rule(name="french_adj_default_post",
+             pattern={"trigger": "Adj[type=other]"},
+             result={"position": "post-nominal"},
+             weight=0.9, direction="forward"),
+        Rule(name="french_liaison",
+             pattern={"trigger": "word_final_consonant + vowel_initial"},
+             result={"phonology": "liaison"},
+             weight=0.8, direction="forward"),
+        Rule(name="french_elision",
+             pattern={"trigger": "le/la + vowel"},
+             result={"form": "l'"},
+             weight=0.95, direction="forward"),
+        Rule(name="french_negation",
+             pattern={"trigger": "ne + V + pas"},
+             result={"polarity": "negative"},
+             weight=0.95, direction="bidirectional"),
+    ]
+    for p in prods:
+        g.add_production(p)
+    for r in rules:
+        g.add_rule(r)
+    return g
+
+
+def build_french_morphological_grammar() -> Grammar:
+    g = Grammar(name="french_morphology", domain="french")
+    rules = [
+        Rule(name="fr_fem_e", pattern={"suffix": ""},
+             result={"suffix": "e", "gender": "feminine"},
+             weight=0.7, direction="forward"),
+        Rule(name="fr_plural_s", pattern={"suffix": ""},
+             result={"suffix": "s", "number": "plural"},
+             weight=0.8, direction="forward"),
+        Rule(name="fr_plural_x", pattern={"suffix": "eau"},
+             result={"suffix": "eaux", "number": "plural"},
+             weight=0.9, direction="forward"),
+        Rule(name="fr_past_part_er", pattern={"suffix": "er"},
+             result={"suffix": "e", "form": "past_participle"},
+             weight=0.9, direction="forward"),
+        Rule(name="fr_past_part_ir", pattern={"suffix": "ir"},
+             result={"suffix": "i", "form": "past_participle"},
+             weight=0.8, direction="forward"),
+    ]
+    for r in rules:
+        g.add_rule(r)
+    return g
+
+
+def french_lexicon_seeds():
+    return [
+        ("etre",     "V", ["french"], "*bhew-"),
+        ("avoir",    "V", ["french"], ""),
+        ("faire",    "V", ["french"], ""),
+        ("dire",     "V", ["french"], ""),
+        ("aller",    "V", ["french"], ""),
+        ("venir",    "V", ["french"], ""),
+        ("voir",     "V", ["french"], ""),
+        ("savoir",   "V", ["french"], ""),
+        ("pouvoir",  "V", ["french"], "*potis-"),
+        ("vouloir",  "V", ["french"], ""),
+        ("prendre",  "V", ["french"], ""),
+        ("donner",   "V", ["french"], "*deh₃-"),
+        ("parler",   "V", ["french"], ""),
+        ("manger",   "V", ["french"], ""),
+        ("boire",    "V", ["french"], "*peh₃-"),
+        ("lire",     "V", ["french"], ""),
+        ("ecrire",   "V", ["french"], ""),
+        ("dormir",   "V", ["french"], ""),
+        ("travailler","V", ["french"], ""),
+        ("aimer",    "V", ["french"], ""),
+        ("homme",    "N", ["french"], ""),
+        ("femme",    "N", ["french"], "*gwen-"),
+        ("enfant",   "N", ["french"], ""),
+        ("fille",    "N", ["french"], ""),
+        ("garcon",   "N", ["french"], ""),
+        ("pere",     "N", ["french"], "*ph₂ter-"),
+        ("mere",     "N", ["french"], "*meh₂ter-"),
+        ("frere",    "N", ["french"], "*bhreh₂ter-"),
+        ("soeur",    "N", ["french"], "*swesor-"),
+        ("maison",   "N", ["french"], ""),
+        ("eau",      "N", ["french", "chemical"], "*wed-"),
+        ("feu",      "N", ["french", "chemical"], "*peh₂wr-"),
+        ("vent",     "N", ["french", "physics"], "*weh₁-"),
+        ("soleil",   "N", ["french", "physics"], "*seh₂wl-"),
+        ("lune",     "N", ["french", "physics"], "*lewk-"),
+        ("etoile",   "N", ["french", "physics"], "*h₂ster-"),
+        ("arbre",    "N", ["french", "biological"], ""),
+        ("chat",     "N", ["french", "biological"], "*kattus"),
+        ("chien",    "N", ["french", "biological"], "*kwon-"),
+        ("oiseau",   "N", ["french", "biological"], ""),
+        ("poisson",  "N", ["french", "biological"], "*peisk-"),
+        ("pain",     "N", ["french"], ""),
+        ("lait",     "N", ["french"], "*glakt-"),
+        ("mer",      "N", ["french"], "*mori-"),
+        ("montagne", "N", ["french"], "*monti-"),
+        ("coeur",    "N", ["french", "biological"], "*kerd-"),
+        ("tete",     "N", ["french", "biological"], ""),
+        ("main",     "N", ["french", "biological"], ""),
+        ("oeil",     "N", ["french", "biological"], "*h₃ekw-"),
+        ("mot",      "N", ["french", "linguistic"], ""),
+        ("livre",    "N", ["french"], "*libr-"),
+        ("jour",     "N", ["french"], "*diw-"),
+        ("nuit",     "N", ["french"], "*nokwt-"),
+        ("nom",      "N", ["french"], "*h₁nomn-"),
+        ("langue",   "N", ["french", "linguistic"], ""),
+        ("monde",    "N", ["french"], ""),
+        ("temps",    "N", ["french"], ""),
+        ("grand",    "Adj", ["french"], ""),
+        ("petit",    "Adj", ["french"], ""),
+        ("bon",      "Adj", ["french"], ""),
+        ("mauvais",  "Adj", ["french"], ""),
+        ("vieux",    "Adj", ["french"], ""),
+        ("jeune",    "Adj", ["french"], ""),
+        ("nouveau",  "Adj", ["french"], "*newyo-"),
+        ("beau",     "Adj", ["french"], ""),
+        ("noir",     "Adj", ["french"], "*nokwt-"),
+        ("blanc",    "Adj", ["french"], ""),
+        ("chaud",    "Adj", ["french"], ""),
+        ("froid",    "Adj", ["french"], ""),
+        ("fort",     "Adj", ["french"], ""),
+        ("le",       "Art", ["french"], ""),
+        ("la",       "Art", ["french"], ""),
+        ("les",      "Art", ["french"], ""),
+        ("un",       "Art", ["french"], ""),
+        ("une",      "Art", ["french"], ""),
+        ("des",      "Art", ["french"], ""),
+        ("je",       "Pron", ["french"], ""),
+        ("tu",       "Pron", ["french"], ""),
+        ("il",       "Pron", ["french"], ""),
+        ("elle",     "Pron", ["french"], ""),
+        ("nous",     "Pron", ["french"], ""),
+        ("vous",     "Pron", ["french"], ""),
+        ("ils",      "Pron", ["french"], ""),
+        ("elles",    "Pron", ["french"], ""),
+        ("dans",     "Prep", ["french"], ""),
+        ("sur",      "Prep", ["french"], ""),
+        ("avec",     "Prep", ["french"], ""),
+        ("pour",     "Prep", ["french"], ""),
+        ("de",       "Prep", ["french"], ""),
+        ("a",        "Prep", ["french"], ""),
+        ("en",       "Prep", ["french"], ""),
+        ("par",      "Prep", ["french"], ""),
+        ("et",       "Conj", ["french"], ""),
+        ("ou",       "Conj", ["french"], ""),
+        ("mais",     "Conj", ["french"], ""),
+        ("un",       "Num", ["french"], ""),
+        ("deux",     "Num", ["french"], "*dwo-"),
+        ("trois",    "Num", ["french"], "*treyes-"),
+        ("quatre",   "Num", ["french"], "*kwetwor-"),
+        ("cinq",     "Num", ["french"], "*penkwe-"),
+        ("six",      "Num", ["french"], "*sweks-"),
+        ("sept",     "Num", ["french"], "*septm-"),
+        ("huit",     "Num", ["french"], "*okto-"),
+        ("neuf",     "Num", ["french"], "*h₁newn-"),
+        ("dix",      "Num", ["french"], "*dekm-"),
+        ("cent",     "Num", ["french"], "*kmtom-"),
+    ]
