@@ -141,6 +141,23 @@ try:
 except Exception:
     build_french_syntactic_grammar = None  # type: ignore[assignment, misc]
 
+try:
+    from glm.grammars.languages.scots import (
+        build_scots_syntactic_grammar, scots_lexicon_seeds,
+    )
+except Exception:
+    build_scots_syntactic_grammar = None  # type: ignore[assignment, misc]
+
+try:
+    from glm.grammars.languages.dialects import (
+        build_rp_grammar, build_estuary_grammar, build_scouse_grammar,
+        build_manc_grammar, build_home_counties_grammar, build_geordie_grammar,
+        all_dialect_lexicon_seeds,
+    )
+except Exception:
+    build_rp_grammar = None  # type: ignore[assignment, misc]
+    all_dialect_lexicon_seeds = None  # type: ignore[assignment, misc]
+
 from glm.substrates.phonological import PhonologicalSubstrate
 from glm.substrates.morphological import MorphologicalSubstrate
 from glm.substrates.molecular import MolecularSubstrate
@@ -182,12 +199,19 @@ class AngelConfig:
         "welsh",
         "irish",
         "scots_gaelic",
+        "scots",
         "hindi",
         "urdu",
         "bengali",
         "punjabi",
         "polish",
         "french",
+        "rp",
+        "estuary",
+        "scouse",
+        "manc",
+        "home_counties",
+        "geordie",
     ])
 
 
@@ -334,6 +358,15 @@ class Angel:
                 build_french_syntactic_grammar,
                 build_french_morphological_grammar,
             ]
+        if build_scots_syntactic_grammar is not None:
+            language_builders["scots"] = [build_scots_syntactic_grammar]
+        if build_rp_grammar is not None:
+            language_builders["rp"] = [build_rp_grammar]
+            language_builders["estuary"] = [build_estuary_grammar]
+            language_builders["scouse"] = [build_scouse_grammar]
+            language_builders["manc"] = [build_manc_grammar]
+            language_builders["home_counties"] = [build_home_counties_grammar]
+            language_builders["geordie"] = [build_geordie_grammar]
         grammar_builders.update(language_builders)
         for domain in self.config.domains:
             builders = grammar_builders.get(domain, [])
@@ -1471,6 +1504,8 @@ class Angel:
             punjabi_lexicon_seeds if build_punjabi_syntactic_grammar else None,
             polish_lexicon_seeds if build_polish_syntactic_grammar else None,
             french_lexicon_seeds if build_french_syntactic_grammar else None,
+            scots_lexicon_seeds if build_scots_syntactic_grammar else None,
+            all_dialect_lexicon_seeds if build_rp_grammar else None,
         ]:
             if seeds_fn is not None:
                 try:
