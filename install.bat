@@ -28,6 +28,7 @@ xcopy /E /I /Y "%SCRIPT_DIR%glm" "%INSTALL_DIR%\glm" >nul
 xcopy /E /I /Y "%SCRIPT_DIR%app" "%INSTALL_DIR%\app" >nul
 xcopy /E /I /Y "%SCRIPT_DIR%assets" "%INSTALL_DIR%\assets" >nul
 copy /Y "%SCRIPT_DIR%demo.py" "%INSTALL_DIR%\" >nul
+copy /Y "%SCRIPT_DIR%chat.py" "%INSTALL_DIR%\" >nul
 copy /Y "%SCRIPT_DIR%pyproject.toml" "%INSTALL_DIR%\" >nul
 
 :: Create mkangel.bat launcher
@@ -43,7 +44,7 @@ echo pause
 (
 echo @echo off
 echo cd /d "%INSTALL_DIR%"
-echo python -c "import sys; sys.path.insert(0,'.'); from app.conductor import AngelConductor; from app.chat import ChatSession; c = AngelConductor().awaken(); s = ChatSession(c); s.run()"
+echo python chat.py
 ) > "%INSTALL_DIR%\mkangel-chat.bat"
 
 :: Add to PATH via user environment variable

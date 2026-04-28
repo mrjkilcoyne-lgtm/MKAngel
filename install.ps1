@@ -29,6 +29,7 @@ Copy-Item -Recurse -Force "$ScriptDir\glm" "$InstallDir\glm"
 Copy-Item -Recurse -Force "$ScriptDir\app" "$InstallDir\app"
 Copy-Item -Recurse -Force "$ScriptDir\assets" "$InstallDir\assets"
 Copy-Item -Force "$ScriptDir\demo.py" "$InstallDir\"
+Copy-Item -Force "$ScriptDir\chat.py" "$InstallDir\"
 Copy-Item -Force "$ScriptDir\pyproject.toml" "$InstallDir\"
 
 Write-Host "[2/4] Creating launchers..." -ForegroundColor Yellow
@@ -45,7 +46,7 @@ pause
 @"
 @echo off
 cd /d "$InstallDir"
-python -c "import sys; sys.path.insert(0,'.'); from app.conductor import AngelConductor; from app.chat import ChatSession; c = AngelConductor().awaken(); s = ChatSession(c); s.run()"
+python chat.py
 "@ | Set-Content "$InstallDir\mkangel-chat.bat"
 
 Write-Host "[3/4] Adding to PATH..." -ForegroundColor Yellow
