@@ -70,6 +70,77 @@ from glm.grammars.physics import (
     build_relativity_grammar,
 )
 
+# Language grammars — graceful import so missing languages don't block boot
+try:
+    from glm.grammars.languages.welsh import (
+        build_welsh_syntactic_grammar, build_welsh_morphological_grammar,
+        build_welsh_phonological_grammar, welsh_lexicon_seeds,
+    )
+except Exception:
+    build_welsh_syntactic_grammar = None  # type: ignore[assignment, misc]
+
+try:
+    from glm.grammars.languages.irish import (
+        build_irish_syntactic_grammar, build_irish_morphological_grammar,
+        irish_lexicon_seeds,
+    )
+except Exception:
+    build_irish_syntactic_grammar = None  # type: ignore[assignment, misc]
+
+try:
+    from glm.grammars.languages.scots_gaelic import (
+        build_scots_gaelic_syntactic_grammar,
+        build_scots_gaelic_morphological_grammar,
+        scots_gaelic_lexicon_seeds,
+    )
+except Exception:
+    build_scots_gaelic_syntactic_grammar = None  # type: ignore[assignment, misc]
+
+try:
+    from glm.grammars.languages.hindi import (
+        build_hindi_syntactic_grammar, build_hindi_morphological_grammar,
+        hindi_lexicon_seeds,
+    )
+except Exception:
+    build_hindi_syntactic_grammar = None  # type: ignore[assignment, misc]
+
+try:
+    from glm.grammars.languages.urdu import (
+        build_urdu_syntactic_grammar, urdu_lexicon_seeds,
+    )
+except Exception:
+    build_urdu_syntactic_grammar = None  # type: ignore[assignment, misc]
+
+try:
+    from glm.grammars.languages.bengali import (
+        build_bengali_syntactic_grammar, bengali_lexicon_seeds,
+    )
+except Exception:
+    build_bengali_syntactic_grammar = None  # type: ignore[assignment, misc]
+
+try:
+    from glm.grammars.languages.punjabi import (
+        build_punjabi_syntactic_grammar, punjabi_lexicon_seeds,
+    )
+except Exception:
+    build_punjabi_syntactic_grammar = None  # type: ignore[assignment, misc]
+
+try:
+    from glm.grammars.languages.polish import (
+        build_polish_syntactic_grammar, build_polish_morphological_grammar,
+        polish_lexicon_seeds,
+    )
+except Exception:
+    build_polish_syntactic_grammar = None  # type: ignore[assignment, misc]
+
+try:
+    from glm.grammars.languages.french import (
+        build_french_syntactic_grammar, build_french_morphological_grammar,
+        french_lexicon_seeds,
+    )
+except Exception:
+    build_french_syntactic_grammar = None  # type: ignore[assignment, misc]
+
 from glm.substrates.phonological import PhonologicalSubstrate
 from glm.substrates.morphological import MorphologicalSubstrate
 from glm.substrates.molecular import MolecularSubstrate
@@ -108,6 +179,15 @@ class AngelConfig:
         "computational",
         "mathematical",
         "physics",
+        "welsh",
+        "irish",
+        "scots_gaelic",
+        "hindi",
+        "urdu",
+        "bengali",
+        "punjabi",
+        "polish",
+        "french",
     ])
 
 
@@ -214,6 +294,47 @@ class Angel:
                 build_relativity_grammar,
             ],
         }
+
+        # Language grammars — only add if imports succeeded
+        language_builders: dict[str, list] = {}
+        if build_welsh_syntactic_grammar is not None:
+            language_builders["welsh"] = [
+                build_welsh_syntactic_grammar,
+                build_welsh_morphological_grammar,
+                build_welsh_phonological_grammar,
+            ]
+        if build_irish_syntactic_grammar is not None:
+            language_builders["irish"] = [
+                build_irish_syntactic_grammar,
+                build_irish_morphological_grammar,
+            ]
+        if build_scots_gaelic_syntactic_grammar is not None:
+            language_builders["scots_gaelic"] = [
+                build_scots_gaelic_syntactic_grammar,
+                build_scots_gaelic_morphological_grammar,
+            ]
+        if build_hindi_syntactic_grammar is not None:
+            language_builders["hindi"] = [
+                build_hindi_syntactic_grammar,
+                build_hindi_morphological_grammar,
+            ]
+        if build_urdu_syntactic_grammar is not None:
+            language_builders["urdu"] = [build_urdu_syntactic_grammar]
+        if build_bengali_syntactic_grammar is not None:
+            language_builders["bengali"] = [build_bengali_syntactic_grammar]
+        if build_punjabi_syntactic_grammar is not None:
+            language_builders["punjabi"] = [build_punjabi_syntactic_grammar]
+        if build_polish_syntactic_grammar is not None:
+            language_builders["polish"] = [
+                build_polish_syntactic_grammar,
+                build_polish_morphological_grammar,
+            ]
+        if build_french_syntactic_grammar is not None:
+            language_builders["french"] = [
+                build_french_syntactic_grammar,
+                build_french_morphological_grammar,
+            ]
+        grammar_builders.update(language_builders)
         for domain in self.config.domains:
             builders = grammar_builders.get(domain, [])
             self._grammars[domain] = [b() for b in builders]
@@ -1338,7 +1459,26 @@ class Angel:
         ]
 
 
-        for form, cat, subs, root in seeds + common:
+        # Gather language-specific lexicon seeds
+        lang_seeds: list[tuple] = []
+        for seeds_fn in [
+            welsh_lexicon_seeds if build_welsh_syntactic_grammar else None,
+            irish_lexicon_seeds if build_irish_syntactic_grammar else None,
+            scots_gaelic_lexicon_seeds if build_scots_gaelic_syntactic_grammar else None,
+            hindi_lexicon_seeds if build_hindi_syntactic_grammar else None,
+            urdu_lexicon_seeds if build_urdu_syntactic_grammar else None,
+            bengali_lexicon_seeds if build_bengali_syntactic_grammar else None,
+            punjabi_lexicon_seeds if build_punjabi_syntactic_grammar else None,
+            polish_lexicon_seeds if build_polish_syntactic_grammar else None,
+            french_lexicon_seeds if build_french_syntactic_grammar else None,
+        ]:
+            if seeds_fn is not None:
+                try:
+                    lang_seeds.extend(seeds_fn())
+                except Exception:
+                    pass
+
+        for form, cat, subs, root in seeds + common + lang_seeds:
             entry = LexicalEntry(
                 form=form, category=cat, substrates=subs,
             )
