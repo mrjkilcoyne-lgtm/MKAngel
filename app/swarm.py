@@ -366,15 +366,18 @@ class AngelLOGOS:
 class AngelCRONOS:
     """Isolated memory/learning chain for a named angel (CRONOS layer).
 
-    Each angel remembers its own interactions independently.
-    They feed up to the Bridge for cross-angel coordination,
-    but don't interfere with each other's learning.
+    Two layers:
+    - Private working memory: the angel's current session, hypotheses
+      in progress, mid-derivation state. Isolated. Not shared.
+    - Shared discovery ledger: verified findings that the Bridge
+      propagates. Each angel decides whether to adopt for their stack.
     """
 
     def __init__(self, name: str) -> None:
         self.name = name
         self._interactions: list[dict[str, Any]] = []
         self._lessons: list[dict[str, Any]] = []
+        self._adopted_discoveries: list[str] = []
 
     def record(self, message: str, response: str, confidence: float) -> None:
         self._interactions.append({
@@ -388,6 +391,11 @@ class AngelCRONOS:
             "confidence": confidence, "timestamp": time.time(),
         })
 
+    def adopt_discovery(self, discovery_id: str) -> None:
+        """Adopt a shared discovery into this angel's working knowledge."""
+        if discovery_id not in self._adopted_discoveries:
+            self._adopted_discoveries.append(discovery_id)
+
     def recent_context(self, n: int = 5) -> list[dict]:
         return self._interactions[-n:]
 
@@ -399,6 +407,7 @@ class AngelCRONOS:
             "name": self.name,
             "interactions": len(self._interactions),
             "lessons": len(self._lessons),
+            "adopted_discoveries": len(self._adopted_discoveries),
         }
 
 
@@ -674,12 +683,91 @@ class CelestialSwitchboard:
             "duration": time.time() - start,
         }
 
+    def record_discovery(
+        self,
+        description: str,
+        domains_crossed: list[str],
+        derivation_chain: list[dict],
+        rules_fired: list[str],
+        confidence: float,
+        angel_name: str = "",
+        human_partner: str = "",
+        project_context: str = "",
+    ) -> dict[str, Any]:
+        """Record a cross-domain discovery in the ledger.
+
+        The derivation chain IS the proof. The hash chain makes
+        it tamper-evident. Ready for Algorand submission.
+        """
+        try:
+            from app.discovery import DiscoveryEvent, DiscoveryLedger
+            ledger = DiscoveryLedger()
+            event = DiscoveryEvent(
+                description=description,
+                domains_crossed=domains_crossed,
+                source_domain=domains_crossed[0] if domains_crossed else "",
+                target_domain=domains_crossed[-1] if len(domains_crossed) > 1 else "",
+                derivation_chain=derivation_chain,
+                rules_fired=rules_fired,
+                confidence=confidence,
+                angel_name=angel_name,
+                human_partner=human_partner,
+                project_context=project_context,
+            )
+            recorded = ledger.record(event)
+
+            # Propagate to all angels — each decides whether to adopt
+            for name, angel_entity in self._angels.items():
+                if name != angel_name:
+                    # Other angels see the discovery; adoption is optional
+                    angel_entity.cronos.learn(
+                        description, domains_crossed[0] if domains_crossed else "",
+                        confidence,
+                    )
+
+            return {
+                "discovery_id": recorded.discovery_id,
+                "citation_key": recorded.citation_key(),
+                "content_hash": recorded.content_hash,
+                "chain_tip": ledger.chain_tip(),
+                "total_discoveries": ledger.count(),
+                "status": "recorded_locally",
+                "algorand": "pending (connect Algorand bridge to submit on-chain)",
+            }
+        except Exception as exc:
+            return {"error": str(exc)}
+
+    def verify_ledger(self) -> dict[str, Any]:
+        """Verify the discovery hash chain is intact."""
+        try:
+            from app.discovery import DiscoveryLedger
+            ledger = DiscoveryLedger()
+            intact, checked, broken = ledger.verify_chain()
+            return {
+                "intact": intact,
+                "entries_verified": checked,
+                "broken_at": broken if not intact else None,
+            }
+        except Exception as exc:
+            return {"error": str(exc)}
+
     def memory_report(self) -> dict[str, Any]:
-        """Bridge-level report on all angels' CRONOS state."""
-        return {
+        """Bridge-level report on all angels' CRONOS state + ledger."""
+        report: dict[str, Any] = {
             name: angel.cronos.summary()
             for name, angel in self._angels.items()
         }
+        try:
+            from app.discovery import DiscoveryLedger
+            ledger = DiscoveryLedger()
+            report["_ledger"] = {
+                "total_discoveries": ledger.count(),
+                "chain_tip": ledger.chain_tip(),
+                "pending_on_chain": len(ledger.pending_on_chain()),
+            }
+        except Exception:
+            report["_ledger"] = {"status": "unavailable"}
+        return report
 
     def who_is_available(self) -> list[dict[str, str]]:
         return [
