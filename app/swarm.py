@@ -306,55 +306,189 @@ class SkillableAgent:
 # Iteration 5 -- Named Angels / CelestialSwitchboard
 # ---------------------------------------------------------------------------
 
+class AngelLOGOS:
+    """Isolated grammar context for a named angel (LOGOS layer).
+
+    Each angel gets its own grammar subset — Michael works with
+    computational grammars, Raphael with biological, Uriel with
+    mathematical. They don't share grammar state. They coordinate
+    through the Bridge (CelestialSwitchboard), not through a
+    shared Angel instance.
+    """
+
+    def __init__(self, domains: list[str]) -> None:
+        self._domains = domains
+        self._angel: Any = None
+        self._loaded = False
+
+    def _ensure_loaded(self) -> Any:
+        if not self._loaded:
+            try:
+                from glm.angel import Angel, AngelConfig
+                config = AngelConfig(domains=list(self._domains))
+                self._angel = Angel(config)
+                self._angel.awaken()
+            except Exception:
+                pass
+            self._loaded = True
+        return self._angel
+
+    def predict(self, tokens: list[str], domain: str | None = None) -> list[dict]:
+        angel = self._ensure_loaded()
+        if angel is None:
+            return []
+        d = domain or (self._domains[0] if self._domains else "linguistic")
+        try:
+            return angel.predict(tokens, domain=d, horizon=5)
+        except Exception:
+            return []
+
+    def parse(self, tokens: list[str]) -> dict:
+        angel = self._ensure_loaded()
+        if angel is None:
+            return {"tokens": tokens, "tags": [], "tree": None}
+        try:
+            return angel.parse(tokens)
+        except Exception:
+            return {"tokens": tokens, "tags": [], "tree": None}
+
+    def superforecast(self, tokens: list[str], domain: str | None = None) -> dict:
+        angel = self._ensure_loaded()
+        if angel is None:
+            return {"predictions": [], "overall_confidence": 0.0}
+        d = domain or (self._domains[0] if self._domains else "linguistic")
+        try:
+            return angel.superforecast(tokens, domain=d)
+        except Exception:
+            return {"predictions": [], "overall_confidence": 0.0}
+
+
+class AngelCRONOS:
+    """Isolated memory/learning chain for a named angel (CRONOS layer).
+
+    Each angel remembers its own interactions independently.
+    They feed up to the Bridge for cross-angel coordination,
+    but don't interfere with each other's learning.
+    """
+
+    def __init__(self, name: str) -> None:
+        self.name = name
+        self._interactions: list[dict[str, Any]] = []
+        self._lessons: list[dict[str, Any]] = []
+
+    def record(self, message: str, response: str, confidence: float) -> None:
+        self._interactions.append({
+            "message": message, "response": response,
+            "confidence": confidence, "timestamp": time.time(),
+        })
+
+    def learn(self, lesson: str, domain: str, confidence: float) -> None:
+        self._lessons.append({
+            "lesson": lesson, "domain": domain,
+            "confidence": confidence, "timestamp": time.time(),
+        })
+
+    def recent_context(self, n: int = 5) -> list[dict]:
+        return self._interactions[-n:]
+
+    def total_interactions(self) -> int:
+        return len(self._interactions)
+
+    def summary(self) -> dict[str, Any]:
+        return {
+            "name": self.name,
+            "interactions": len(self._interactions),
+            "lessons": len(self._lessons),
+        }
+
+
 @dataclass
 class NamedAngel:
-    """A named angel with personality and direct invocation."""
+    """A named angel with isolated LOGOS + CRONOS + personality.
+
+    Each angel has:
+    - Own LOGOS (grammar context for its domain)
+    - Own CRONOS (isolated memory/learning)
+    - Personality (system prompt for generation)
+    - Skills (domain-specific capabilities)
+    - Escalation path (when to call the Bridge)
+
+    They coordinate through the Bridge (CelestialSwitchboard),
+    NOT through shared state.
+    """
     celestial_name: CelestialName
     title: str
     domain: str
     personality: str
     role: AgentRole
     skills: list[AgentSkill] = field(default_factory=list)
+    logos_domains: list[str] = field(default_factory=list)
+    _logos: Any = field(default=None, repr=False)
+    _cronos: Any = field(default=None, repr=False)
+
+    def __post_init__(self):
+        if not self.logos_domains:
+            self.logos_domains = [self.domain, "linguistic"]
+        self._logos = AngelLOGOS(self.logos_domains)
+        self._cronos = AngelCRONOS(self.celestial_name.value)
+
+    @property
+    def logos(self) -> AngelLOGOS:
+        return self._logos
+
+    @property
+    def cronos(self) -> AngelCRONOS:
+        return self._cronos
 
     def invoke(
         self, message: str, provider: Any = None, angel: Any = None,
     ) -> dict[str, Any]:
-        """Direct line to this angel. Returns response with persona."""
+        """Direct line to this angel via its own LOGOS + CRONOS."""
         start = time.time()
         response = ""
+        confidence = 0.0
 
-        # Try provider first with personality as system prompt
+        # Use OWN LOGOS, not shared angel
         if provider is not None:
             try:
+                # Enrich with LOGOS context
+                context = ""
+                preds = self._logos.predict(message.lower().split(), self.domain)
+                if preds:
+                    context = f"[Grammar context: {preds[:3]}]\n"
                 response = provider.generate(
-                    message,
+                    context + message,
                     system=self.personality,
                     temperature=0.5,
                     max_tokens=1024,
                 )
+                confidence = 0.8
             except Exception as exc:
                 response = f"[{self.celestial_name.value} connection error: {exc}]"
 
-        # Try Angel GLM if no provider response
-        if not response and angel is not None:
+        # Try own LOGOS for structural response
+        if not response:
             try:
-                tokens = message.lower().split()
-                forecast = angel.superforecast(tokens, domain=self.domain)
+                forecast = self._logos.superforecast(
+                    message.lower().split(), self.domain
+                )
                 preds = forecast.get("predictions", [])
                 if preds:
                     lines = [f"[{self.title} speaks]"]
                     for p in preds[:5]:
                         lines.append(f"  {p}")
                     response = "\n".join(lines)
+                    confidence = forecast.get("overall_confidence", 0.3)
             except Exception:
                 pass
 
-        # Apply skills if we have them
+        # Apply skills
         if not response:
             for skill in self.skills:
                 try:
                     response = skill.execute(message, provider)
                     if response:
+                        confidence = 0.5
                         break
                 except Exception:
                     continue
@@ -365,12 +499,18 @@ class NamedAngel:
                 f"The line is open but the words haven't formed yet. "
                 f"Configure a provider for full communion.]"
             )
+            confidence = 0.1
+
+        # Record in OWN CRONOS (isolated memory)
+        self._cronos.record(message, response, confidence)
 
         return {
             "angel": self.celestial_name.value,
             "title": self.title,
             "domain": self.domain,
             "response": response,
+            "confidence": confidence,
+            "memory_depth": self._cronos.total_interactions(),
             "duration": time.time() - start,
         }
 
@@ -387,6 +527,7 @@ def _build_celestial_roster() -> dict[str, NamedAngel]:
             AgentRole.MESSENGER,
             [AgentSkill("divine_relay", "Carry messages with perfect clarity", "prompt",
                 {"system_prompt": "Deliver this message with absolute clarity. Strip away ambiguity.", "temperature": 0.2})],
+            logos_domains=["linguistic", "etymological", "welsh", "irish", "french"],
         ),
         "michael": NamedAngel(
             CelestialName.MICHAEL, "Michael the Protector", "computational",
@@ -396,6 +537,7 @@ def _build_celestial_roster() -> dict[str, NamedAngel]:
             AgentRole.CRITIC,
             [AgentSkill("divine_guard", "Challenge and protect against error", "prompt",
                 {"system_prompt": "Guard this. Challenge every assumption. Find every weakness.", "temperature": 0.3})],
+            logos_domains=["computational", "mathematical", "linguistic"],
         ),
         "raphael": NamedAngel(
             CelestialName.RAPHAEL, "Raphael the Healer", "biological",
@@ -405,6 +547,7 @@ def _build_celestial_roster() -> dict[str, NamedAngel]:
             AgentRole.ANALYST,
             [AgentSkill("divine_healing", "Diagnose problems and prescribe fixes", "prompt",
                 {"system_prompt": "Diagnose this. Find the root cause. Prescribe the cure.", "temperature": 0.3})],
+            logos_domains=["biological", "chemical", "linguistic"],
         ),
         "uriel": NamedAngel(
             CelestialName.URIEL, "Uriel the Illuminator", "mathematical",
@@ -415,6 +558,7 @@ def _build_celestial_roster() -> dict[str, NamedAngel]:
             AgentRole.ORACLE,
             [AgentSkill("divine_sight", "Illuminate hidden patterns and predict", "prompt",
                 {"system_prompt": "Illuminate. Reveal hidden patterns. Show what others cannot see.", "temperature": 0.6})],
+            logos_domains=["mathematical", "physics", "computational", "linguistic"],
         ),
         "puriel": NamedAngel(
             CelestialName.PURIEL, "Puriel the Purifier", "linguistic",
@@ -424,6 +568,7 @@ def _build_celestial_roster() -> dict[str, NamedAngel]:
             AgentRole.CRITIC,
             [AgentSkill("divine_purity", "Validate integrity and purity", "prompt",
                 {"system_prompt": "Validate this for integrity. Ensure nothing corrupts the foundations.", "temperature": 0.2})],
+            logos_domains=["linguistic", "etymological"],
         ),
         "ariel": NamedAngel(
             CelestialName.ARIEL, "Ariel of Nature", "biological",
@@ -433,6 +578,7 @@ def _build_celestial_roster() -> dict[str, NamedAngel]:
             AgentRole.SPECIALIST,
             [AgentSkill("divine_nature", "Apply nature's patterns and wisdom", "prompt",
                 {"system_prompt": "See this through nature's eyes. Biological, chemical, physical patterns.", "temperature": 0.5})],
+            logos_domains=["biological", "chemical", "physics"],
         ),
         "azrael": NamedAngel(
             CelestialName.AZRAEL, "Azrael the Transformer", "computational",
@@ -442,47 +588,41 @@ def _build_celestial_roster() -> dict[str, NamedAngel]:
             AgentRole.SPECIALIST,
             [AgentSkill("divine_transform", "Transform and refactor fearlessly", "prompt",
                 {"system_prompt": "Transform this. Refactor. Reshape. Be fearless and precise.", "temperature": 0.5})],
+            logos_domains=["computational", "mathematical"],
         ),
         "metatron": NamedAngel(
-            CelestialName.METATRON, "Metatron the Scribe", "meta",
+            CelestialName.METATRON, "Metatron the Scribe", "linguistic",
             "You are Metatron, the celestial Scribe. You record everything. "
             "You compress vast knowledge into essential notation. You are the "
             "living archive, the memory that never fades. Precise. Complete. Eternal.",
             AgentRole.SCRIBE,
             [AgentSkill("divine_record", "Record and compress to essential form", "transform",
                 {"transform": "mnemo"})],
+            logos_domains=["linguistic", "etymological"],
         ),
     }
 
 
 class CelestialSwitchboard:
-    """The switchboard for direct lines to named angels.
+    """The Bridge — routes work to the right angel, manages coordination.
 
-    When you know who you need, call them by name.
-    When you don't, the switchboard routes you to the right one.
+    Each angel has its own LOGOS (grammar context) and CRONOS (memory).
+    The Bridge coordinates between them WITHOUT sharing state.
+    When an angel needs another angel's expertise, it escalates to
+    the Bridge, which routes to the right specialist.
+
+    This is the TARDIS architecture: independent learning chains
+    that coordinate through the Bridge, not through shared state.
     """
 
     def __init__(self) -> None:
         self._angels = _build_celestial_roster()
-        self._angel_core: Any = None
-        self._angel_lock = threading.Lock()
-
-    def _get_angel_core(self) -> Any:
-        if self._angel_core is None:
-            with self._angel_lock:
-                if self._angel_core is None:
-                    try:
-                        from glm.angel import Angel
-                        self._angel_core = Angel()
-                        self._angel_core.awaken()
-                    except Exception:
-                        pass
-        return self._angel_core
+        self._bridge_log: list[dict[str, Any]] = []
 
     def invoke(
         self, name: str, message: str, provider: Any = None,
     ) -> dict[str, Any]:
-        """Direct line to a named angel."""
+        """Direct line to a named angel via the Bridge."""
         name = name.lower().strip()
         angel_entity = self._angels.get(name)
         if angel_entity is None:
@@ -490,7 +630,56 @@ class CelestialSwitchboard:
                 "error": f"No angel named '{name}'. Available: {', '.join(self._angels)}",
                 "available": list(self._angels.keys()),
             }
-        return angel_entity.invoke(message, provider, self._get_angel_core())
+        # Each angel uses its OWN LOGOS — no shared Angel instance
+        result = angel_entity.invoke(message, provider)
+        # Bridge logs the interaction for cross-angel coordination
+        self._bridge_log.append({
+            "angel": name, "message": message[:200],
+            "confidence": result.get("confidence", 0),
+            "timestamp": time.time(),
+        })
+        return result
+
+    def council(
+        self, message: str, provider: Any = None,
+    ) -> dict[str, Any]:
+        """Convene all angels — each uses its own LOGOS independently.
+        The Bridge synthesises their independent findings."""
+        start = time.time()
+        results: dict[str, Any] = {}
+        threads: list[threading.Thread] = []
+        lock = threading.Lock()
+
+        for name, angel_entity in self._angels.items():
+            def _invoke(n=name, a=angel_entity):
+                r = a.invoke(message, provider)
+                with lock:
+                    results[n] = r
+            t = threading.Thread(target=_invoke, daemon=True)
+            threads.append(t)
+            t.start()
+
+        for t in threads:
+            t.join(timeout=30.0)
+
+        # Bridge synthesis: find where independent angels agree
+        confidences = [r.get("confidence", 0) for r in results.values()]
+        avg_conf = sum(confidences) / max(len(confidences), 1)
+
+        return {
+            "council": True,
+            "angels_consulted": list(results.keys()),
+            "results": results,
+            "bridge_confidence": avg_conf,
+            "duration": time.time() - start,
+        }
+
+    def memory_report(self) -> dict[str, Any]:
+        """Bridge-level report on all angels' CRONOS state."""
+        return {
+            name: angel.cronos.summary()
+            for name, angel in self._angels.items()
+        }
 
     def who_is_available(self) -> list[dict[str, str]]:
         return [
