@@ -146,6 +146,74 @@ def build_mechanics_grammar() -> Grammar:
             weight=0.9,
             direction="forward",
         ),
+
+        # --- Kepler's laws (empirical, verified by Newton) ---
+        Rule(
+            name="keplers_first_law",
+            pattern={"system": "two-body gravitational"},
+            result={"orbit": "ellipse with massive body at one focus",
+                    "equation": "r = a(1-e²)/(1+e·cos θ)",
+                    "verified": "Tycho Brahe data, 1609"},
+            weight=1.0, direction="forward",
+        ),
+        Rule(
+            name="keplers_second_law",
+            pattern={"system": "orbiting body"},
+            result={"invariant": "equal areas swept in equal times",
+                    "consequence": "conservation of angular momentum",
+                    "equation": "dA/dt = L/(2m) = constant"},
+            weight=1.0, direction="forward",
+        ),
+        Rule(
+            name="keplers_third_law",
+            pattern={"system": "orbiting body period T, semi-major axis a"},
+            result={"relation": "T² ∝ a³",
+                    "equation": "T² = (4π²/GM)a³",
+                    "verified": "all planetary orbits"},
+            weight=1.0, direction="bidirectional",
+        ),
+        # --- Harmonic motion ---
+        Rule(
+            name="simple_harmonic_motion",
+            pattern={"restoring_force": "F = -kx"},
+            result={"solution": "x(t) = A·cos(ωt + φ)",
+                    "angular_frequency": "ω = √(k/m)",
+                    "period": "T = 2π/ω",
+                    "isomorphism": "same equation as LC circuit, pendulum, phonon"},
+            weight=1.0, direction="bidirectional",
+        ),
+        # --- Wave equation ---
+        Rule(
+            name="wave_equation",
+            pattern={"medium": "continuous, elastic"},
+            result={"equation": "∂²ψ/∂t² = v²·∂²ψ/∂x²",
+                    "solutions": "ψ(x,t) = f(x-vt) + g(x+vt)",
+                    "isomorphism": "identical form in acoustics, EM, quantum, phonology"},
+            weight=1.0, direction="bidirectional",
+        ),
+        # --- Collisions ---
+        Rule(
+            name="elastic_collision",
+            pattern={"collision": "elastic (KE conserved)"},
+            result={"conserved": ["momentum p", "kinetic energy KE"],
+                    "equation_1d": "v₁' = ((m₁-m₂)v₁ + 2m₂v₂)/(m₁+m₂)"},
+            weight=1.0, direction="bidirectional",
+        ),
+        # --- Torque and rotation ---
+        Rule(
+            name="torque",
+            pattern={"force_applied": "at distance r from pivot"},
+            result={"equation": "τ = r × F = Iα",
+                    "rotational_newton": "analogue of F = ma for rotation"},
+            weight=1.0, direction="bidirectional",
+        ),
+        Rule(
+            name="parallel_axis_theorem",
+            pattern={"rotation": "about axis displaced from centre of mass"},
+            result={"equation": "I = I_cm + Md²",
+                    "verified": "all rigid bodies"},
+            weight=1.0, direction="forward",
+        ),
     ]
 
     return Grammar(
@@ -243,6 +311,47 @@ def build_electromagnetism_grammar() -> Grammar:
                     "isomorphism": "same r² law as gravity — deep structural parallel"},
             weight=1.0,
             direction="forward",
+        ),
+
+        # --- Circuit laws ---
+        Rule(
+            name="ohms_law",
+            pattern={"circuit": "conductor with resistance R"},
+            result={"equation": "V = IR",
+                    "microscopic": "J = σE (current density = conductivity × field)",
+                    "verified": "Georg Ohm, 1827"},
+            weight=1.0, direction="bidirectional",
+        ),
+        Rule(
+            name="kirchhoffs_current_law",
+            pattern={"node": "junction in circuit"},
+            result={"law": "sum of currents entering = sum leaving",
+                    "equation": "Σ I_in = Σ I_out",
+                    "basis": "conservation of charge"},
+            weight=1.0, direction="bidirectional",
+        ),
+        Rule(
+            name="kirchhoffs_voltage_law",
+            pattern={"loop": "closed loop in circuit"},
+            result={"law": "sum of voltage drops around loop = 0",
+                    "equation": "Σ V = 0",
+                    "basis": "conservation of energy"},
+            weight=1.0, direction="bidirectional",
+        ),
+        Rule(
+            name="lc_resonance",
+            pattern={"circuit": "inductor L and capacitor C"},
+            result={"frequency": "f = 1/(2π√(LC))",
+                    "isomorphism": "identical to mass-spring SHM with ω = √(k/m)"},
+            weight=1.0, direction="bidirectional",
+        ),
+        Rule(
+            name="electromagnetic_induction",
+            pattern={"flux": "changing magnetic flux through conductor"},
+            result={"equation": "EMF = -dΦ_B/dt",
+                    "name": "Faraday's law of induction",
+                    "lenz": "induced current opposes change (negative sign)"},
+            weight=1.0, direction="forward",
         ),
     ]
 
@@ -358,6 +467,73 @@ def build_thermodynamics_grammar() -> Grammar:
             weight=0.85,
             direction="bidirectional",
             self_referential=True,
+        ),
+
+        # --- Carnot efficiency (theoretical maximum) ---
+        Rule(
+            name="carnot_efficiency",
+            pattern={"engine": "heat engine between T_hot and T_cold"},
+            result={"maximum_efficiency": "η = 1 - T_cold/T_hot",
+                    "consequence": "no engine can exceed this",
+                    "verified": "Sadi Carnot, 1824; Clausius, 1850"},
+            weight=1.0, direction="forward",
+        ),
+        # --- Stefan-Boltzmann law ---
+        Rule(
+            name="stefan_boltzmann",
+            pattern={"body": "blackbody at temperature T"},
+            result={"power_per_area": "j = σT⁴",
+                    "constant": "σ = 5.670374419 × 10⁻⁸ W/(m²·K⁴)",
+                    "verified": "Stefan 1879 (empirical), Boltzmann 1884 (derived)"},
+            weight=1.0, direction="forward",
+        ),
+        # --- Gibbs free energy ---
+        Rule(
+            name="gibbs_free_energy",
+            pattern={"process": "constant temperature and pressure"},
+            result={"equation": "G = H - TS",
+                    "spontaneous_condition": "ΔG < 0",
+                    "equilibrium": "ΔG = 0",
+                    "isomorphism": "chemical potential ↔ linguistic productivity"},
+            weight=1.0, direction="bidirectional",
+        ),
+        # --- Clausius-Clapeyron (phase transitions) ---
+        Rule(
+            name="clausius_clapeyron",
+            pattern={"transition": "phase boundary in P-T diagram"},
+            result={"equation": "dP/dT = ΔH/(TΔV)",
+                    "governs": "boiling point variation with pressure",
+                    "verified": "all pure substances"},
+            weight=1.0, direction="forward",
+        ),
+        # --- Equipartition theorem ---
+        Rule(
+            name="equipartition_theorem",
+            pattern={"system": "classical thermal equilibrium"},
+            result={"energy_per_dof": "½k_BT per quadratic degree of freedom",
+                    "monatomic_gas": "E = 3/2 nRT",
+                    "diatomic_gas": "E = 5/2 nRT (translation + rotation)"},
+            weight=1.0, direction="forward",
+        ),
+        # --- Ideal gas law ---
+        Rule(
+            name="ideal_gas_law",
+            pattern={"gas": "ideal (low density, high temperature)"},
+            result={"equation": "PV = nRT",
+                    "R": "8.314 J/(mol·K)",
+                    "microscopic": "PV = Nk_BT",
+                    "verified": "Boyle, Charles, Gay-Lussac, Avogadro combined"},
+            weight=1.0, direction="bidirectional",
+        ),
+        # --- Landauer's principle ---
+        Rule(
+            name="landauers_principle",
+            pattern={"operation": "irreversible erasure of 1 bit"},
+            result={"minimum_heat": "k_BT ln 2 ≈ 2.87 × 10⁻²¹ J at 300K",
+                    "significance": "computation has thermodynamic cost",
+                    "isomorphism": "information ↔ physics bridge",
+                    "verified": "Landauer 1961, experimentally confirmed 2012"},
+            weight=1.0, direction="forward",
         ),
     ]
 
@@ -513,6 +689,79 @@ def build_quantum_grammar() -> Grammar:
             weight=0.9,
             direction="bidirectional",
         ),
+
+        # --- Born rule ---
+        Rule(
+            name="born_rule",
+            pattern={"wavefunction": "ψ(x)"},
+            result={"probability_density": "|ψ(x)|² gives probability of finding particle at x",
+                    "normalisation": "∫|ψ|² dx = 1",
+                    "verified": "Max Born, 1926; confirmed by all quantum experiments"},
+            weight=1.0, direction="forward",
+        ),
+        # --- Time-independent Schrödinger ---
+        Rule(
+            name="schrodinger_time_independent",
+            pattern={"stationary_state": "ψ with definite energy E"},
+            result={"equation": "Ĥψ = Eψ (eigenvalue equation)",
+                    "hydrogen_atom": "E_n = -13.6 eV / n² (verified spectroscopically)"},
+            weight=1.0, direction="bidirectional",
+        ),
+        # --- Energy-time uncertainty ---
+        Rule(
+            name="energy_time_uncertainty",
+            pattern={"observables": "energy E, time interval Δt"},
+            result={"inequality": "ΔE × Δt ≥ ℏ/2",
+                    "consequence": "short-lived states have broad energy (natural linewidth)"},
+            weight=1.0, direction="bidirectional",
+        ),
+        # --- Quantum tunnelling ---
+        Rule(
+            name="quantum_tunnelling",
+            pattern={"barrier": "potential V > particle energy E"},
+            result={"probability": "T ≈ exp(-2κL) where κ = √(2m(V-E))/ℏ",
+                    "applications": ["alpha decay", "scanning tunnelling microscope",
+                                     "nuclear fusion in stars"],
+                    "verified": "Gamow 1928, experimentally confirmed"},
+            weight=1.0, direction="forward",
+        ),
+        # --- Spin-statistics theorem ---
+        Rule(
+            name="spin_statistics_theorem",
+            pattern={"particle_type": "quantum identical particles"},
+            result={"bosons": "integer spin → symmetric wavefunction → can share states (Bose-Einstein)",
+                    "fermions": "half-integer spin → antisymmetric wavefunction → Pauli exclusion (Fermi-Dirac)",
+                    "verified": "Pauli 1940; foundation of all matter structure"},
+            weight=1.0, direction="bidirectional",
+        ),
+        # --- Bell's theorem ---
+        Rule(
+            name="bells_theorem",
+            pattern={"assumption": "local realism (hidden variables)"},
+            result={"inequality": "|S| ≤ 2 (CHSH form)",
+                    "quantum_prediction": "|S| = 2√2 ≈ 2.828",
+                    "experiments": "Aspect 1982, Hensen 2015 (loophole-free): quantum wins",
+                    "consequence": "nature is non-local OR non-real (or both)"},
+            weight=1.0, direction="forward",
+        ),
+        # --- de Broglie wavelength ---
+        Rule(
+            name="de_broglie_wavelength",
+            pattern={"particle": "with momentum p"},
+            result={"wavelength": "λ = h/p",
+                    "consequence": "all matter has wave-like properties",
+                    "verified": "Davisson-Germer 1927 (electron diffraction)"},
+            weight=1.0, direction="bidirectional",
+        ),
+        # --- Selection rules ---
+        Rule(
+            name="selection_rules_em",
+            pattern={"transition": "electric dipole radiation"},
+            result={"allowed": "Δl = ±1, Δm = 0,±1, Δs = 0",
+                    "forbidden": "transitions violating these are suppressed",
+                    "basis": "conservation of angular momentum + photon spin 1"},
+            weight=1.0, direction="forward",
+        ),
     ]
 
     strange_loop = StrangeLoop(
@@ -601,6 +850,72 @@ def build_relativity_grammar() -> Grammar:
                     "isomorphism": "like phonological neutralisation: distinct inputs, same output"},
             weight=1.0,
             direction="bidirectional",
+        ),
+
+        # --- Gravitational redshift ---
+        Rule(
+            name="gravitational_redshift",
+            pattern={"photon": "escaping gravitational well of mass M at radius r"},
+            result={"equation": "f_observed/f_emitted = √(1 - 2GM/(rc²))",
+                    "verified": "Pound-Rebka 1959 (22.5m tower, Fe-57 gamma rays)"},
+            weight=1.0, direction="forward",
+        ),
+        # --- Schwarzschild radius ---
+        Rule(
+            name="schwarzschild_radius",
+            pattern={"mass": "M (non-rotating, uncharged)"},
+            result={"equation": "r_s = 2GM/c²",
+                    "consequence": "event horizon: nothing escapes if r < r_s",
+                    "sun": "r_s ≈ 3 km", "earth": "r_s ≈ 9 mm"},
+            weight=1.0, direction="forward",
+        ),
+        # --- Gravitational lensing ---
+        Rule(
+            name="gravitational_lensing",
+            pattern={"light": "passing mass M at impact parameter b"},
+            result={"deflection_angle": "θ = 4GM/(bc²) (GR prediction)",
+                    "newtonian_half": "Newton predicts half this value",
+                    "verified": "Eddington 1919 solar eclipse; now routine in cosmology"},
+            weight=1.0, direction="forward",
+        ),
+        # --- Hawking radiation ---
+        Rule(
+            name="hawking_radiation",
+            pattern={"black_hole": "mass M, event horizon"},
+            result={"temperature": "T = ℏc³/(8πGMk_B)",
+                    "consequence": "black holes slowly evaporate",
+                    "significance": "connects quantum mechanics, gravity, and thermodynamics",
+                    "status": "theoretical (Hawking 1974), not yet directly observed"},
+            weight=0.8, direction="forward",
+        ),
+        # --- Cosmological redshift ---
+        Rule(
+            name="hubble_law",
+            pattern={"galaxy": "at distance d from observer"},
+            result={"velocity": "v = H₀ × d",
+                    "H0": "≈ 67-73 km/s/Mpc (Hubble tension unresolved)",
+                    "consequence": "universe is expanding",
+                    "verified": "Hubble 1929; Perlmutter/Riess 1998 (accelerating)"},
+            weight=1.0, direction="forward",
+        ),
+        # --- Geodesic equation ---
+        Rule(
+            name="geodesic_equation",
+            pattern={"particle": "free-falling in curved spacetime"},
+            result={"equation": "d²xᵘ/dτ² + Γᵘᵥₚ dxᵛ/dτ dxᵖ/dτ = 0",
+                    "meaning": "particles follow straightest possible paths in curved spacetime",
+                    "isomorphism": "like least-effort principle in phonological change"},
+            weight=1.0, direction="forward",
+        ),
+        # --- Gravitational waves ---
+        Rule(
+            name="gravitational_waves",
+            pattern={"source": "accelerating mass (e.g., binary inspiral)"},
+            result={"wave": "ripples in spacetime, transverse, two polarisations",
+                    "speed": "propagate at c",
+                    "verified": "LIGO 2015 (binary black hole merger GW150914)",
+                    "significance": "new observational window on universe"},
+            weight=1.0, direction="forward",
         ),
     ]
 

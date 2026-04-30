@@ -221,6 +221,64 @@ def build_algebra_grammar() -> Grammar:
             weight=0.85,
             direction="bidirectional",
         ),
+
+        # --- Fundamental theorem of algebra ---
+        Rule(name="fundamental_theorem_algebra",
+             pattern={"polynomial": "non-constant polynomial with complex coefficients"},
+             result={"theorem": "has at least one complex root",
+                     "consequence": "degree-n polynomial has exactly n roots (counting multiplicity)",
+                     "proved": "Gauss 1799 (first rigorous proof)"},
+             weight=1.0, direction="forward"),
+        # --- Lagrange's theorem ---
+        Rule(name="lagranges_theorem_groups",
+             pattern={"group": "finite group G, subgroup H"},
+             result={"theorem": "|H| divides |G|",
+                     "consequence": "order of any element divides |G|",
+                     "corollary": "groups of prime order are cyclic"},
+             weight=1.0, direction="forward"),
+        # --- Cayley's theorem ---
+        Rule(name="cayleys_theorem",
+             pattern={"group": "any group G"},
+             result={"theorem": "G is isomorphic to a subgroup of Sym(G)",
+                     "meaning": "every abstract group can be realised as permutations"},
+             weight=1.0, direction="forward"),
+        # --- Ring and field axioms ---
+        Rule(name="field_axioms",
+             pattern={"structure": "(F, +, ×)"},
+             result={"axioms": [
+                 "abelian group under +",
+                 "abelian group under × (excluding 0)",
+                 "distributivity: a(b+c) = ab + ac",
+             ],
+                     "examples": "ℚ, ℝ, ℂ, 𝔽_p (finite fields)"},
+             weight=1.0, direction="bidirectional"),
+        # --- Eigenvalue equation ---
+        Rule(name="eigenvalue_equation",
+             pattern={"linear_map": "A: V → V"},
+             result={"equation": "Av = λv",
+                     "lambda": "eigenvalue", "v": "eigenvector (v ≠ 0)",
+                     "char_poly": "det(A - λI) = 0",
+                     "isomorphism": "quantum observables use same structure"},
+             weight=1.0, direction="bidirectional"),
+        # --- Cayley-Hamilton ---
+        Rule(name="cayley_hamilton",
+             pattern={"matrix": "n×n matrix A with characteristic polynomial p(λ)"},
+             result={"theorem": "p(A) = 0 (matrix satisfies its own characteristic equation)",
+                     "proved": "Cayley 1858, Hamilton 1853"},
+             weight=1.0, direction="forward"),
+        # --- Noether's theorem (mathematical statement) ---
+        Rule(name="noethers_theorem_math",
+             pattern={"system": "action integral invariant under continuous symmetry"},
+             result={"theorem": "every continuous symmetry ↔ conservation law",
+                     "examples": {
+                         "time_translation": "→ energy conservation",
+                         "space_translation": "→ momentum conservation",
+                         "rotation": "→ angular momentum conservation",
+                         "gauge_U1": "→ charge conservation",
+                     },
+                     "proved": "Emmy Noether 1918",
+                     "significance": "deepest connection between symmetry and physics"},
+             weight=1.0, direction="bidirectional"),
     ]
 
     return Grammar(
@@ -355,6 +413,52 @@ def build_calculus_grammar() -> Grammar:
             weight=0.9,
             direction="forward",
         ),
+
+        # --- Mean value theorem ---
+        Rule(name="mean_value_theorem",
+             pattern={"function": "f continuous on [a,b], differentiable on (a,b)"},
+             result={"theorem": "∃c ∈ (a,b): f'(c) = (f(b)-f(a))/(b-a)",
+                     "meaning": "instantaneous rate equals average rate somewhere"},
+             weight=1.0, direction="forward"),
+        # --- Intermediate value theorem ---
+        Rule(name="intermediate_value_theorem",
+             pattern={"function": "f continuous on [a,b]"},
+             result={"theorem": "for any y between f(a) and f(b), ∃c ∈ [a,b]: f(c) = y",
+                     "consequence": "continuous functions take all intermediate values",
+                     "application": "proves existence of roots"},
+             weight=1.0, direction="forward"),
+        # --- Taylor series ---
+        Rule(name="taylor_series",
+             pattern={"function": "f infinitely differentiable at a"},
+             result={"expansion": "f(x) = Σ f⁽ⁿ⁾(a)/n! × (x-a)ⁿ",
+                     "maclaurin": "Taylor at a=0",
+                     "examples": {"eˣ": "Σ xⁿ/n!", "sin x": "Σ (-1)ⁿx²ⁿ⁺¹/(2n+1)!",
+                                  "cos x": "Σ (-1)ⁿx²ⁿ/(2n)!"}},
+             weight=1.0, direction="bidirectional"),
+        # --- Stokes' theorem (generalised) ---
+        Rule(name="stokes_theorem_general",
+             pattern={"manifold": "oriented manifold M with boundary ∂M"},
+             result={"theorem": "∫_M dω = ∫_∂M ω",
+                     "special_cases": {
+                         "1D": "fundamental theorem of calculus",
+                         "2D_line": "Green's theorem",
+                         "2D_surface": "classical Stokes' theorem",
+                         "3D": "divergence theorem (Gauss)",
+                     },
+                     "significance": "unifies all of vector calculus in one statement"},
+             weight=1.0, direction="bidirectional"),
+        # --- Integration by parts ---
+        Rule(name="integration_by_parts",
+             pattern={"integral": "∫ u dv"},
+             result={"formula": "∫ u dv = uv - ∫ v du",
+                     "derivation": "from product rule d(uv) = u dv + v du"},
+             weight=1.0, direction="bidirectional"),
+        # --- Picard-Lindelöf (ODE existence) ---
+        Rule(name="picard_lindelof",
+             pattern={"ode": "y' = f(t,y), f Lipschitz in y"},
+             result={"theorem": "unique solution exists in neighbourhood of initial condition",
+                     "significance": "determinism of differential equations"},
+             weight=1.0, direction="forward"),
     ]
 
     strange_loop = StrangeLoop(
@@ -503,6 +607,60 @@ def build_logic_grammar() -> Grammar:
             direction="bidirectional",
             self_referential=True,
         ),
+
+        # --- Gödel's completeness theorem ---
+        Rule(name="godel_completeness",
+             pattern={"system": "first-order predicate logic"},
+             result={"theorem": "every logically valid formula is provable",
+                     "equivalently": "if Γ ⊨ φ then Γ ⊢ φ",
+                     "contrast": "incompleteness is about arithmetic, completeness about pure logic",
+                     "proved": "Gödel 1929 (PhD thesis)"},
+             weight=1.0, direction="bidirectional"),
+        # --- Compactness theorem ---
+        Rule(name="compactness_theorem",
+             pattern={"theory": "set of first-order sentences Γ"},
+             result={"theorem": "Γ has a model iff every finite subset has a model",
+                     "consequence": "can transfer properties from finite to infinite",
+                     "proved": "follows from completeness (Gödel 1930)"},
+             weight=1.0, direction="bidirectional"),
+        # --- Church-Turing thesis ---
+        Rule(name="church_turing_thesis",
+             pattern={"concept": "effective computability"},
+             result={"thesis": "every effectively computable function is Turing-computable",
+                     "equivalences": ["Turing machine", "lambda calculus", "recursive functions",
+                                      "Post system", "Markov algorithm"],
+                     "status": "thesis, not theorem — cannot be formally proved",
+                     "isomorphism": "like universal grammar hypothesis — all formalisms converge"},
+             weight=1.0, direction="bidirectional"),
+        # --- Halting problem ---
+        Rule(name="halting_problem",
+             pattern={"question": "does program P halt on input x?"},
+             result={"theorem": "no algorithm can decide this for all P and x",
+                     "proof": "diagonalisation (Turing 1936)",
+                     "consequence": "limits of computation are absolute, not technological",
+                     "isomorphism": "like Gödel — self-reference creates undecidability"},
+             weight=1.0, direction="forward"),
+        # --- Curry-Howard correspondence ---
+        Rule(name="curry_howard",
+             pattern={"observation": "structural similarity between proofs and programs"},
+             result={"correspondence": {
+                         "propositions": "↔ types",
+                         "proofs": "↔ programs",
+                         "proof_simplification": "↔ program evaluation",
+                         "implication A→B": "↔ function type A → B",
+                         "conjunction A∧B": "↔ product type (A, B)",
+                         "disjunction A∨B": "↔ sum type A | B",
+                     },
+                     "significance": "logic and computation are the same structure",
+                     "isomorphism": "bridges mathematics, computation, and linguistics"},
+             weight=1.0, direction="bidirectional"),
+        # --- Tarski's undefinability ---
+        Rule(name="tarskis_undefinability",
+             pattern={"language": "sufficiently expressive formal language L"},
+             result={"theorem": "truth in L cannot be defined within L",
+                     "consequence": "metalanguage needed to talk about truth",
+                     "isomorphism": "like use/mention distinction in linguistics"},
+             weight=1.0, direction="forward"),
     ]
 
     strange_loop = StrangeLoop(
@@ -618,6 +776,57 @@ def build_number_theory_grammar() -> Grammar:
             weight=0.9,
             direction="bidirectional",
         ),
+
+        # --- Euclid's theorem ---
+        Rule(name="euclids_theorem_primes",
+             pattern={"question": "are there finitely many primes?"},
+             result={"theorem": "there are infinitely many primes",
+                     "proof": "assume finitely many p₁...pₖ; p₁×...×pₖ + 1 has prime factor not in list",
+                     "proved": "Euclid, ~300 BCE; oldest known mathematical proof"},
+             weight=1.0, direction="forward"),
+        # --- Euler's theorem ---
+        Rule(name="eulers_theorem",
+             pattern={"conditions": "gcd(a, n) = 1"},
+             result={"theorem": "a^φ(n) ≡ 1 (mod n)",
+                     "euler_totient": "φ(n) = count of integers 1..n coprime to n",
+                     "generalises": "Fermat's little theorem (when n is prime, φ(p) = p-1)"},
+             weight=1.0, direction="forward"),
+        # --- Quadratic reciprocity ---
+        Rule(name="quadratic_reciprocity",
+             pattern={"primes": "distinct odd primes p, q"},
+             result={"theorem": "(p/q)(q/p) = (-1)^((p-1)/2 · (q-1)/2)",
+                     "meaning": "solvability of x² ≡ p (mod q) related to x² ≡ q (mod p)",
+                     "proved": "Gauss 1801 (published 8 proofs)",
+                     "significance": "called 'the gem of arithmetic' by Gauss"},
+             weight=1.0, direction="bidirectional"),
+        # --- Bezout's identity ---
+        Rule(name="bezouts_identity",
+             pattern={"integers": "a, b with gcd(a,b) = d"},
+             result={"theorem": "∃x,y ∈ ℤ: ax + by = d",
+                     "found_by": "extended Euclidean algorithm",
+                     "consequence": "gcd is the smallest positive linear combination"},
+             weight=1.0, direction="bidirectional"),
+        # --- Dirichlet's theorem ---
+        Rule(name="dirichlets_theorem",
+             pattern={"arithmetic_progression": "a, a+d, a+2d, ... with gcd(a,d)=1"},
+             result={"theorem": "contains infinitely many primes",
+                     "proved": "Dirichlet 1837 (using L-functions)",
+                     "example": "3, 7, 11, 19, 23, ... (≡ 3 mod 4) has infinitely many primes"},
+             weight=1.0, direction="forward"),
+        # --- Perfect numbers ---
+        Rule(name="euclid_euler_perfect",
+             pattern={"number": "n is an even perfect number"},
+             result={"theorem": "n = 2^(p-1)(2^p - 1) where 2^p - 1 is a Mersenne prime",
+                     "direction": "Euclid (sufficient), Euler (necessary for even)",
+                     "open_question": "do odd perfect numbers exist? (none found, none disproved)"},
+             weight=1.0, direction="bidirectional"),
+        # --- Euler's identity ---
+        Rule(name="eulers_identity",
+             pattern={"equation": "e^(iπ) + 1 = 0"},
+             result={"significance": "connects five fundamental constants: e, i, π, 1, 0",
+                     "generalised": "e^(ix) = cos(x) + i·sin(x) (Euler's formula)",
+                     "isomorphism": "unifies analysis, algebra, geometry, and trigonometry"},
+             weight=1.0, direction="bidirectional"),
     ]
 
     productions = [
