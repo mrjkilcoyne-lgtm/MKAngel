@@ -1,0 +1,38 @@
+{
+  "expo": {
+    "name": "MKAngel",
+    "slug": "MKAngel",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "dark",
+    "newArchEnabled": true,
+    "splash": {
+      "image": "./assets/splash-icon.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#0f0f23"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "infoPlist": {
+        "UIBackgroundModes": ["fetch", "processing"]
+      },
+      "bundleIdentifier": "com.mkangel.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#0f0f23"
+      },
+      "edgeToEdgeEnabled": true,
+      "package": "com.mkangel.app",
+      "permissions": ["RECEIVE_BOOT_COMPLETED", "WAKE_LOCK"]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "plugins": [
+      "expo-background-fetch"
+    ]
+  }
+}
